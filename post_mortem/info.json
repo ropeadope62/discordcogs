@@ -1,0 +1,26 @@
+{
+    "author" : [
+        "Slurms Mackenzie"
+    ],
+    "description" : "Predict when and how users will die",
+    "disabled" : false,
+    "end_user_data_statement" : "This cog does not persistently store data or metadata about users.",
+    "hidden" : false,
+    "install_msg" : "Usage: `[p]postmortem <user>`",
+    "max_bot_version" : "0.0.0",
+    "min_bot_version" : "3.1.8",
+    "min_python_version" : [
+        3,
+        7,
+        2
+    ],
+    "name" : "PostMortem",
+    "permissions" : [],
+    "required_cogs" : {},
+    "requirements" : [],
+    "short" : "Predict when and how users will die",
+    "tags" : [
+        "fun"
+    ],
+    "type" : "COG"
+}
