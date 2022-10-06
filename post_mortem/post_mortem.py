@@ -122,7 +122,7 @@ class PostMortem(commands.Cog):
         hash_result_asint = int(hash_method)
         current_year = date.today().year
         age = 10
-        msg = "*** Post Mortem:registered Likely result of death:***  "
+        msg = "*** Post Mortem:registered: - Likely result of death: ***  "
         if user:
             if user.id == self.bot.user.id:
                 user = ctx.message.author
