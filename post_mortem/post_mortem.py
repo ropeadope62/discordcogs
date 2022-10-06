@@ -124,7 +124,6 @@ class PostMortem(commands.Cog):
         age = 10
         msg = "*** Post Mortem:registered Likely result of death:***  "
         if user:
-
             if user.id == self.bot.user.id:
                 user = ctx.message.author
                 bot_msg = [
@@ -165,7 +164,7 @@ class PostMortem(commands.Cog):
                 else: 
                     raise Exception('Error #2414: User IQ too low.\n')                    
         else:
-            await ctx.send(ctx.message.author.mention + msg + choice(deaths))
+            await ctx.send(f'A subject is required for analysis...')
 
 
 
