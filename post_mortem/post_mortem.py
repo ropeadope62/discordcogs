@@ -100,7 +100,11 @@ class PostMortem(commands.Cog):
         Nothing to delete
         """
         return
-    
+
+    def get_str():
+        return '100'
+
+
 
              
     @commands.command()
@@ -111,11 +115,14 @@ class PostMortem(commands.Cog):
 
         `user` the user you would like to assess.
         """
+        user_hash = hash(user)
+        #def get_memberhash(user: discord.Member):
+        #    return(hash(user))  
+        hash_method = str(user_hash)[:2]
+        hash_result_asint = int(hash_method)
         current_year = date.today().year
-        years_generate = 0
-        years_generate = int(user.id)
         age = 10
-        msg = "***Post Mortem:registered:***  "
+        msg = "*** Post Mortem:registered Likely result of death:***  "
         if user:
 
             if user.id == self.bot.user.id:
@@ -135,13 +142,11 @@ class PostMortem(commands.Cog):
                 #age.append(userid_as_int)
                 
                 if age in range(1,100):
-                    years = str(years_generate)[-2:]
-                    years_as_int = int(years)
-                    days = years_as_int * 365
-                    weeks = years_as_int * 52
-                    months = years_as_int * 12 
-                    death_year = current_year + years_as_int
-                
+                    years = hash_result_asint
+                    days = hash_result_asint * 365
+                    weeks = hash_result_asint * 52
+                    months = hash_result_asint * 12 
+                    death_year = current_year + hash_result_asint
                     await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n') ; sleep(1)
                     await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n') ; sleep(1)
                     await ctx.send(f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n') ; sleep(0.5)
@@ -153,6 +158,7 @@ class PostMortem(commands.Cog):
                     await ctx.send(f"*{user}* has {years} years... *or* {months} months... *or* {weeks} weeks... *or* {days} days left to live.\n") ; sleep(0.2)
                     await ctx.send(f"***Generating Final Report...***") ; sleep(1)
                     await ctx.send(user.mention + msg + choice(deaths))
+
                     #await ctx.send(days_remaining)
                     #await ctx.send(weeks_remaining)
                     #await ctx.send(months_remaining)    
@@ -160,9 +166,12 @@ class PostMortem(commands.Cog):
                     raise Exception('Error #2414: User IQ too low.\n')                    
         else:
             await ctx.send(ctx.message.author.mention + msg + choice(deaths))
+
+
+
       
 
         
-        
+    
 
         
