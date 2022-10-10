@@ -121,8 +121,8 @@ class PostMortem(commands.Cog):
         hash_method = str(user_hash)[:2]
         hash_result_asint = int(hash_method)
         current_year = date.today().year
-        age = 10
-        msg = "*** Post Mortem:registered: - Likely result of death: ***  "
+        interval = random.random()
+        msg = "*** Post Mortem:registered:  Likely result of death:***  "
         if user:
             if user.id == self.bot.user.id:
                 user = ctx.message.author
@@ -140,7 +140,7 @@ class PostMortem(commands.Cog):
                 #userid_as_int = int(user.id)
                 #age.append(userid_as_int)
                 
-                if age in range(1,100):
+                if user:
                     years = hash_result_asint
                     days = hash_result_asint * 365
                     weeks = hash_result_asint * 52
@@ -148,13 +148,13 @@ class PostMortem(commands.Cog):
                     death_year = current_year + hash_result_asint
                     await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n') ; sleep(1)
                     await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n') ; sleep(1)
-                    await ctx.send(f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n') ; sleep(0.5)
-                    await ctx.send('Calculating Vitals...\n') ; sleep(0.2)
-                    await ctx.send(f"Analyzing *{user}'s* Dietary Choices...\n") ; sleep(0.2)
-                    await ctx.send(f"Analyzing *{user}'s* Life Choices...\n") ; sleep(0.2)
+                    await ctx.send(f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n') ; sleep(interval)
+                    await ctx.send('Calculating Vitals...\n') ; sleep(interval)
+                    await ctx.send(f"Analyzing *{user}'s* Dietary Choices...\n") ; sleep(interval)
+                    await ctx.send(f"Analyzing *{user}'s* Life Choices...\n") ; sleep(interval)
                     await ctx.send('Analysis Completed Successfully\n') ; sleep(1) 
-                    await ctx.send(f"*{user}'s* death will occur in {death_year}.\n") ; sleep(0.2)
-                    await ctx.send(f"*{user}* has {years} years... *or* {months} months... *or* {weeks} weeks... *or* {days} days left to live.\n") ; sleep(0.2)
+                    await ctx.send(f"*{user}'s* death will occur in {death_year}.\n") ; sleep(interval)
+                    await ctx.send(f"*{user}* has {years} years... *or* {months} months... *or* {weeks} weeks... *or* {days} days left to live.\n") ; sleep(interval)
                     await ctx.send(f"***Generating Final Report...***") ; sleep(1)
                     await ctx.send(user.mention + msg + choice(deaths))
 
