@@ -490,8 +490,6 @@ class Hunting(commands.Cog):
             if reward:
                 cur_name = await bank.get_currency_name(guild)
                 msg = f"{author.display_name} shot a {animal}{bangtime} and earned {reward} {cur_name}!"
-            elif user_data["fastest_shot"] > time_for_bang:
-                msg = f"{author.display_name} shot a {animal}{bangtime} and earned {reward} {cur_name}! They beat their previous shot speed record!"
             else:
                 msg = f"{author.display_name} shot a {animal}{bangtime}!"
         else:
