@@ -291,10 +291,9 @@ class Hunting(commands.Cog):
             total = total + animal[1]
             if animal[1] == 1 or animal[0][-1] == "s":
                 kill_list.append(f"{animal[1]} {animal[0].capitalize()}")
-                message = f"{member.name} shot a total of {total} animals ({humanize_list(kill_list)}). {member.name}'s fastest shot was in {shot_time} seconds!"
             else:
                 kill_list.append(f"{animal[1]} {animal[0].capitalize()}s")
-                message = f"{member.name} shot a total of {total} animals ({humanize_list(kill_list)}). {member.name}'s fastest shot was in {shot_time} seconds!"
+            message = f"{member.name} shot a total of {total} animals ({humanize_list(kill_list)}). {member.name}'s fastest shot was in {shot_time} seconds!"
         await ctx.send(bold(message))
 
     @checks.mod_or_permissions(manage_guild=True)
