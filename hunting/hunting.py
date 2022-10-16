@@ -292,8 +292,6 @@ class Hunting(commands.Cog):
             total = total + animal[1]
             if animal[1] == 1 or animal[0][-1] == "s":
                 kill_list.append(f"{animal[1]} {animal[0].capitalize()}")
-            elif shot_time == "":
-                message = f"{member.name} shot a total of {total} animals ({humanize_list(kill_list)}). {member.name} has not yet recorded a {shot_time}"
             else:
                 kill_list.append(f"{animal[1]} {animal[0].capitalize()}s")
             message = f"{member.name} shot a total of {total} animals ({humanize_list(kill_list)}). {member.name}'s fastest shot was in {shot_time} seconds!"
