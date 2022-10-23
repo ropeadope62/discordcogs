@@ -110,7 +110,7 @@ class PostMortem(commands.Cog):
         return '100'
 
 
-             
+    @commands.cooldown(1, 30, commands.BucketType.user)         
     @commands.command()
     async def postmortem(self, ctx: commands.Context, user: discord.Member = None) -> None:
         """
@@ -161,8 +161,6 @@ class PostMortem(commands.Cog):
                     await ctx.send(f"*{user}* has {years} years... *or* {months} months... *or* {weeks} weeks... *or* {days} days left to live.\n") ; sleep(interval)
                     await ctx.send(f"***Generating Final Report...***") ; sleep(1)
                     await ctx.send(user.mention + msg + choice(deaths))
-
-                    @commands.cooldown(1, 30, commands.BucketType.user)
 
                     #await ctx.send(days_remaining)
                     #await ctx.send(weeks_remaining)
