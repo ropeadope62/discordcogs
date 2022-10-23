@@ -17,6 +17,8 @@ from redbot.core.utils.chat_formatting import (bold, box, humanize_list,humanize
 from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 from redbot.core.utils.predicates import MessagePredicate
 
+
+
 _ = Translator("PostMortem", __file__)
 
 deaths: List[str] = [
@@ -77,12 +79,15 @@ deaths: List[str] = [
     _('Extreme face sitting')
 ]
     
-#@cog_i18n(_)
+
+
+
 class PostMortem(commands.Cog):
     """Broad Street Labs - Post Mortem"""
     
     __author__ = ["Slurms Mackenzie"]
     __version__ = "0.1.0"
+
 
     def __init__(self, bot):
         self.bot = bot
@@ -103,7 +108,6 @@ class PostMortem(commands.Cog):
 
     def get_str():
         return '100'
-
 
 
              
@@ -158,13 +162,15 @@ class PostMortem(commands.Cog):
                     await ctx.send(f"***Generating Final Report...***") ; sleep(1)
                     await ctx.send(user.mention + msg + choice(deaths))
 
+                    @commands.cooldown(1, 30, commands.BucketType.user)
+
                     #await ctx.send(days_remaining)
                     #await ctx.send(weeks_remaining)
                     #await ctx.send(months_remaining)    
                 else: 
                     raise Exception('Error #2414: User IQ too low.\n')                    
         else:
-            await ctx.send(f'A subject is required for analysis...')
+            await ctx.send(f'A subject is required for analysis... try postmortem @discorduser')
 
 
 
