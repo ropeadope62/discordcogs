@@ -140,33 +140,27 @@ class PostMortem(commands.Cog):
                 ]
                 await ctx.send(f"{ctx.author.mention}{choice(bot_msg)}")
             else:
-                
                 #userid_as_int = int(user.id)
                 #age.append(userid_as_int)
-                
-                if user:
-                    years = hash_result_asint
-                    days = hash_result_asint * 365
-                    weeks = hash_result_asint * 52
-                    months = hash_result_asint * 12 
-                    death_year = current_year + hash_result_asint
-                    await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n') ; sleep(1)
-                    await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n') ; sleep(1)
-                    await ctx.send(f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n') ; sleep(interval)
-                    await ctx.send('Calculating Vitals...\n') ; sleep(interval)
-                    await ctx.send(f"Analyzing *{user}'s* Dietary Choices...\n") ; sleep(interval)
-                    await ctx.send(f"Analyzing *{user}'s* Life Choices...\n") ; sleep(interval)
-                    await ctx.send('Analysis Completed Successfully\n') ; sleep(1) 
-                    await ctx.send(f"*{user}'s* death will occur in {death_year}.\n") ; sleep(interval)
-                    await ctx.send(f"*{user}* has {years} years... *or* {months} months... *or* {weeks} weeks... *or* {days} days left to live.\n") ; sleep(interval)
-                    await ctx.send(f"***Generating Final Report...***") ; sleep(1)
-                    await ctx.send(user.mention + msg + choice(deaths))
-
-                    #await ctx.send(days_remaining)
-                    #await ctx.send(weeks_remaining)
-                    #await ctx.send(months_remaining)    
-                else: 
-                    raise Exception('Error #2414: User IQ too low.\n')                    
+                years = hash_result_asint
+                days = hash_result_asint * 365
+                weeks = hash_result_asint * 52
+                months = hash_result_asint * 12 
+                death_year = current_year + hash_result_asint
+                await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n') ; sleep(1)
+                await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n') ; sleep(1)
+                await ctx.send(f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n') ; sleep(interval)
+                await ctx.send('Calculating Vitals...\n') ; sleep(interval)
+                await ctx.send(f"Analyzing *{user}'s* Dietary Choices...\n") ; sleep(interval)
+                await ctx.send(f"Analyzing *{user}'s* Life Choices...\n") ; sleep(interval)
+                await ctx.send('Analysis Completed Successfully\n') ; sleep(1) 
+                await ctx.send(f"*{user}'s* death will occur in {death_year}.\n") ; sleep(interval)
+                await ctx.send(f"*{user}* has {years} years... *or* {months} months... *or* {weeks} weeks... *or* {days} days left to live.\n") ; sleep(interval)
+                await ctx.send(f"***Generating Final Report...***") ; sleep(1)
+                await ctx.send(user.mention + msg + choice(deaths))
+                #await ctx.send(days_remaining)
+                #await ctx.send(weeks_remaining)
+                #await ctx.send(months_remaining)                
         else:
             await ctx.send(f'A subject is required for analysis... try postmortem @discorduser')
 
