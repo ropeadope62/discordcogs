@@ -27,7 +27,7 @@ class Hunting(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, 170708480, force_registration=True)
+        self.config = Config.get_conf(self, 1007372182529245194, force_registration=True)
 
         self.animals = {
             "dove": ":dove: **_Coo!_**",
