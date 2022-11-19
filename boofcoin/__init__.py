@@ -1,4 +1,4 @@
-from .boofcoin import Boofcoin
+from .boofcoin import BoofCoin
 
 
 def setup(bot):
