@@ -4,13 +4,13 @@
         "Flame",
         "TrustyJAID"
     ],
-    "install_msg": "Thanks for installing crypto, use [p]help crypto for more information..",
-    "name": "Crypto",
+    "install_msg": "Thanks for installing boofcoin, use >help boofcoin for more information..",
+    "name": "boofcoin",
     "disabled": false,
     "short": "Buy and sell cyrptocurrencies with Red economy.",
     "description": "Buy and sell cryptocurrencies with Red economy.",
     "tags": [
-        "crypto"
+        "boofcoin"
     ],
     "requirements": [
         "tabulate"
