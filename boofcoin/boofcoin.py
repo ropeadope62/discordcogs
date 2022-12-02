@@ -64,9 +64,10 @@ class BoofCoin(commands.Cog):
     @commands.check(tokencheck)
     @commands.group()
     async def boofcoin(self, ctx):
-        """Group command for buying/selling BoofCoins (BFC)
+        """BOOFCOIN: Stick your money into cryptocurrency.
 
-        Exchange rate 1$ = 10 credits."""
+        BoofCoin is a highly volatile cryptocurrency based on Broadstreet Block Chain Technology (BBCT).
+        BoofCoin Market Data is Simulated based on aggregated crypto market conditions. Exchange rate 1$ = 1 credit"""
 
 
     @boofcoin.command()
@@ -252,7 +253,13 @@ class BoofCoin(commands.Cog):
         await ctx.send(
             f'{humanize_number(amount)} of {coin_data["name"]} is {humanize_number(amount * (float(coin_data["quote"]["USD"]["price"]) * 10))} {currency} each. ({humanize_number(float(coin_data["quote"]["USD"]["price"]) * 10)} {currency} each)'
         )
+    @boofcoin.command()
+    async def trade(self, ctx, coin, *, amount: float):
+            """Sell Boofcoins"""
 
+    @boofcoin.command()
+    async def BoofNFT(self, ctx, coin, *, amount: float):
+            """Buy one of a kind digital assets that will make you rich"""
     @commands.command()
     @commands.is_owner()
     async def boofcoinapi(self, ctx):
