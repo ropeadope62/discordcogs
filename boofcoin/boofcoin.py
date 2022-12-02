@@ -74,9 +74,9 @@ class BoofCoin(commands.Cog):
     async def buy(self, ctx, coin, *, amount: float):
         """Buy Boofcoins
 
-        Exchange rate 1$ = 1 credit, BoofCoin Market Data is Simulated."""
+        BoofCoin Market Data is Simulated based on aggregated crypto market conditions. Exchange rate 1$ = 1 credit"""
         if amount <= 0:
-            await ctx.send("You cannot buy less than 0 coin.")
+            await ctx.send("You cannot buy less than 0 BFC.")
             return
         coin_data = await self.checkcoins(coin)
         if "status" in coin_data:
@@ -256,7 +256,7 @@ class BoofCoin(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def cryptoapi(self, ctx):
+    async def boofcoinapi(self, ctx):
         """
         Instructions for how to setup the crypto API
         """
