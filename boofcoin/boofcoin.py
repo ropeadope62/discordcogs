@@ -76,7 +76,6 @@ class BoofCoin(commands.Cog):
         Exchange rate 1$ = 10 credits."""
         if ctx.invoked_subcommand is None:
             guild_data = await self.config.guild(ctx.guild).all()
-        price_factor = "Factor" if guild_data["price_factor"] else "Off"
 
     @boofcoin.command()
     async def buy(self, ctx, coin, *, amount: float):
