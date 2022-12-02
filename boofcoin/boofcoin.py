@@ -27,8 +27,14 @@ class BoofCoin(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, 170708480, force_registration=True)
-        self.config.register_user(crypto={})
+        self.config = Config.get_conf(self, 170708324234480, force_registration=True)
+
+        default_guild = {
+            "price_factor": 0, #minimum length to qualify as feedback
+            "trading" True
+        }
+        self.config.register_user(boofcoin={})
+        self.config.register_guild(**default_guild)
 
     async def get_header(
         self,
@@ -41,9 +47,7 @@ class BoofCoin(commands.Cog):
         else:
             return None
 
-    async def checkcoins(
-        self, base: str
-    ) -> dict:  # Attribution to TrustyJAID, https://github.com/TrustyJAID/Trusty-cogs/blob/ffdb8f77ed888d5bbbfcc3805d860e8dab80741b/conversions/conversions.py#L211
+    async def checkcoins(self, base: str ) -> dict:  # Attribution to TrustyJAID, https://github.com/TrustyJAID/Trusty-cogs/blob/ffdb8f77ed888d5bbbfcc3805d860e8dab80741b/conversions/conversions.py#L211
         url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=await self.get_header()) as resp:
@@ -63,12 +67,16 @@ class BoofCoin(commands.Cog):
                     return await resp.json()
                 return {}
 
-    @commands.group()
+ 
     @commands.check(tokencheck)
+    @commands.group()
     async def boofcoin(self, ctx):
         """Group command for buying/selling BoofCoins (BFC)
 
         Exchange rate 1$ = 10 credits."""
+        if ctx.invoked_subcommand is None:
+            guild_data = await self.config.guild(ctx.guild).all()
+        price_factor = "Factor" if guild_data["price_factor"] else "Off"
 
     @boofcoin.command()
     async def buy(self, ctx, coin, *, amount: float):
