@@ -29,13 +29,6 @@ class BoofCoin(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, 170708324234480, force_registration=True)
 
-        default_guild = {
-            "price_factor": 0, #minimum length to qualify as feedback
-            "trading": True
-        }
-        self.config.register_user(boofcoin={})
-        self.config.register_guild(**default_guild)
-
     async def get_header(
         self,
     ) -> Optional[
@@ -74,8 +67,7 @@ class BoofCoin(commands.Cog):
         """Group command for buying/selling BoofCoins (BFC)
 
         Exchange rate 1$ = 10 credits."""
-        if ctx.invoked_subcommand is None:
-            guild_data = await self.config.guild(ctx.guild).all()
+
 
     @boofcoin.command()
     async def buy(self, ctx, coin, *, amount: float):
