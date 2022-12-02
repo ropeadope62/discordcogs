@@ -31,7 +31,7 @@ class BoofCoin(commands.Cog):
 
         default_guild = {
             "price_factor": 0, #minimum length to qualify as feedback
-            "trading" True
+            "trading": True
         }
         self.config.register_user(boofcoin={})
         self.config.register_guild(**default_guild)
