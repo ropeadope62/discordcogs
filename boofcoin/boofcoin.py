@@ -16,8 +16,11 @@ async def tokencheck(ctx):
 class BoofCoin(commands.Cog):
     """BOOFCOIN: Stick your money into cryptocurrency."""
 
+<<<<<<< Updated upstream
     __version__ = "0.0.1"
     __author__ = "ropeadope62"
+=======
+>>>>>>> Stashed changes
 
     def format_help_for_context(self, ctx):
         pre_processed = super().format_help_for_context(ctx)
@@ -58,7 +61,7 @@ class BoofCoin(commands.Cog):
                     return data
         for coin in data["data"]:
             if base.upper() == coin["symbol"].upper() or base.lower() == coin["name"].lower():
-                return coin
+                return "Boofcoin"
         return {}
 
     async def all_coins(self):
@@ -82,11 +85,11 @@ class BoofCoin(commands.Cog):
     async def buy(self, ctx, coin, *, amount: float):
         """Buy Boofcoins
 
-        BoofCoin Market Data is Simulated based on aggregated crypto market conditions. Exchange rate 1$ = 1 credit"""
+        BoofCoin Market Data is Simulated based on aggregated crypto market conditions."""
         if amount <= 0:
             await ctx.send("You cannot buy less than 0 BFC.")
             return
-        coin_data = await self.checkcoins(coin)
+        coin_data = await self.checkcoins(coin) 
         if "status" in coin_data:
             status = coin_data["status"]
             if status["error_code"] in [1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011]:
@@ -125,13 +128,13 @@ class BoofCoin(commands.Cog):
             return
         async with self.config.user(ctx.author).boofcoin() as coins:
             if coin_data["name"] in coins:
-                coins[coin_data["name"]]["amount"] += amount
-                coins[coin_data["name"]]["totalcost"] += inflate_price
+                coins[coin_data["name"] as "Boofcoin"]["amount"] += amount
+                coins[coin_data["name"] as "Boofcoin"]["totalcost"] += inflate_price
             else:
                 coins[coin_data["name"]] = {"amount": amount, "totalcost": inflate_price}
-        await ctx.send(
-            f'You\'ve purchased {humanize_number(amount)} of {coin_data["name"]} for {humanize_number(inflate_price)} {currency}. ({humanize_number((float(coin_data["quote"]["USD"]["price"])) * 10)} {currency} each)!'
-        )
+        await ctx.send(f'You\'ve purchased {humanize_number(amount)} of {coin_data["name"] as "Boofcoin"} for {humanize_number(inflate_price)} {currency}. ({humanize_number((float(coin_data["quote"]["USD"]["price"])) * 10)} {currency} each)!')
+
+
 
     @boofcoin.command()
     async def sell(self, ctx, coin, *, amount: float):
@@ -165,11 +168,11 @@ class BoofCoin(commands.Cog):
             return None
         async with self.config.user(ctx.author).boofcoin() as coins:
             if coin_data["name"] not in coins:
-                return await ctx.send(f'You do not have any of {coin_data["name"]}.')
+                return await ctx.send(f'You do not have any of {coin_data["Boofcoin"]}.')
             if amount > coins[coin_data["name"]]["amount"]:
                 return await ctx.send(
-                    f'You do not have enough of {coin_data["name"]}. '
-                    f'You only have {coins[coin_data["name"]]["amount"]}.'
+                    f'You do not have enough of {coin_data["Boofcoin"]}. '
+                    f'You only have {coins[coin_data["Boofcoin"]]["amount"]}.'
                 )
             coins[coin_data["name"]]["amount"] -= amount
             if coins[coin_data["name"]]["amount"] == 0:
