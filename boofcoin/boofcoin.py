@@ -78,10 +78,6 @@ class BoofCoin(commands.Cog):
         BoofCoin is a highly volatile cryptocurrency based on Broadstreet Block Chain Technology (BBCT).
         BoofCoin Market Data is Simulated based on aggregated crypto market conditions. Exchange rate 1$ = 1 credit"""
 
-        if ctx.invoked_subcommand is None:
-            guild_data = await self.config.guild(ctx.guild).all()
-        price_factor = "Factor" if guild_data["price_factor"] else "Off"
-
     @boofcoin.command()
     async def buy(self, ctx, coin, *, amount: float):
         """Buy Boofcoins
