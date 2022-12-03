@@ -6,8 +6,6 @@ from redbot.core import Config, bank, commands
 from redbot.core.utils.chat_formatting import box, humanize_number
 from tabulate import tabulate
 
-# https://github.com/Flame442/FlameCogs/blob/master/stocks/stocks.py
-# A lot of the logic in this is based on Flames stocks, obtained with permission.
 
 
 async def tokencheck(ctx):
@@ -31,7 +29,7 @@ class BoofCoin(commands.Cog):
 
         default_guild = {
             "price_factor": 0, #minimum length to qualify as feedback
-            "trading" True
+            "trading": True
         }
         self.config.register_user(boofcoin={})
         self.config.register_guild(**default_guild)
@@ -71,9 +69,10 @@ class BoofCoin(commands.Cog):
     @commands.check(tokencheck)
     @commands.group()
     async def boofcoin(self, ctx):
-        """Group command for buying/selling BoofCoins (BFC)
+        """BOOFCOIN: Stick your money into cryptocurrency.
 
-        Exchange rate 1$ = 10 credits."""
+        BoofCoin is a highly volatile cryptocurrency based on Broadstreet Block Chain Technology (BBCT).
+        BoofCoin Market Data is Simulated based on aggregated crypto market conditions. Exchange rate 1$ = 1 credit"""
         if ctx.invoked_subcommand is None:
             guild_data = await self.config.guild(ctx.guild).all()
         price_factor = "Factor" if guild_data["price_factor"] else "Off"
@@ -100,7 +99,7 @@ class BoofCoin(commands.Cog):
             if status["error_code"] in [1001, 1002]:
                 await ctx.send(
                     "The bot owner has not set an API key. "
-                    "Please use `{prefix}cryptoapi` to see "
+                    "Please use `{prefix}boofcoinapi` to see "
                     "how to create and setup an API key.".format(prefix=ctx.clean_prefix)
                 )
                 return None
@@ -123,7 +122,7 @@ class BoofCoin(commands.Cog):
                 f'You cannot afford {humanize_number(amount)} of {coin_data["name"]}.\nIt would have cost {humanize_number(inflate_price)} {currency} ({price} {currency}) however you only have {bal} {currency}!.'
             )
             return
-        async with self.config.user(ctx.author).crypto() as coins:
+        async with self.config.user(ctx.author).boofcoin() as coins:
             if coin_data["name"] in coins:
                 coins[coin_data["name"]]["amount"] += amount
                 coins[coin_data["name"]]["totalcost"] += inflate_price
@@ -155,14 +154,14 @@ class BoofCoin(commands.Cog):
             if status["error_code"] in [1001, 1002]:
                 await ctx.send(
                     "The bot owner has not set an API key. "
-                    "Please use `{prefix}cryptoapi` to see "
+                    "Please use `{prefix}boofcoinapi` to see "
                     "how to create and setup an API key.".format(prefix=ctx.clean_prefix)
                 )
                 return None
         if coin_data == {}:
             await ctx.send("{} is not in my list of currencies!".format(coin))
             return None
-        async with self.config.user(ctx.author).crypto() as coins:
+        async with self.config.user(ctx.author).boofcoin() as coins:
             if coin_data["name"] not in coins:
                 return await ctx.send(f'You do not have any of {coin_data["name"]}.')
             if amount > coins[coin_data["name"]]["amount"]:
@@ -184,15 +183,15 @@ class BoofCoin(commands.Cog):
 
     @boofcoin.command(name="list")
     async def _list(self, ctx, user: discord.Member = None):
-        """Lists the crypto of a user, defaults to self
+        """Lists the boofcoins of a user, defaults to self
 
         Example:
-            - `[p]crypto list`
-            - `[p]crypto balance @Bird`
+            - `[p]boofcoin list`
+            - `[p]boofcoin balance @Slurms`
 
         **Arguments**
 
-        - `<user>` The user to check the crypto balance of. If omitted, default to your own balance.
+        - `<user>` The user to check the Boofcoin balance of. If omitted, default to your own balance.
         """
         selfrequest = False
 
@@ -204,7 +203,7 @@ class BoofCoin(commands.Cog):
         if coin_data == {}:
             return await ctx.send("Failed to fetch all coin data.")
         coin_list = {coin["name"]: coin for coin in coin_data["data"]}
-        data = await self.config.user(user).crypto()
+        data = await self.config.user(user).boofcoin()
         if not data:
             if selfrequest:
                 return await ctx.send("You do not have any BoofCoins.")
@@ -243,7 +242,7 @@ class BoofCoin(commands.Cog):
             if status["error_code"] in [1001, 1002]:
                 await ctx.send(
                     "The bot owner has not set an API key. "
-                    "Please use `{prefix}cryptoapi` to see "
+                    "Please use `{prefix}boofcoinapi` to see "
                     "how to create and setup an API key.".format(prefix=ctx.clean_prefix)
                 )
                 return None
@@ -262,11 +261,21 @@ class BoofCoin(commands.Cog):
             f'{humanize_number(amount)} of {coin_data["name"]} is {humanize_number(amount * (float(coin_data["quote"]["USD"]["price"]) * 10))} {currency} each. ({humanize_number(float(coin_data["quote"]["USD"]["price"]) * 10)} {currency} each)'
         )
 
+    @boofcoin.command()
+    async def trade(self, ctx, coin, *, amount: float):
+            """Sell Boofcoins"""
+
+    @boofcoin.command()
+    async def BoofNFT(self, ctx, coin, *, amount: float):
+            """Buy one of a kind digital assets that will make you rich"""
+
+
     @commands.command()
     @commands.is_owner()
     async def boofcoinapi(self, ctx):
         """
-        Instructions for how to setup the crypto API
+        Instructions for how to setup the # 
+        crypto API
         """
         msg = (
             "1. Go to https://coinmarketcap.com/api/ sign up for an account.\n"
