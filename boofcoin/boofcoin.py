@@ -268,20 +268,12 @@ class BoofCoin(commands.Cog):
         )
     @boofcoin.command()
     async def trade(self, ctx, coin, *, amount: float):
-            """Sell Boofcoins"""
-
-    @boofcoin.command()
-    async def trade(self, ctx, coin, *, amount: float):
-            """Sell Boofcoins"""
+            """Trade Boofcoins"""
 
     @boofcoin.command()
     async def BoofNFT(self, ctx, coin, *, amount: float):
             """Buy one of a kind digital assets that will make you rich"""
 
-
-    @boofcoin.command()
-    async def BoofNFT(self, ctx, coin, *, amount: float):
-            """Buy one of a kind digital assets that will make you rich"""
     @commands.command()
     @commands.is_owner()
     async def boofcoinapi(self, ctx):
