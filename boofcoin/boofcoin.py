@@ -14,10 +14,10 @@ async def tokencheck(ctx):
 
 
 class BoofCoin(commands.Cog):
-    """Buy and Sell Crypto"""
+    """BOOFCOIN: Stick your money into cryptocurrency."""
 
     __version__ = "0.0.1"
-    __author__ = "flare, Flame and TrustyJAID."
+    __author__ = "ropeadope62"
 
     def format_help_for_context(self, ctx):
         pre_processed = super().format_help_for_context(ctx)
@@ -31,7 +31,11 @@ class BoofCoin(commands.Cog):
             "price_factor": 0, #minimum length to qualify as feedback
             "trading": True
         }
-        self.config.register_user(boofcoin={})
+        
+        default_user = {
+            "boofcoin": {}
+        }
+        self.config.register_user(**default_user)
         self.config.register_guild(**default_guild)
 
     async def get_header(
