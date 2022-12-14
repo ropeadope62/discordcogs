@@ -78,7 +78,7 @@ class BoofCoin(commands.Cog):
     async def boofcoin(self, ctx):
         """BOOFCOIN: Stick your money into cryptocurrency.
 
-        BoofCoin is a highly volatile cryptocurrency based on Broadstreet Block Chain Technology (BBCT).
+        BoofCoin is a highly volatile cryptocurrency based on Boof Block Chain Technology (BBC).
         BoofCoin Market Data is Simulated based on aggregated crypto market conditions. Exchange rate 1$ = 1 credit"""
 
     @boofcoin.command()
@@ -132,7 +132,7 @@ class BoofCoin(commands.Cog):
                 coins[coin_data["name"] as "Boofcoin"]["totalcost"] += inflate_price
             else:
                 coins[coin_data["name"]] = {"amount": amount, "totalcost": inflate_price}
-        await ctx.send(f'You\'ve purchased {humanize_number(amount)} of {coin_data["name"] as "Boofcoin"} for {humanize_number(inflate_price)} {currency}. ({humanize_number((float(coin_data["quote"]["USD"]["price"])) * 10)} {currency} each)!')
+        await ctx.send(f'You\'ve purchased {humanize_number(amount)} of {coin_data["name"]} for {humanize_number(inflate_price)} {currency}. ({humanize_number((float(coin_data["quote"]["USD"]["price"])) * 10)} {currency} each)!')
 
 
 
@@ -182,8 +182,8 @@ class BoofCoin(commands.Cog):
         )
         currency = await bank.get_currency_name(ctx.guild)
         await ctx.send(
-            f'You sold {humanize_number(amount)} of {coin_data["name"]} for {humanize_number(int(amount * (float(coin_data["quote"]["USD"]["price"]) * 10)))} {currency} '
-            f'({humanize_number((float(coin_data["quote"]["USD"]["price"]) * 10))} {currency} each).\nYou now have {humanize_number(bal)} {currency}.'
+            f'You sold {humanize_number(amount)} of BFC for {humanize_number(int(amount * (float(coin_data["quote"]["USD"]["price"]) * 10)))} {currency} '
+            f'({humanize_number((float(coin_data["quote"]["USD"]["price"]) * 10))} {currency} each).\nYou now have {humanize_number(bal)} Boofcoin.'
         )
 
     @boofcoin.command(name="list")
@@ -207,7 +207,7 @@ class BoofCoin(commands.Cog):
         coin_data = await self.all_coins()
         if coin_data == {}:
             return await ctx.send("Failed to fetch all coin data.")
-        coin_list = {coin["name"]: coin for coin in coin_data["data"]}
+        coin_list = {coin["boofcoin"]: coin for coin in coin_data["data"]}
         data = await self.config.user(user).boofcoin()
         if not data:
             if selfrequest:
