@@ -16,11 +16,8 @@ async def tokencheck(ctx):
 class BoofCoin(commands.Cog):
     """BOOFCOIN: Stick your money into cryptocurrency."""
 
-<<<<<<< Updated upstream
     __version__ = "0.0.1"
     __author__ = "ropeadope62"
-=======
->>>>>>> Stashed changes
 
     def format_help_for_context(self, ctx):
         pre_processed = super().format_help_for_context(ctx)
