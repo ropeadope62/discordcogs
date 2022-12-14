@@ -125,8 +125,8 @@ class BoofCoin(commands.Cog):
             return
         async with self.config.user(ctx.author).boofcoin() as coins:
             if coin_data["name"] in coins:
-                coins[coin_data["name"] as "Boofcoin"]["amount"] += amount
-                coins[coin_data["name"] as "Boofcoin"]["totalcost"] += inflate_price
+                coins[coin_data["name"]]["amount"] += amount
+                coins[coin_data["name"]]["totalcost"] += inflate_price
             else:
                 coins[coin_data["name"]] = {"amount": amount, "totalcost": inflate_price}
         await ctx.send(f'You\'ve purchased {humanize_number(amount)} of {coin_data["name"]} for {humanize_number(inflate_price)} {currency}. ({humanize_number((float(coin_data["quote"]["USD"]["price"])) * 10)} {currency} each)!')
