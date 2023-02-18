@@ -1,0 +1,26 @@
+{
+    "author" : [
+        "Slurms Mackenzie (ropeadope62)"
+    ],
+    "description" : "Play a game of russian roulette",
+    "disabled" : false,
+    "end_user_data_statement" : "This cog does not persistently store data or metadata about users.",
+    "hidden" : false,
+    "install_msg" : "Usage: `[p]russianroulette start`",
+    "max_bot_version" : "0.0.0",
+    "min_bot_version" : "0.1.0",
+    "min_python_version" : [
+        3,
+        7,
+        2
+    ],
+    "name" : "RussianRoulette",
+    "permissions" : [],
+    "required_cogs" : {},
+    "requirements" : [],
+    "short" : "Play a game of Russian Roulette",
+    "tags" : [
+        "fun"
+    ],
+    "type" : "COG"
+}
