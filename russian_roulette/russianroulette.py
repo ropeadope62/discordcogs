@@ -12,12 +12,15 @@ from redbot.core.errors import BalanceTooHigh
 # Discord
 import discord
 
+
 class RussianRoulette(commands.Cog):
     def __init__(self):
+        self.bot = bot
         self.players = []
         self.game_started = False
         self.current_player = None
         self.player_numbers = {}
+        self.config = Config.get_conf(self, 100737218252923221245194, force_registration=True)
 
    
     @commands.group()
