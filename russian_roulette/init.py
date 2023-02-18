@@ -1,4 +1,4 @@
-from .russianroulette import RussianRouletteCog
+from .russianroulette import RussianRoulette
 
 def setup(bot):
-    bot.add_cog(RussianRouletteCog())
+    bot.add_cog(RussianRoulette())
