@@ -12,7 +12,7 @@ from redbot.core.errors import BalanceTooHigh
 # Discord
 import discord
 
-class RussianRouletteCog(commands.Cog):
+class RussianRoulette(commands.Cog):
     def __init__(self):
         self.players = []
         self.game_started = False
@@ -35,7 +35,7 @@ class RussianRouletteCog(commands.Cog):
         """
         pass
 
-    @russian_roulette.command()
+    @russianroulette.command()
     async def start(self):
         if self.game_started:
             await ctx.send("A game is already in progress.")
@@ -90,7 +90,7 @@ class RussianRouletteCog(commands.Cog):
         index = self.players.index(current_player)
         return self.players[(index + 1) % len(self.players)]
         
-    @russian_roulette.command()
+    @russianroulette.command()
     async def cancel(self, ctx):
         if not self.game_started:
             await ctx.send("No game in progress.")
@@ -99,17 +99,15 @@ class RussianRouletteCog(commands.Cog):
         self.game_started = False
         await ctx.send("Game cancelled.")
     
-    @commands.Cog.listener()
-    async def on_message(self, message):
+    @russianroulette.command()
+    async def join(self, message):
         if message.author == self.bot.user:
             return
-        
-        if message.content.lower() == "join" and message.channel.type == discord.ChannelType.text:
-            if message.author not in self.players:
-                self.players.append(message.author)
-                await message.add_reaction("✅")
+        if message.author not in self.players:
+            self.players.append(message.author)
+            await message.add_reaction("✅")
 
-    @russian_roulette.command()
+    @russianroulette.command()
     async def version(self, ctx):
         """Displays the version of race."""
         await ctx.send(f"Russian Roulette {__version__}. by Slurms Mackenzie (ropeadope62)")
