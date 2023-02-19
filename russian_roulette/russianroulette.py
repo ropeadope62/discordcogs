@@ -11,11 +11,8 @@ class RussianRoulette(commands.Cog):
         self.player_numbers = {}
 
 
-
-    @commands.group()
     async def russianroulette(self, ctx):
         pass
-
     @russianroulette.command()
     async def start(self, ctx):
 
