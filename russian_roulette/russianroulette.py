@@ -19,6 +19,8 @@ class RussianRoulette(commands.Cog):
         self.game_started = False
         self.current_player = None
         self.player_numbers = {}
+        global players
+        self.players = []
         self.config = Config.get_conf(self, 100737218252923221245194, force_registration=True)
 
    
@@ -36,9 +38,6 @@ class RussianRoulette(commands.Cog):
         The user who started the round also takes part.
         """
         pass
-
-    global players
-    players = []
     
 
     # function to select a random player to start the game
