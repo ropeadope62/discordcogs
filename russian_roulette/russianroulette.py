@@ -51,7 +51,7 @@ class RussianRoulette(commands.Cog):
 
     # start a new game session if one isn't already in progress
     @russianroulette.command()
-    async def start(self, ctx):
+    async def start(self, players, ctx):
         global players
         players = []
         if len(players) == 0:
