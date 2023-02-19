@@ -51,7 +51,7 @@ class RussianRoulette(commands.Cog):
 
     # start a new game session if one isn't already in progress
     @russianroulette.command()
-    async def start(self, players, ctx):
+    async def start(self, ctx, players):
         if len(players) == 0:
             await ctx.send("Starting a game of Russian Roulette! Type '!join' to join the game.")
             await asyncio.sleep(30)
