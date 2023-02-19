@@ -1,7 +1,7 @@
 import asyncio
 import random
 import discord
-from discord.ext import commands, 
+from discord.ext import commands
 from redbot.core import Config, bank, commands, checks
 from redbot.core.utils import AsyncIter
 from redbot.core.errors import BalanceTooHigh
