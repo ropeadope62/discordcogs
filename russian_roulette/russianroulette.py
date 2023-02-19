@@ -32,11 +32,11 @@ class RussianRoulette(commands.Cog):
             return msg.author != self.bot.user and msg.content.lower() == "join"
         counter = 0
         while counter < 6:
-        try:
-            messages = await self.bot.wait_for("message", check=check, timeout=30)
-            counter += 1
-        except asyncio.TimeoutError:
-            pass
+            try:
+                messages = await self.bot.wait_for("message", check=check, timeout=30)
+                counter += 1
+            except asyncio.TimeoutError:
+                pass
         
         if not self.players:
             await ctx.send("Not enough players. Game cancelled.")
