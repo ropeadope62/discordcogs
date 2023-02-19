@@ -15,8 +15,7 @@ class RussianRoulette(commands.Cog):
     @commands.guild_only()
     async def russianroulette(self, ctx):
         pass
-    @russianroulette.command():
-
+    @russianroulette.command()
     async def start(self, ctx):
 
         if self.game_started:
