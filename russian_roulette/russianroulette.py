@@ -38,7 +38,7 @@ class RussianRoulette(commands.Cog):
         """
         pass
 
-
+    global players
     players = []
 
     # function to select a random player to start the game
@@ -52,8 +52,6 @@ class RussianRoulette(commands.Cog):
     # start a new game session if one isn't already in progress
     @russianroulette.command()
     async def start(self, players, ctx):
-        global players
-        players = []
         if len(players) == 0:
             await ctx.send("Starting a game of Russian Roulette! Type '!join' to join the game.")
             await asyncio.sleep(30)
@@ -92,7 +90,6 @@ class RussianRoulette(commands.Cog):
     # function to handle player join requests
     @russianroulette.command()
     async def join(message):
-        global players
         if len(players) < 6 and message.author not in players:
             players.append(message.author)
             await message.channel.send(f"{message.author.mention} has joined the game.")
