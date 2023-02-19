@@ -1,6 +1,7 @@
 import asyncio
 import random
-from discord.ext import commands
+import discord
+from discord.ext import commands, 
 from redbot.core import Config, bank, commands, checks
 from redbot.core.utils import AsyncIter
 from redbot.core.errors import BalanceTooHigh
@@ -86,7 +87,7 @@ class RussianRoulette(commands.Cog):
         if message.author == self.bot.user:
             return
         
-        if message.content.lower() == "join" and message.channel.type == discord.ChannelType.text:
+        if message.content.lower() == "join" and message.channel.type == discord.TextChannel:
             if message.author not in self.players:
                 self.players.append(message.author)
                 await message.add_reaction("✅")
