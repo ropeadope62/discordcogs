@@ -16,11 +16,10 @@ import discord
 class RussianRoulette(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.players = []
         self.game_started = False
         self.current_player = None
         self.player_numbers = {}
-        global players
-        self.players = []
         self.config = Config.get_conf(self, 100737218252923221245194, force_registration=True)
 
    
@@ -38,7 +37,9 @@ class RussianRoulette(commands.Cog):
         The user who started the round also takes part.
         """
         pass
-    
+
+
+    players = []
 
     # function to select a random player to start the game
     def select_start_player():
@@ -50,42 +51,43 @@ class RussianRoulette(commands.Cog):
 
     # start a new game session if one isn't already in progress
     @russianroulette.command()
-    async def start(message, players):
-            
+    async def start(message, ):
+        global players
+        players = []
         if len(players) == 0:
-            await message.ctx.send("Starting a game of Russian Roulette! Type '!join' to join the game.")
+            await message.channel.send("Starting a game of Russian Roulette! Type '!join' to join the game.")
             await asyncio.sleep(30)
             if len(players) < 2:
-                await message.ctx.send("Game canceled due to lack of players.")
+                await message.channel.send("Game canceled due to lack of players.")
                 return
             start_player = select_start_player()
-            await message.ctx.send(f"{start_player.mention} will start the game. When it's your turn, type 'pull'.")
+            await message.channel.send(f"{start_player.mention} will start the game. When it's your turn, type 'pull'.")
             index = players.index(start_player)
             while True:
                 current_player = players[index]
-                await message.ctx.send(f"{current_player.mention}, it's your turn. Type 'pull'.")
+                await message.channel.send(f"{current_player.mention}, it's your turn. Type 'pull'.")
                 try:
                     response = await bot.wait_for("message", check=lambda m: m.author == current_player and m.content.lower() == "pull", timeout=30)
                 except asyncio.TimeoutError:
-                    await message.ctx.send(f"{current_player.mention} has timed out and is out of the game!")
+                    await message.channel.send(f"{current_player.mention} has timed out and is out of the game!")
                     players.remove(current_player)
                     if len(players) == 1:
-                        await message.ctx.send(f"Congratulations {players[0].mention}, you're the winner!")
+                        await message.channel.send(f"Congratulations {players[0].mention}, you're the winner!")
                         players = []
                         break
                 else:
                     if pull_trigger():
-                        await message.ctx.send(f"{current_player.mention} is out! The game is over.")
+                        await message.channel.send(f"{current_player.mention} is out! The game is over.")
                         players.remove(current_player)
                         if len(players) == 1:
-                            await message.ctx.send(f"Congratulations {players[0].mention}, you're the winner!")
+                            await message.channel.send(f"Congratulations {players[0].mention}, you're the winner!")
                             players = []
                             break
                     else:
-                        await message.ctx.send(f"{current_player.mention} survived! Passing the gun to the next player.")
+                        await message.channel.send(f"{current_player.mention} survived! Passing the gun to the next player.")
                 index = (index + 1) % len(players)
         else:
-            await message.ctx.send("A game is already in progress. Please wait for it to finish.")
+            await message.channel.send("A game is already in progress. Please wait for it to finish.")
 
     # function to handle player join requests
     @russianroulette.command()
