@@ -39,7 +39,7 @@ class RussianRoulette(commands.Cog):
         pass
 
     @russianroulette.command()
-    async def start(self):
+    async def start(self, ctx):
         if self.game_started:
             await ctx.send("A game is already in progress.")
             return
