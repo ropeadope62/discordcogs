@@ -16,7 +16,6 @@ import discord
 class RussianRoulette(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.players = []
         self.game_started = False
         self.current_player = None
         self.player_numbers = {}
