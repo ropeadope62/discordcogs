@@ -13,7 +13,6 @@ class RussianRoulette(commands.Cog):
 
 
     @commands.group()
-    @commands.guild_only()
     async def russianroulette(self, ctx):
         pass
 
