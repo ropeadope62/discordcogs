@@ -30,7 +30,7 @@ class RussianRoulette(commands.Cog):
         
         def check(msg):
             return msg.author != self.bot.user and msg.content.lower() == "join"
-        counter = 0
+        
         while counter < 6:
             try:
                 messages = await self.bot.wait_for("message", check=check, timeout=30)
@@ -84,7 +84,6 @@ class RussianRoulette(commands.Cog):
         self.game_started = False
         await ctx.send("Game cancelled.")
     
-    @commands.Cog.listener()
     async def on_message(self, message):
         if message.author == self.bot.user:
             return
