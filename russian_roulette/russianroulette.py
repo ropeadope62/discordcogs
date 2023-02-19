@@ -1,6 +1,9 @@
 import asyncio
 import random
 from discord.ext import commands
+from redbot.core import Config, bank, commands, checks
+from redbot.core.utils import AsyncIter
+from redbot.core.errors import BalanceTooHigh
 
 class RussianRoulette(commands.Cog):
     def __init__(self, bot):
