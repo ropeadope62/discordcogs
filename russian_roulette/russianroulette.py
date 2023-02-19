@@ -30,9 +30,11 @@ class RussianRoulette(commands.Cog):
         
         def check(msg):
             return msg.author != self.bot.user and msg.content.lower() == "join"
-        
+        counter = 0
+        while counter < 6:
         try:
-            messages = await self.bot.wait_for("message", check=check, timeout=30, count=6)
+            messages = await self.bot.wait_for("message", check=check, timeout=30)
+            counter += 1
         except asyncio.TimeoutError:
             pass
         
