@@ -80,11 +80,12 @@ class RussianRoulette(commands.Cog):
         random.shuffle(self.players)
         await ctx.send(f"{self.players[ctx.guild.id][0].mention} goes first.")
 
-    # Set up the game with a bullet in one of the chambers
+        # Set up the game with a bullet in one of the chambers
         chambers = [0] * 6
         chambers[random.randint(0, 5)] = 1
 
         # Play the game until someone loses
+        wait = await self.config.guild(ctx.guild).Wait()
         current_player = self.players[ctx.guild.id][0]
         while True:
         # Ask the player to pull the trigger
@@ -94,7 +95,7 @@ class RussianRoulette(commands.Cog):
                 return msg.author == current_player and msg.content.lower() == 'pull'
 
             try:
-                msg = await self.wait_for('message', check=check, timeout=30.0)
+                msg = await self.wait('message', check=check, timeout=30.0)
             except asyncio.TimeoutError:
                 await ctx.send(f"{current_player.mention} didn't respond in time. Game cancelled.")
                 return
