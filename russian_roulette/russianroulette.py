@@ -74,7 +74,7 @@ class RussianRoulette(commands.Cog):
         )
 
         await asyncio.sleep(wait)
-        self.started[ctx.guild.id] = True
+        self.round_started[ctx.guild.id] = True
         await ctx.send("🏁 A game is now in progress. 🏁")
         await self.run_game(ctx)
 
@@ -109,7 +109,7 @@ class RussianRoulette(commands.Cog):
             """Join a game of Russian Roulette
 
             """
-            if self.started[ctx.guild.id]:
+            if self.round_started[ctx.guild.id]:
                 return await ctx.send(
                     "A game has already started, wait for the previous round to finish"
                 )
