@@ -45,7 +45,7 @@ class RussianRoulette(commands.Cog):
     async def russianroulette(self, ctx):
         pass
     @russianroulette.command()
-    async def russianroulette(self, ctx, opponent: discord.Member):
+    async def challenge(self, ctx, opponent: discord.Member):
         """
         Start a game of Russian Roulette with the specified opponent.
         """
