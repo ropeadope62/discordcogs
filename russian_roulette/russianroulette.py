@@ -22,6 +22,7 @@ class RussianRoulette(commands.Cog):
         self.config = Config.get_conf(self, 45465465488435321554, force_registration=True)
         self.players = FancyDictList()
         self.active = FancyDict()
+        self.started = FancyDict()
         self.bot = bot
 
         guild_defaults = {
