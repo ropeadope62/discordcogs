@@ -85,8 +85,8 @@ class RussianRoulette(commands.Cog):
         await ctx.send(content=msg, embed=embed)
         await self._race_teardown(ctx, settings)
 
-        @russianroulette.command()
-        async def stats(self, ctx, user: discord.Member = None):
+    @russianroulette.command()
+    async def stats(self, ctx, user: discord.Member = None):
             """Display your russian roulette stats."""
             if not user:
                 user = ctx.author
@@ -104,8 +104,8 @@ class RussianRoulette(commands.Cog):
             embed.add_field(name="Losses", value=f'{user_data["Losses"]}')
             await ctx.send(embed=embed)
             
-        @russianroulette.command()
-        async def join(self, ctx):
+    @russianroulette.command()
+    async def join(self, ctx):
             """Join a game of Russian Roulette
 
             """
@@ -123,9 +123,9 @@ class RussianRoulette(commands.Cog):
                 self.players[ctx.guild.id].append(ctx.author)
                 await ctx.send(f"{ctx.author.mention} has joined the game.")
 
-        @russianroulette.command(hidden=True)
-        @checks.admin_or_permissions(administrator=True)
-        async def clear(self, ctx):                                                     
+    @russianroulette.command(hidden=True)
+    @checks.admin_or_permissions(administrator=True)
+    async def clear(self, ctx):                                                     
             """ONLY USE THIS COMMAND FOR DEBUGPURPOSES
 
             You shouldn't use this command unless the round is stuck
@@ -133,9 +133,9 @@ class RussianRoulette(commands.Cog):
             self.clear_local(ctx)
             await ctx.send("Round cleared.")
 
-        @russianroulette.command()
-        @checks.is_owner()
-        async def wipe(self, ctx):
+    @russianroulette.command()
+    @checks.is_owner()
+    async def wipe(self, ctx):
             """This command will wipe ALL race data.
 
             You are given a confirmation dialog when using this command.
@@ -159,13 +159,21 @@ class RussianRoulette(commands.Cog):
             else:
                 return await ctx.send("russian roulette wipe cancelled.")
             
-        @russianroulette.command()
-        async def version(self, ctx):
+    @russianroulette.command()
+    async def version(self, ctx):
             """Displays the version of russian roulette."""
             await ctx.send(f"You are running russian roulette version {__version__}.")
 
-        @setrussianroulette.command()
-        async def wait(self, ctx, wait: int):
+    @commands.group()
+    @commands.guild_only()
+    @checks.admin_or_permissions(administrator=True)
+    async def setrussianroulette(self, ctx):
+        """Race settings commands."""
+        pass
+
+
+    @setrussianroulette.command()
+    async def wait(self, ctx, wait: int):
             """Changes the wait time before a game starts.
 
             This only affects the period where game is still waiting
@@ -175,9 +183,9 @@ class RussianRoulette(commands.Cog):
             await self.config.guild(ctx.guild).Wait.set(wait)
             await ctx.send(f"Wait time before a game begins is now {wait} seconds.")
 
-        @checks.is_owner()
-        @setrussianroulette.group(name="buyin")
-        async def buyin(self, ctx, amount: int ):
+    @checks.is_owner()
+    @setrussianroulette.group(name="buyin")
+    async def buyin(self, ctx, amount: int ):
             """Buyin."""
             await self.config.guild(ctx.guild).Buyin.set(amount)
             await ctx.send(f"Buy in amount set to {amount}.")
