@@ -27,8 +27,8 @@ class RussianRoulette(commands.Cog):
             return
         
         await ctx.send("Type 'join' to join the game. You have 30 seconds.")
-        def check(self, msg):
-            return msg.author != self.bot.user and msg.content.lower() == "join"      
+        def check(self, message):
+            return message.author != self.bot.user and message.content.lower() == "join"      
         counter = 0 
         while counter < 6:
             try:
