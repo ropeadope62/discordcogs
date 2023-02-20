@@ -1,6 +1,7 @@
 import asyncio
 import random
 import discord
+from discord.ext import commands
 from redbot.core import Config, bank, commands, checks
 from redbot.core.utils import AsyncIter
 from redbot.core.errors import BalanceTooHigh
@@ -93,8 +94,9 @@ class RussianRoulette(commands.Cog):
 
             def check(msg):
                 return msg.author == current_player and msg.content.lower() == 'pull'
+
             try:
-                msg = await ('message', check=check, timeout=30.0)
+                msg = await self.wait_for('message', check=check, timeout=30.0)
             except asyncio.TimeoutError:
                 await ctx.send(f"{current_player.mention} didn't respond in time. Game cancelled.")
                 return
