@@ -94,7 +94,7 @@ class RussianRoulette(commands.Cog):
                 return msg.author == current_player and msg.content.lower() == 'pull'
 
             try:
-                msg = await bot.wait_for('message', check=check, timeout=30.0)
+                msg = await self.wait_for('message', check=check, timeout=30.0)
             except asyncio.TimeoutError:
                 await ctx.send(f"{current_player.mention} didn't respond in time. Game cancelled.")
                 return
