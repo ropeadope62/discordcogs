@@ -62,9 +62,9 @@ class RussianRoulette(commands.Cog):
 
         The user who started the race is automatically entered into the race.
         """
-        if self.active[ctx.guild.id]:
+        if self.round_started[ctx.guild.id]:
             return await ctx.send(f"A game is already in progress,  Type `{ctx.prefix}russianroullete join` to join!")
-        self.active[ctx.guild.id] = True
+        self.round_started[ctx.guild.id] = True
         self.players[ctx.guild.id].append(ctx.author)
         wait = await self.config.guild(ctx.guild).Wait()
         await ctx.send(
@@ -113,7 +113,7 @@ class RussianRoulette(commands.Cog):
                 return await ctx.send(
                     "A game has already started, wait for the previous round to finish"
                 )
-            elif not self.active.get(ctx.guild.id):
+            elif not self.round_started.get(ctx.guild.id):
                 return await ctx.send("A game must be started before you can enter.")
             elif ctx.author in self.players[ctx.guild.id]:
                 return await ctx.send("You have already entered the game.")
