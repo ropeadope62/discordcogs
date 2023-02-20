@@ -20,7 +20,6 @@ class FancyDictList(dict):
 
 class RussianRoulette(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
         self.config = Config.get_conf(self, 45465465488435321554, force_registration=True)
         self.players = FancyDictList()
         self.active = FancyDict()
