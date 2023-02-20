@@ -77,7 +77,7 @@ class RussianRoulette(commands.Cog):
     # Both players accepted, randomly choose who goes first
         self.started[ctx.guild.id] = True
         self.players[ctx.guild.id].append(opponent)
-        random.shuffle(self.players)[ctx.guild.id]
+        random.shuffle(self.players)
         await ctx.send(f"{self.players[ctx.guild.id][0].mention} goes first.")
 
     # Set up the game with a bullet in one of the chambers
