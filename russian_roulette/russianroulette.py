@@ -1,7 +1,6 @@
 import asyncio
 import random
 import discord
-from discord.ext import commands
 from redbot.core import Config, bank, commands, checks
 from redbot.core.utils import AsyncIter
 from redbot.core.errors import BalanceTooHigh
@@ -19,7 +18,7 @@ class FancyDictList(dict):
         return value
 
 class RussianRoulette(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self):
         self.config = Config.get_conf(self, 45465465488435321554, force_registration=True)
         self.players = FancyDictList()
         self.active = FancyDict()
