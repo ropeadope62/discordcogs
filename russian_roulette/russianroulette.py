@@ -27,7 +27,8 @@ class RussianRoulette(commands.Cog):
             return
         
         await ctx.send("Type 'join' to join the game. You have 30 seconds.")
-                
+        def check(self, msg):
+            return msg.author != self.bot.user and msg.content.lower() == "join"      
         counter = 0 
         while counter < 6:
             try:
@@ -59,7 +60,7 @@ class RussianRoulette(commands.Cog):
             return
 
         number = self.player_numbers[ctx.author]
-        await ctx.send("{0.mention} has number {1}.".format(ctx.author, number))
+        await ctx.send("{0.mention} ***CLICK!***".format(ctx.author, number))
 
         if number == 3:
             await ctx.send("{0.mention} wins!".format(ctx.author))
@@ -91,6 +92,4 @@ class RussianRoulette(commands.Cog):
                 self.players.append(message.author)
                 await message.add_reaction("✅")
 
-    @russianroulette.command(hidden=True)
-    def check(self, msg):
-            return msg.author != self.bot.user and msg.content.lower() == "join"
+
