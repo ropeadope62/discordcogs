@@ -28,7 +28,7 @@ class RussianRoulette(commands.Cog):
             "Chambers": 0,
         }
         
-        member_defaults = {"Wins": 0, "Losses": 0, "Total Winnings": 0 }
+        member_defaults = {"Wins": 0, "Losses": 0, "Total_Winnings": 0 }
 
         self.config.register_guild(**guild_defaults)
         self.config.register_member(**member_defaults)
