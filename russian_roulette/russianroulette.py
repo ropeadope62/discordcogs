@@ -63,6 +63,7 @@ class RussianRoulette(commands.Cog):
             await ctx.send(f"{opponent.mention}, do you accept this game of Russian Roulette? Type 'yes' or 'no'.")
 
         def check(msg):
+            print(msg.content)
             return msg.author == opponent and msg.content.lower() in ['yes', 'no']
 
         try:
@@ -93,7 +94,8 @@ class RussianRoulette(commands.Cog):
             await ctx.send(f"{current_player.mention}, pull the trigger! Type 'pull' to pull the trigger.")
 
             def check(msg):
-                return msg.author == current_player and msg.content.lower() == ['pull']
+                print(msg.content)
+                return msg.author == current_player and msg.content.lower() in ['pull']
 
             try:
                 msg = await self.bot.wait_for('message', check=check, timeout=30.0)
