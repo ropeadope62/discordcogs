@@ -27,7 +27,7 @@ class RussianRoulette(commands.Cog):
 
         guild_defaults = {
             "Wait": 20,
-            "Chambers": 0,
+            "Chambers": 6,
         }
         
         member_defaults = {"Wins": 0, "Losses": 0, "Total_Winnings": 0 }
@@ -51,6 +51,8 @@ class RussianRoulette(commands.Cog):
         """
         Start a game of Russian Roulette with the specified opponent.
         """
+        wait = await self.config.guild(ctx.guild).Wait()
+        chambers = await self.config.guild(ctx.guild).Chambers()
         if self.active[ctx.guild.id]:
             await ctx.send(f"A game of Russian Roulette is already in progress. Wait please.")
             return 
@@ -66,7 +68,7 @@ class RussianRoulette(commands.Cog):
             return msg.author == opponent and msg.content.lower() in ['yes', 'no']
 
         try:
-            msg = await self.bot.wait_for('message', check=check, timeout=30.0)
+            msg = await self.bot.wait_for('message', check=check, timeout=wait)
         except asyncio.TimeoutError:
             await ctx.send(f"{opponent.mention} didn't respond in time. Game cancelled.")
             return
@@ -75,37 +77,42 @@ class RussianRoulette(commands.Cog):
             await ctx.send(f"{opponent.mention} declined the game. Game cancelled.")
             return
 
-    # Both players accepted, randomly choose who goes first
+        # Both players accepted, set the session to active and add the opponent to players
+    
         self.active[ctx.guild.id] = True
         self.players[ctx.guild.id].append(opponent)
+        
+        #This is for logging purposes
         print(self.players)
         print(self.players[ctx.guild.id][0])
+
         current_player = self.players[ctx.guild.id][0]
         await ctx.send(f"{current_player} goes first.")
 
         # Set up the game with a bullet in one of the chambers
-        chambers = [0] * 6
-        chambers[random.randint(0, 5)] = 1
+        maxchambers = await self.config.guild(ctx.guild).Chambers()
+        chambers = [0] * maxchambers
+        chambers[random.randint(0, maxchambers)] = 1
 
         # Play the game until someone loses
         while True:
         # Ask the player to pull the trigger
-            await ctx.send(f"{current_player.mention}, pull the trigger! Type 'pull' to pull the trigger.")
+            await ctx.send(f"{current_player.mention}, it's your turn! Type 'pull' to pull the trigger.")
 
             def check(msg):
                 print(msg.content)
                 return msg.author == current_player and msg.content.lower() in ['pull']
 
             try:
-                msg = await self.bot.wait_for('message', check=check, timeout=30.0)
+                msg = await self.bot.wait_for('message', check=check, timeout=wait)
             except asyncio.TimeoutError:
-                await ctx.send(f"{current_player.mention} didn't respond in time. Game cancelled.")
+                await ctx.send(f"{current_player.mention} chickened out. Game cancelled.")
                 return
             
             if msg.content.lower() == 'pull':
                 await ctx.send(f"{current_player.mention} pulls the trigger...")
             if chambers.pop(0) == 1:
-                await ctx.send(f"{current_player.mention} pulled the trigger and the gun fired! You lose!")
+                await ctx.send(f"{current_player.mention} pulled the trigger and the gun fired! {opponent.mention} wins!")
                 self.active[ctx.guild.id] = False
                 break
             else:
