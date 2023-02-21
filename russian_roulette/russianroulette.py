@@ -23,7 +23,6 @@ class RussianRoulette(commands.Cog):
         self.config = Config.get_conf(self, 45465465488435321554, force_registration=True)
         self.players = FancyDictList()
         self.active = FancyDict()
-        self.started = FancyDict()
         self.bot = bot
 
         guild_defaults = {
@@ -77,18 +76,16 @@ class RussianRoulette(commands.Cog):
             return
 
     # Both players accepted, randomly choose who goes first
-        self.started[ctx.guild.id] = True
+        self.active[ctx.guild.id] = True
         self.players[ctx.guild.id].append(opponent)
-        random.shuffle(self.players)
-        await ctx.send(f"{self.players[ctx.guild.id][0].mention} goes first.")
+        current_player = random.shuffle(self.players)[0]
+        await ctx.send(f"{current_player} goes first.")
 
         # Set up the game with a bullet in one of the chambers
         chambers = [0] * 6
         chambers[random.randint(0, 5)] = 1
 
         # Play the game until someone loses
-        wait = await self.config.guild(ctx.guild).Wait()
-        current_player = self.players[ctx.guild.id][0]
         while True:
         # Ask the player to pull the trigger
             await ctx.send(f"{current_player.mention}, pull the trigger! Type 'pull' to pull the trigger.")
