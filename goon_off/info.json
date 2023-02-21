@@ -2,11 +2,11 @@
     "author" : [
         "Slurms Mackenzie (ropeadope62)"
     ],
-    "description" : "Play a game of russian roulette",
+    "description" : "Goon Off",
     "disabled" : false,
     "end_user_data_statement" : "This cog does not persistently store data or metadata about users.",
     "hidden" : false,
-    "install_msg" : "Usage: `[p]russianroulette start`",
+    "install_msg" : "Usage: `[p]goonoff challenge`",
     "max_bot_version" : "0.0.0",
     "min_bot_version" : "0.1.0",
     "min_python_version" : [
@@ -14,11 +14,11 @@
         7,
         2
     ],
-    "name" : "RussianRoulette",
+    "name" : "Goon Off",
     "permissions" : [],
     "required_cogs" : {},
     "requirements" : [],
-    "short" : "Play a game of Russian Roulette",
+    "short" : "Stroke until you choke. ",
     "tags" : [
         "fun"
     ],
