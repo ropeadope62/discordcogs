@@ -101,16 +101,16 @@ class GoonOff(commands.Cog):
 
             def check(msg):
                 print(msg.content)
-                return msg.author == current_player and msg.content.lower() in ['pull']
+                return msg.author == current_player and msg.content.lower() in ['edge']
 
             try:
                 msg = await self.bot.wait_for('message', check=check, timeout=wait)
             except asyncio.TimeoutError:
-                await ctx.send(f"{current_player.mention} chickened out. Game cancelled.")
+                await ctx.send(f"{current_player.mention} stopped responding. The goon off is cancelled.")
                 return
             
-            if msg.content.lower() == 'pull':
-                await ctx.send(f"{current_player.mention} pulls the trigger...")
+            if msg.content.lower() == 'edge':
+                await ctx.send(f"{current_player.mention} edges...")
             if chambers.pop(0) == 1:
                 winner = self.players[ctx.guild.id][1] if current_player == self.players[ctx.guild.id][0] else self.players[ctx.guild.id][0]
                 await ctx.send(f"{current_player.mention} pulled the trigger and the gun fired! {winner.mention} wins!")
