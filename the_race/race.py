@@ -1,5 +1,4 @@
-# Developed by Redjumpman for Redbot.
-# Inspired by the snail race mini game.
+
 
 # Standard Library
 import asyncio
