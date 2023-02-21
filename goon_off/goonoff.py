@@ -61,7 +61,7 @@ class GoonOff(commands.Cog):
             return
         else: 
             self.players[ctx.guild.id].append(ctx.author)
-            await ctx.send(f"{current_player.mention} has challenged {opponent.mention} to a goon off! Type ‘yes’ or ‘no’ to accept or reject the challenge")
+            await ctx.send(f"{ctx.author.mention} has challenged {opponent.mention} to a goon off! Type ‘yes’ or ‘no’ to accept or reject the challenge")
 
         def check(msg):
             print(msg.content)
@@ -113,7 +113,7 @@ class GoonOff(commands.Cog):
                 await ctx.send(f"{current_player.mention} edges...")
             if chambers.pop(0) == 1:
                 winner = self.players[ctx.guild.id][1] if current_player == self.players[ctx.guild.id][0] else self.players[ctx.guild.id][0]
-                await ctx.send(f"{current_player.mention} tried to hold back, but they busted all over themselves. What a mess! {winner.mention} wins!")
+                await ctx.send(f"{current_player.mention} pulled the trigger and the gun fired! {winner.mention} wins!")
                 (current_player)['Losses'] += 1
                 (winner)['Wins'] += 1
                 self.active[ctx.guild.id] = False
