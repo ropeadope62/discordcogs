@@ -93,7 +93,7 @@ class RussianRoulette(commands.Cog):
             await ctx.send(f"{current_player.mention}, pull the trigger! Type 'pull' to pull the trigger.")
 
             def check(msg):
-                return msg.author == current_player and msg.content.lower() in ['yes', 'no']
+                return msg.author == current_player and msg.content.lower() == ['pull']
 
             try:
                 msg = await self.bot.wait_for('message', check=check, timeout=30.0)
