@@ -106,6 +106,7 @@ class RussianRoulette(commands.Cog):
                 await ctx.send(f"{current_player.mention} pulls the trigger...")
             if chambers.pop(0) == 1:
                 await ctx.send(f"{current_player.mention} pulled the trigger and the gun fired! You lose!")
+                self.active[ctx.guild.id] = False
                 break
             else:
                 # Switch to the next player
