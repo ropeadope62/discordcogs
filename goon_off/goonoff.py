@@ -54,14 +54,14 @@ class GoonOff(commands.Cog):
         wait = await self.config.guild(ctx.guild).Wait()
         chambers = await self.config.guild(ctx.guild).Chambers()
         if self.active[ctx.guild.id]:
-            await ctx.send(f"A game of Russian Roulette is already in progress. Wait please.")
+            await ctx.send(f"There are already two degenerates gooning off in here, don’t you think that’s enough? Go wait in the corner until the current goons have finished.")
             return 
         if opponent == ctx.author:
             await ctx.send("You can't play Russian Roulette with yourself!")
             return
         else: 
             self.players[ctx.guild.id].append(ctx.author)
-            await ctx.send(f'{current_player.mention} has challenged {opponent.mention} to a goon off! Type ‘yes’ or ‘no’ to accept or reject the challenge')
+            await ctx.send(f"{current_player.mention} has challenged {opponent.mention} to a goon off! Type ‘yes’ or ‘no’ to accept or reject the challenge")
 
         def check(msg):
             print(msg.content)
@@ -113,9 +113,9 @@ class GoonOff(commands.Cog):
                 await ctx.send(f"{current_player.mention} edges...")
             if chambers.pop(0) == 1:
                 winner = self.players[ctx.guild.id][1] if current_player == self.players[ctx.guild.id][0] else self.players[ctx.guild.id][0]
-                await ctx.send(f"{current_player.mention} pulled the trigger and the gun fired! {winner.mention} wins!")
-                self.config.user(current_player)['Losses'] += 1
-                self.config.user(winner)['Wins'] += 1
+                await ctx.send(f"{current_player.mention} tried to hold back, but they busted all over themselves. What a mess! {winner.mention} wins!")
+                (current_player)['Losses'] += 1
+                (winner)['Wins'] += 1
                 self.active[ctx.guild.id] = False
                 break
             else:
