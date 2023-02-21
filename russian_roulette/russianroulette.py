@@ -101,11 +101,12 @@ class RussianRoulette(commands.Cog):
             except asyncio.TimeoutError:
                 await ctx.send(f"{current_player.mention} didn't respond in time. Game cancelled.")
                 return
-
-        # Check if the player pulled the unlucky bullet
+            
+            if msg.content.lower() == 'pull':
+                await ctx.send(f"{current_player.mention} pulls the trigger...")
             if chambers.pop(0) == 1:
                 await ctx.send(f"{current_player.mention} pulled the trigger and the gun fired! You lose!")
-            break
-
-        # Switch to the next player
-        current_player = self.players[ctx.guild.id][1] if current_player == self.players[ctx.guild.id][0] else self.players[ctx.guild.id][0]
+                break
+            else:
+                # Switch to the next player
+                current_player = self.players[ctx.guild.id][1] if current_player == self.players[ctx.guild.id][0] else self.players[ctx.guild.id][0]
