@@ -49,7 +49,7 @@ class GoonOff(commands.Cog):
     @goonoff.command()
     async def challenge(self, ctx, opponent: discord.Member):
         """
-        Start a game of Russian Roulette with the specified opponent.
+        Goon with your friends! Remember no cumming allowed!
         """
         wait = await self.config.guild(ctx.guild).Wait()
         chambers = await self.config.guild(ctx.guild).Chambers()
@@ -61,7 +61,7 @@ class GoonOff(commands.Cog):
             return
         else: 
             self.players[ctx.guild.id].append(ctx.author)
-            await ctx.send(f"{opponent.mention}, do you accept this game of Russian Roulette? Type 'yes' or 'no'.")
+            await ctx.send(f'{current_player.mention} has challenged {opponent.mention} to a goon off! Type ‘yes’ or ‘no’ to accept or reject the challenge')
 
         def check(msg):
             print(msg.content)
@@ -70,11 +70,11 @@ class GoonOff(commands.Cog):
         try:
             msg = await self.bot.wait_for('message', check=check, timeout=wait)
         except asyncio.TimeoutError:
-            await ctx.send(f"{opponent.mention} didn't respond in time. Game cancelled.")
+            await ctx.send(f"{opponent.mention} didn't respond in time, probably because they’re already gooning. There will be no goon off.")
             return
 
         if msg.content.lower() == 'no':
-            await ctx.send(f"{opponent.mention} declined the game. Game cancelled.")
+            await ctx.send(f"{opponent.mention} declined the goon. Looks like you’re on your own, {current_player}.")
             return
 
         # Both players accepted, set the session to active and add the opponent to players
@@ -87,7 +87,7 @@ class GoonOff(commands.Cog):
         print(self.players[ctx.guild.id][0])
 
         current_player = self.players[ctx.guild.id][random.randint(0, 1)]
-        await ctx.send(f"{current_player} goes first.")
+        await ctx.send(f"{current_player} edges first.")
 
         # Set up the game with a bullet in one of the chambers
         maxchambers = await self.config.guild(ctx.guild).Chambers()
@@ -97,7 +97,7 @@ class GoonOff(commands.Cog):
         # Play the game until someone loses
         while True:
         # Ask the player to pull the trigger
-            await ctx.send(f"{current_player.mention}, it's your turn! Type 'pull' to pull the trigger.")
+            await ctx.send(f"{current_player.mention}, Uh oh, you can feel it building! Type ‘edge’ to try and hold off…")
 
             def check(msg):
                 print(msg.content)
@@ -114,6 +114,8 @@ class GoonOff(commands.Cog):
             if chambers.pop(0) == 1:
                 winner = self.players[ctx.guild.id][1] if current_player == self.players[ctx.guild.id][0] else self.players[ctx.guild.id][0]
                 await ctx.send(f"{current_player.mention} pulled the trigger and the gun fired! {winner.mention} wins!")
+                self.config.user(current_player)['Losses'] += 1
+                self.config.user(winner)['Wins'] += 1
                 self.active[ctx.guild.id] = False
                 break
             else:
