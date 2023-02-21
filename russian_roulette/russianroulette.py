@@ -79,6 +79,8 @@ class RussianRoulette(commands.Cog):
         self.active[ctx.guild.id] = True
         self.players[ctx.guild.id].append(opponent)
         print(self.players)
+        print(self.players[ctx.guild.id][0])
+        current_player = self.players[ctx.guild.id][0]
         await ctx.send(f"{current_player} goes first.")
 
         # Set up the game with a bullet in one of the chambers
