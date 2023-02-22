@@ -119,3 +119,39 @@ class RussianRoulette(commands.Cog):
             else:
                 # Switch to the next player
                 current_player = self.players[ctx.guild.id][1] if current_player == self.players[ctx.guild.id][0] else self.players[ctx.guild.id][0]
+
+    @russianroulette.command(hidden=True)
+    @checks.admin_or_permissions(administrator=True)
+    async def clear(self, ctx):
+        """ONLY USE THIS COMMAND FOR DEBUG PURPOSES
+
+        You shouldn't use this command unless the game is stuck
+        or you are debugging."""
+        self.clear_local(ctx)
+        await ctx.send("Cleared.")
+
+    @russianroulette.command()
+    @checks.is_owner()
+    async def wipe(self, ctx):
+        """This command will wipe ALL RR data.
+
+        You are given a confirmation dialog when using this command.
+        If you decide to wipe your data, all stats and settings will be deleted.
+        """
+        await ctx.send(
+            f"You are about to clear all RR data including Wins, Losses and Earnings. "
+            f"If you are sure you wish to proceed, type `{ctx.prefix}yes`."
+        )
+        choices = (f"{ctx.prefix}yes", f"{ctx.prefix}no")
+        check = lambda m: (m.author == ctx.author and m.channel == ctx.channel and m.content in choices)
+        try:
+            choice = await ctx.bot.wait_for("message", timeout=20.0, check=check)
+        except asyncio.TimeoutError:
+            return await ctx.send("No response. RR wipe cancelled.")
+
+        if choice.content.lower() == f"{ctx.prefix}yes":
+            await self.config.guild(ctx.guild).clear()
+            await self.config.clear_all_members(ctx.guild)
+            return await ctx.send("RR data has been wiped.")
+        else:
+            return await ctx.send("RR wipe cancelled.")           
