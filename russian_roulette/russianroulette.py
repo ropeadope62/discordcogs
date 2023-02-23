@@ -53,6 +53,7 @@ class RussianRoulette(commands.Cog):
         """
         wait = await self.config.guild(ctx.guild).Wait()
         chambers = await self.config.guild(ctx.guild).Chambers()
+        challenger = ctx.author
         if self.active[ctx.guild.id]:
             await ctx.send(f"A game of Russian Roulette is already in progress. Wait please.")
             return 
@@ -86,7 +87,7 @@ class RussianRoulette(commands.Cog):
         print(self.players)
         print(self.players[ctx.guild.id][0])
 
-        current_player = self.players[ctx.guild.id][random.randint(0, 1)]
+        current_player = random.choice(self.players[ctx.guild.id])
         await ctx.send(f"{current_player} goes first.")
 
         # Set up the game with a bullet in one of the chambers
