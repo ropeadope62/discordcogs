@@ -114,8 +114,7 @@ class RussianRoulette(commands.Cog):
                 await ctx.send(f"{current_player.mention} pulls the trigger...")
             if chambers.pop(0) == 1:
                 winner = self.players[ctx.guild.id][1] if current_player == self.players[ctx.guild.id][0] else self.players[ctx.guild.id][0]
-                await ctx.send(f"{current_player.mention} pulled the trigger and the gun fired! {winner.mention} wins!")
-                await self.config.member.set('Wins') += 1
+                await ctx.send(f"{current_player.mention} pulled the trigger and the gun fired! {winner.mention} wins!")1
                 self.players = FancyDict()
                 self.active[ctx.guild.id] = False 
                 break
