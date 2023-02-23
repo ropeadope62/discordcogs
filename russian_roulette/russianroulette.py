@@ -115,12 +115,27 @@ class RussianRoulette(commands.Cog):
             if chambers.pop(0) == 1:
                 winner = self.players[ctx.guild.id][1] if current_player == self.players[ctx.guild.id][0] else self.players[ctx.guild.id][0]
                 await ctx.send(f"{current_player.mention} pulled the trigger and the gun fired! {winner.mention} wins!")
+                await self.config.member.set('Wins') += 1
                 self.players = FancyDict()
                 self.active[ctx.guild.id] = False 
                 break
             else:
                 # Switch to the next player
                 current_player = self.players[ctx.guild.id][1] if current_player == self.players[ctx.guild.id][0] else self.players[ctx.guild.id][0]
+
+
+    @russianroulette.command(name="score")
+    async def score(self, ctx, member: discord.Member = None):
+        """This will show the number of rounds of Russian Roulette won or lost by a user."""
+        if not member:
+            member = ctx.author
+        wins = await self.config.user(member).Wins()
+        losses = await self.config.user(member).Losses()
+        if not score:
+            message = f"{ctx.author} has never played."
+        else:
+            message = "f'{member.name} has a total of {wins} wins and {losses} losses."
+        await ctx.send(message)
 
     @russianroulette.command(hidden=True)
     @checks.admin_or_permissions(administrator=True)
