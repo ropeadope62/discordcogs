@@ -115,6 +115,9 @@ class RussianRoulette(commands.Cog):
             if chambers.pop(0) == 1:
                 winner = self.players[ctx.guild.id][1] if current_player == self.players[ctx.guild.id][0] else self.players[ctx.guild.id][0]
                 await ctx.send(f"{current_player.mention} pulled the trigger and the gun fired! {winner.mention} wins!")
+                
+                wins = config.member(winner).member_defaults.get.wins('Wins')
+                wins += 1 
                 self.active[ctx.guild.id] = False
                 break
             else:
