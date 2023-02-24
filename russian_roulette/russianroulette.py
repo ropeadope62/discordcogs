@@ -30,7 +30,10 @@ class RussianRoulette(commands.Cog):
             "Chambers": 6,
         }
         
-        member_defaults = {"Wins": 0, "Losses": 0, "Total_Winnings": 0 }
+        member_defaults = {
+            "Wins": 0,
+            "Losses": 0,
+            "Total_Winnings": 0 }
 
         self.config.register_guild(**guild_defaults)
         self.config.register_member(**member_defaults)
@@ -53,6 +56,7 @@ class RussianRoulette(commands.Cog):
         """
         wait = await self.config.guild(ctx.guild).Wait()
         chambers = await self.config.guild(ctx.guild).Chambers()
+
         if self.active[ctx.guild.id]:
             await ctx.send(f"A game of Russian Roulette is already in progress. Wait please.")
             return 
@@ -129,9 +133,9 @@ class RussianRoulette(commands.Cog):
         """This will show the number of rounds of Russian Roulette won or lost by a user."""
         if not member:
             member = ctx.author
-        wins = await self.config.user(member).Wins()
-        losses = await self.config.user(member).Losses()
-        if not score:
+        member_wins = await self.config.guild(ctx.member).Wins()
+        member_losses = await self.config.guild(ctx.member).Losses()
+        if not member_wins or not member_losses: 
             message = f"{ctx.author} has never played."
         else:
             message = "f'{member.name} has a total of {wins} wins and {losses} losses."
