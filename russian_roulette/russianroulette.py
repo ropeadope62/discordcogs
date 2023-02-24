@@ -134,8 +134,8 @@ class RussianRoulette(commands.Cog):
         member_data = await self.config.member(ctx.author).all()
         if not member:
             member = ctx.author
-        member_wins = await self.member_data['Wins']
-        member_losses = await self.member_data['Losses']
+        member_wins = member_data['Wins']
+        member_losses = member_data['Losses']
         if not member_wins or not member_losses: 
             message = f'{ctx.author} has never played.'
         else:
