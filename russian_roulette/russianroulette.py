@@ -133,8 +133,8 @@ class RussianRoulette(commands.Cog):
         """This will show the number of rounds of Russian Roulette won or lost by a user."""
         if not member:
             member = ctx.author
-        member_wins = await self.config.guild(ctx.member).Wins()
-        member_losses = await self.config.guild(ctx.member).Losses()
+        member_wins = await self.config.guild(member).Wins()
+        member_losses = await self.config.guild(member).Losses()
         if not member_wins or not member_losses: 
             message = f"{ctx.author} has never played."
         else:
