@@ -85,8 +85,8 @@ class RussianRoulette(commands.Cog):
         
         #This is for logging purposes
         print(self.players)
-        print(self.players[ctx.guild.id][0])
-        print(self.players[ctx.guild.id][1])
+        print(self.players[0])
+        print(self.players[1])
 
         current_player = random.choice(self.players[ctx.guild.id])
         await ctx.send(f"{current_player} goes first.")
