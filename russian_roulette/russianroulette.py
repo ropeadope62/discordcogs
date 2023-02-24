@@ -94,11 +94,12 @@ class RussianRoulette(commands.Cog):
 
         current_player = random.choice(self.players)
         await ctx.send(f"{current_player} goes first.")
+        gun_chambers = []
 
         # Set up the game with a bullet in one of the chambers
         maxchambers = await self.config.guild(ctx.guild).Chambers()
-        chambers = [0] * maxchambers
-        chambers[random.randint(0, maxchambers)] = 1
+        gun_chambers = [0] * maxchambers
+        gun_chambers[random.randint(0, maxchambers)] = 1
 
         # Play the game until someone loses
         while True:
