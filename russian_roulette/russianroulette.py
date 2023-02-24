@@ -121,7 +121,7 @@ class RussianRoulette(commands.Cog):
                 break
             else:
                 # Switch to the next player
-                current_player = self.players[ctx.guild.id][1] if current_player == self.players[ctx.guild.id][0] else self.players[ctx.guild.id][0]
+                current_player = self.players[1] if current_player == self.players[0] else self.players[0]
 
 
     @russianroulette.command(name="score")
