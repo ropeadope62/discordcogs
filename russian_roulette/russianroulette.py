@@ -61,6 +61,7 @@ class RussianRoulette(commands.Cog):
             return
         else: 
             self.players[ctx.guild.id].append(ctx.author)
+            self.players[ctx.guild.id].append(opponent)
             await ctx.send(f"{opponent.mention}, do you accept this game of Russian Roulette? Type 'yes' or 'no'.")
 
         def check(msg):
@@ -80,7 +81,7 @@ class RussianRoulette(commands.Cog):
         # Both players accepted, set the session to active and add the opponent to players
     
         self.active[ctx.guild.id] = True
-        self.players[ctx.guild.id].append(opponent)
+
         
         #This is for logging purposes
         print(self.players)
