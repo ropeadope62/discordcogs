@@ -88,7 +88,7 @@ class RussianRoulette(commands.Cog):
         print(self.players[0])
         print(self.players[1])
 
-        current_player = random.choice(self.players[ctx.guild.id])
+        current_player = random.choice(self.players)
         await ctx.send(f"{current_player} goes first.")
 
         # Set up the game with a bullet in one of the chambers
