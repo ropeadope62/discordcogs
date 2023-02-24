@@ -131,14 +131,15 @@ class RussianRoulette(commands.Cog):
     @russianroulette.command(name="score")
     async def score(self, ctx, member: discord.Member = None):
         """This will show the number of rounds of Russian Roulette won or lost by a user."""
+        member_data = await self.config.member(ctx.author).all()
         if not member:
             member = ctx.author
-        member_wins = await self.config.guild(member).Wins()
-        member_losses = await self.config.guild(member).Losses()
+        member_wins = await self.member_data['Wins']
+        member_losses = await self.member_data['Losses']
         if not member_wins or not member_losses: 
-            message = f"{ctx.author} has never played."
+            message = f'{ctx.author} has never played.'
         else:
-            message = "f'{member.name} has a total of {wins} wins and {losses} losses."
+            message = f'{member.name} has a total of {member_wins} wins and {member_losses} losses.'
         await ctx.send(message)
 
     @russianroulette.command(hidden=True)
