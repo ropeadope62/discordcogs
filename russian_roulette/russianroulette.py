@@ -21,7 +21,7 @@ class FancyDictList(dict):
 class RussianRoulette(commands.Cog):
     def __init__(self, bot):
         self.config = Config.get_conf(self, 45465465488435321554, force_registration=True)
-        self.players = FancyDictList()
+        self.players = []
         self.active = FancyDict()
         self.bot = bot
 
@@ -53,7 +53,6 @@ class RussianRoulette(commands.Cog):
         """
         wait = await self.config.guild(ctx.guild).Wait()
         chambers = await self.config.guild(ctx.guild).Chambers()
-        challenger = ctx.author
         if self.active[ctx.guild.id]:
             await ctx.send(f"A game of Russian Roulette is already in progress. Wait please.")
             return 
@@ -86,6 +85,7 @@ class RussianRoulette(commands.Cog):
         #This is for logging purposes
         print(self.players)
         print(self.players[ctx.guild.id][0])
+        print(self.players[ctx.guild.id][1])
 
         current_player = random.choice(self.players[ctx.guild.id])
         await ctx.send(f"{current_player} goes first.")
