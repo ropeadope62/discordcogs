@@ -60,8 +60,8 @@ class RussianRoulette(commands.Cog):
             await ctx.send("You can't play Russian Roulette with yourself!")
             return
         else: 
-            self.players[ctx.guild.id].append(ctx.author)
-            self.players[ctx.guild.id].append(opponent)
+            self.players.append(ctx.author)
+            self.players.append(opponent)
             await ctx.send(f"{opponent.mention}, do you accept this game of Russian Roulette? Type 'yes' or 'no'.")
 
         def check(msg):
@@ -114,9 +114,9 @@ class RussianRoulette(commands.Cog):
             if msg.content.lower() == 'pull':
                 await ctx.send(f"{current_player.mention} pulls the trigger...")
             if chambers.pop(0) == 1:
-                winner = self.players[ctx.guild.id][1] if current_player == self.players[ctx.guild.id][0] else self.players[ctx.guild.id][0]
+                winner = self.players[1] if current_player == self.players[0] else self.players[0]
                 await ctx.send(f"{current_player.mention} pulled the trigger and the gun fired! {winner.mention} wins!")
-                self.players = FancyDict()
+                self.players = []
                 self.active[ctx.guild.id] = False 
                 break
             else:
