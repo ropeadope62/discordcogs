@@ -145,10 +145,13 @@ class PostMortem(commands.Cog):
                 weeks = hash_result_asint * 52
                 months = hash_result_asint * 12 
                 death_year = current_year + hash_result_asint
+
+            await ctx.send(('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n') ; sleep(1) + ('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n') ; sleep(1)  + (f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n') ; sleep(interval) + ('Calculating Vitals...\n') ; sleep(interval)
+            await ctx.send(f"Analyzing *{user}'s* Life Choices...\n") ; sleep(interval) + ('Analysis Completed Successfully\n') ; sleep(1) 
                 
             embed = discord.Embed(
-                title="**Welcome to Broad Street Labs™ - Post Mortem®**",
-                description="*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*",
+                title="**Broad Street Labs™ - Post Mortem®**",
+                description="*Final Report Summary*",
                 color=discord.Color.dark_red(),
             )
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
