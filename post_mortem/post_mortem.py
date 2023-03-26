@@ -21,7 +21,14 @@ from redbot.core.utils.predicates import MessagePredicate
 
 _ = Translator("PostMortem", __file__)
 
-deaths: List[str] = [
+
+class PostMortem(commands.Cog):
+    """Broad Street Labs - Post Mortem"""
+    
+    __author__ = ["Slurms Mackenzie"]
+    __version__ = "0.1.0"
+    
+    deaths: List[str] = [
     _('Freak gasoline fight accident'),
     _('Falling out of bed'),
     _('Impaled on the bill of a swordfish'),
@@ -77,16 +84,7 @@ deaths: List[str] = [
     _('Asphyxiated accidentaly while being Queened'),
     _('Victim drove their car into a wall while attempting to drive over school children'),
     _('Extreme face sitting')
-]
-    
-
-
-
-class PostMortem(commands.Cog):
-    """Broad Street Labs - Post Mortem"""
-    
-    __author__ = ["Slurms Mackenzie"]
-    __version__ = "0.1.0"
+    ]
 
 
     def __init__(self, bot):
