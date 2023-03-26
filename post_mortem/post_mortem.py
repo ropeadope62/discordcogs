@@ -125,7 +125,9 @@ class PostMortem(commands.Cog):
         current_year = date.today().year
         interval = random.random()
 
-        await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n') ; sleep(1) + ('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n') ; sleep(1)  + (f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n') ; sleep(1) + ('Calculating Vitals...\n') ; sleep(1)
+        await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n') ; sleep(1) 
+        await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n') ; sleep(1)  
+        await ctx.send(f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n') ; sleep(1) + ('Calculating Vitals...\n') ; sleep(1)
         await ctx.send(f"Analyzing *{user}'s* Life Choices...\n") ; sleep(interval) + ('Analysis Completed Successfully\n') ; sleep(1) 
         
 
