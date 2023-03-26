@@ -124,6 +124,11 @@ class PostMortem(commands.Cog):
         hash_result_asint = int(hash_method)
         current_year = date.today().year
         interval = random.random()
+
+        await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n') ; sleep(1) + ('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n') ; sleep(1)  + (f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n') ; sleep(1) + ('Calculating Vitals...\n') ; sleep(1)
+        await ctx.send(f"Analyzing *{user}'s* Life Choices...\n") ; sleep(interval) + ('Analysis Completed Successfully\n') ; sleep(1) 
+        
+
         msg = "*** Post Mortem:registered:  Likely result of death:***  "
         if user:
             if user.id == self.bot.user.id:
@@ -146,8 +151,7 @@ class PostMortem(commands.Cog):
                 months = hash_result_asint * 12 
                 death_year = current_year + hash_result_asint
 
-            await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n') ; sleep(1) + ('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n') ; sleep(1)  + (f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n') ; sleep(interval) + ('Calculating Vitals...\n') ; sleep(interval)
-            await ctx.send(f"Analyzing *{user}'s* Life Choices...\n") ; sleep(interval) + ('Analysis Completed Successfully\n') ; sleep(1) 
+            
                 
             embed = discord.Embed(
                 title="**Broad Street Labs™ - Post Mortem®**",
