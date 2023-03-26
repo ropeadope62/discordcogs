@@ -168,7 +168,7 @@ class PostMortem(commands.Cog):
                 description="*Final Report Summary*",
                 color=discord.Color.dark_red(),
             )
-            embed.set_author(name=user, icon_url=ctx.user.avatar_url)
+            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
             embed.add_field(name="Subject", value=user.mention, inline=False)
             embed.add_field(name="Death Year", value=f"{death_year}", inline=False)
             embed.add_field(
