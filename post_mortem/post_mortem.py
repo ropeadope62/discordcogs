@@ -10,12 +10,8 @@ from datetime import date
 from time import sleep
 from typing import List
 
-from redbot.core.i18n import Translator, cog_i18n
-from redbot.core import Config, checks, commands, bank
-from redbot.core.errors import BalanceTooHigh
-from redbot.core.utils.chat_formatting import (bold, box, humanize_list,humanize_number, pagify)
-from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
-from redbot.core.utils.predicates import MessagePredicate
+from redbot.core.i18n import Translator
+from redbot.core import commands
 
 
 
@@ -83,7 +79,9 @@ class PostMortem(commands.Cog):
     _('During a game of hide and seek, victim was locked in the cupboard and died from acute dehydration after several days'),
     _('Asphyxiated accidentaly while being Queened'),
     _('Victim drove their car into a wall while attempting to drive over school children'),
-    _('Extreme face sitting')
+    _('Extreme face sitting'),
+    _('Declared themselves the reincarnation of David Koresh - Shot 193 times in an ATF shootout.')
+    _('Drowned in the toddler splash pool'),
     ]
 
 
@@ -108,7 +106,8 @@ class PostMortem(commands.Cog):
         return '100'
 
 
-    @commands.cooldown(1, 30, commands.BucketType.user)         
+    @commands.cooldown(1, 30, commands.BucketType.user)  
+    @commands.group()       
     @commands.command()
     async def postmortem(self, ctx: commands.Context, user: discord.Member = None) -> None:
         """
@@ -123,7 +122,7 @@ class PostMortem(commands.Cog):
         hash_method = str(user_hash)[:2]
         hash_result_asint = int(hash_method)
         current_year = date.today().year
-        interval = random.random()
+        random.random()
 
         await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n') 
         sleep(1) 
@@ -139,7 +138,6 @@ class PostMortem(commands.Cog):
         sleep(1) 
         
 
-        msg = "*** Post Mortem:registered:  Likely result of death:***  "
         if user:
             if user.id == self.bot.user.id:
                 user = ctx.message.author
@@ -184,7 +182,7 @@ class PostMortem(commands.Cog):
 
             await ctx.send(embed=embed)
         else:
-            await ctx.send(f"A subject is required for analysis... try postmortem @discorduser")
+            await ctx.send("A subject is required for analysis... try postmortem @discorduser")
 
 
       
