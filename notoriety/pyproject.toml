@@ -2,7 +2,7 @@
 name = "notoriety"
 version = "0.1.0"
 description = ""
-authors = ["ropeadope62 <davechadwick@gmail.com>"]
+authors = ["ropeadope62 (Slurms)"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
