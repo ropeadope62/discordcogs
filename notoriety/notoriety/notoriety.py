@@ -11,7 +11,7 @@ class Notoriety(commands.Cog):
         self.votes = defaultdict(lambda: defaultdict(int))
 
         default_guild = {
-            "titles": [], "req_nominations": 5
+            "titles": ['king','serf','noble'], "req_nominations": 2
         }
         self.config.register_guild(**default_guild)
 
@@ -61,12 +61,15 @@ class Notoriety(commands.Cog):
     @commands.command()
     async def nominate(self, ctx, user: discord.Member, title: str):
         """Nominate a user for a Notoriety tile."""
+        
+        req_nominations = await self.config.guild(ctx.guild).req_nominations()
+
         titles = await self.config.guild(ctx.guild).titles()
         if title not in titles:
             await ctx.send("This title does not exist.")
             return
-
-        if self.nominations[ctx.guild.id][user.id] == 3:
+        
+        if self.nominations[ctx.guild.id][user.id] == :
             await ctx.send(f"{user.mention} has already been nominated for this title.")
             return
 
