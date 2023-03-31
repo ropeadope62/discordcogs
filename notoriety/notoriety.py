@@ -69,13 +69,13 @@ class Notoriety(commands.Cog):
             await ctx.send("This title does not exist.")
             return
         
-        if self.nominations[ctx.guild.id][user.id] == :
+        if self.nominations[ctx.guild.id][user.id] == req_nominations:
             await ctx.send(f"{user.mention} has already been nominated for this title.")
             return
 
         self.nominations[ctx.guild.id][user.id] += 1
 
-        if self.nominations[ctx.guild.id][user.id] == 3:
+        if self.nominations[ctx.guild.id][user.id] == req_nominations:
             await ctx.send(f"{user.mention} has been nominated 3 times for the title '{title}'. Voting has started.")
             await self.initiate_voting(ctx, user, title)
         else:
