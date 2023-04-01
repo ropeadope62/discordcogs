@@ -58,30 +58,32 @@ class Notoriety(commands.Cog):
                 req_nominations = req_nominations 
 
     @commands.guild_only()
-    @commands.command()
-    async def nominate(self, ctx, user: discord.Member, title: str):
-        """Nominate a user for a Notoriety tile."""
+@commands.command()
+async def nominate(self, ctx, user: discord.Member, title: str):
+    """Nominate a user for a Notoriety tile."""
+    
+    req_nominations = await self.config.guild(ctx.guild).req_nominations()
+
+    titles = await self.config.guild(ctx.guild).titles()
+    if title not in titles:
+        await ctx.send("This title does not exist.")
+        return
+    
+    user_nominations = self.nominations[ctx.guild.id].get(user.id, {})
+    if title in user_nominations:
+        await ctx.send(f"{user.mention} has already been nominated for the title '{title}'.")
+        return
+
+    self.nominations[ctx.guild.id][user.id][title] = True
+
+    if len(self.nominations[ctx.guild.id][user.id]) == req_nominations:
+        await ctx.send(f"{user.mention} has been nominated {req_nominations} times for the title '{title}'. Voting has started.")
+        await self.initiate_voting(ctx, user, title)
+    else:
+        remaining = req_nominations - len(self.nominations[ctx.guild.id][user.id])
+        await ctx.send(f"{user.mention} has been nominated for the title '{title}'. {remaining} more nominations needed.")
+
         
-        req_nominations = await self.config.guild(ctx.guild).req_nominations()
-
-        titles = await self.config.guild(ctx.guild).titles()
-        if title not in titles:
-            await ctx.send("This title does not exist.")
-            return
-        
-        if self.nominations[ctx.guild.id][user.id] == req_nominations:
-            await ctx.send(f"{user.mention} has already been nominated for this title.")
-            return
-
-        self.nominations[ctx.guild.id][user.id] += 1
-
-        if self.nominations[ctx.guild.id][user.id] == req_nominations:
-            await ctx.send(f"{user.mention} has been nominated 3 times for the title '{title}'. Voting has started.")
-            await self.initiate_voting(ctx, user, title)
-        else:
-            remaining = 3 - self.nominations[ctx.guild.id][user.id]
-            await ctx.send(f"{user.mention} has been nominated for the title '{title}'. {remaining} more nominations needed.")
-
     async def initiate_voting(self, ctx, user, title):
         self.votes[ctx.guild.id][user.id] = 0
 
