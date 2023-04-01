@@ -11,7 +11,7 @@ class Notoriety(commands.Cog):
         self.votes = defaultdict(lambda: defaultdict(int))
 
         default_guild = {
-            "titles": ['king','serf','noble'], "req_nominations": 2
+            "titles": ['king','serf','noble', 'CEO of Cuckolding'], "req_nominations": 2
         }
         self.config.register_guild(**default_guild)
 
