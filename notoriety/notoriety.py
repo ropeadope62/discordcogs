@@ -11,18 +11,18 @@ class Notoriety(commands.Cog):
         self.votes = defaultdict(lambda: defaultdict(int))
 
         default_guild = {
-            "titles": ['king','serf','noble', 'CEO of Cuckolding'], "req_nominations": 2
+            "titles": ['king','serf','noble', 'CEO of Cuckolding'], "req_nominations": [2]
         }
         self.config.register_guild(**default_guild)
 
 
     @commands.guild_only()
     @commands.group()
-    async def titles(self, ctx):
+    async def notoriety(self, ctx):
         """Notoriety: Manage Notoriety Titles"""
         pass
 
-    @titles.command(name="add")
+    @notoriety.command(name="add title")
     async def _add_title(self, ctx, *, title: str):
         """Notoriety: Add a new title to the list """
         async with self.config.guild(ctx.guild).titles() as titles: 
@@ -32,7 +32,7 @@ class Notoriety(commands.Cog):
                 titles.append(title)
                 await ctx.send(f"Title {title} added successfully. ")
 
-    @titles.command(name="remove")
+    @notoriety.command(name="remove title")
     async def _remove_title(self, ctx, *, title: str):
         """Notoriety: Remove a title from the list"""
         async with self.config.guild(ctx.guild).titles() as titles: 
@@ -52,6 +52,7 @@ class Notoriety(commands.Cog):
     async def _nominations_required(self, ctx, req_nominations: int):
         """Notoriety: Set the number of required nominations to call a vote"""
         async with self.config.guild(ctx.guild).req_nominations() as req_nominations:
+            await ctx.send(req_nominations)
             if req_nominations < 5 >= 10:
                 await ctx.send("The number of required nominations can be set from 5 to 10")
             else: 
@@ -92,34 +93,35 @@ class Notoriety(commands.Cog):
             await ctx.send(f"{user.mention} has been nominated for the title '{title}'. {remaining} more nominations needed for this title.")
 
     async def initiate_voting(self, ctx, user, title):
-    self.votes[ctx.guild.id][user.id] = 0
-    voters = set()
+        self.votes[ctx.guild.id][user.id] = 0
+        voters = set()
 
-    def check(reaction, voter):
-        return (
-            str(reaction.emoji) == '👍'
-            and voter != self.bot.user
-            and reaction.message.id == vote_message.id
-            and voter.id not in voters
-        )
+        def check(reaction, voter):
+            return (
+                str(reaction.emoji) == '👍'
+                and voter != self.bot.user
+                and reaction.message.id == vote_message.id
+                and voter.id not in voters
+            )
 
-    vote_message = await ctx.send(f"Vote to award {user.mention} the title '{title}'. React with 👍 to vote 'yes'.")
-    
-    await vote_message.add_reaction('👍')
 
-    while self.votes[ctx.guild.id][user.id] < 2:
-        try:
-            reaction, voter = await self.bot.wait_for("reaction_add", check=check, timeout=300)
-            self.votes[ctx.guild.id][user.id] += 1
-            voters.add(voter.id)
-            remaining_votes = 10 - self.votes[ctx.guild.id][user.id]
-            await ctx.send(f"{voter.mention} voted 'yes'. {remaining_votes} more 'yes' votes needed.")
-        except asyncio.TimeoutError:
-            await ctx.send(f"Voting for {user.mention} to receive the title '{title}' has ended due to inactivity.")
-            return
+        vote_message = await ctx.send(f"Vote to award {user.mention} the title '{title}'. React with 👍 to vote 'yes'.")
+        
+        await vote_message.add_reaction('👍')
 
-    await ctx.send(f"{user.mention} has received 10 'yes' votes and has been awarded the title '{title}'.")
+        while self.votes[ctx.guild.id][user.id] < 2:
+            try:
+                reaction, voter = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+                self.votes[ctx.guild.id][user.id] += 1
+                voters.add(voter.id)
+                remaining_votes = 10 - self.votes[ctx.guild.id][user.id]
+                await ctx.send(f"{voter.mention} voted 'yes'. {remaining_votes} more 'yes' votes needed.")
+            except asyncio.TimeoutError:
+                await ctx.send(f"Voting for {user.mention} to receive the title '{title}' has ended due to inactivity.")
+                return
 
-    # Reset votes and nominations for this user and title
-    self.votes[ctx.guild.id][user.id] = 0
-    self.nominations[ctx.guild.id][user.id] = defaultdict(int)
+        await ctx.send(f"{user.mention} has received 10 'yes' votes and has been awarded the title '{title}'.")
+
+        # Reset votes and nominations for this user and title
+        self.votes[ctx.guild.id][user.id] = 0
+        self.nominations[ctx.guild.id][user.id] = defaultdict(int)
