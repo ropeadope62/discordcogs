@@ -48,7 +48,7 @@ class Notoriety(commands.Cog):
         """Notoriety: Manage Nomination Rules"""
         pass
 
-    @nominations.command(name=nominations)
+    @nominations.command(name=required)
     async def _nominations_required(self, ctx, req_nominations: int):
         """Notoriety: Set the number of required nominations to call a vote"""
         async with self.config.guild(ctx.guild).req_nominations() as req_nominations:
