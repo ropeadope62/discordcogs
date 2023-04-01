@@ -11,7 +11,7 @@ class Notoriety(commands.Cog):
         self.votes = defaultdict(lambda: defaultdict(int))
 
         default_guild = {
-            "titles": ['king','serf','noble', 'CEO of Cuckolding'], "req_nominations": [2]
+            "titles": ['king','serf','noble', 'CEO of Cuckolding'], "req_nominations": 2
         }
         self.config.register_guild(**default_guild)
 
@@ -22,7 +22,7 @@ class Notoriety(commands.Cog):
         """Notoriety: Manage Notoriety Titles"""
         pass
 
-    @notoriety.command(name="add title")
+    @notoriety.command(name="add")
     async def _add_title(self, ctx, *, title: str):
         """Notoriety: Add a new title to the list """
         async with self.config.guild(ctx.guild).titles() as titles: 
@@ -32,7 +32,7 @@ class Notoriety(commands.Cog):
                 titles.append(title)
                 await ctx.send(f"Title {title} added successfully. ")
 
-    @notoriety.command(name="remove title")
+    @notoriety.command(name="remove")
     async def _remove_title(self, ctx, *, title: str):
         """Notoriety: Remove a title from the list"""
         async with self.config.guild(ctx.guild).titles() as titles: 
@@ -53,7 +53,7 @@ class Notoriety(commands.Cog):
         """Notoriety: Set the number of required nominations to call a vote"""
         async with self.config.guild(ctx.guild).req_nominations() as req_nominations:
             await ctx.send(req_nominations)
-            if req_nominations < 5 >= 10:
+            if req_nominations[0] <= 5:
                 await ctx.send("The number of required nominations can be set from 5 to 10")
             else: 
                 req_nominations = req_nominations 
