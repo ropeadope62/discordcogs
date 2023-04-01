@@ -92,32 +92,34 @@ class Notoriety(commands.Cog):
             await ctx.send(f"{user.mention} has been nominated for the title '{title}'. {remaining} more nominations needed for this title.")
 
     async def initiate_voting(self, ctx, user, title):
-        self.votes[ctx.guild.id][user.id] = 0
+    self.votes[ctx.guild.id][user.id] = 0
+    voters = set()
 
-        def check(reaction, voter):
-            return (
-                str(reaction.emoji) == '👍'
-                and voter != self.bot.user
-                and reaction.message.id == vote_message.id
-            )
+    def check(reaction, voter):
+        return (
+            str(reaction.emoji) == '👍'
+            and voter != self.bot.user
+            and reaction.message.id == vote_message.id
+            and voter.id not in voters
+        )
 
-        vote_message = await ctx.send(f"Vote to award {user.mention} the title '{title}'. React with 👍 to vote 'yes'.")
-        
-        await vote_message.add_reaction('👍')
+    vote_message = await ctx.send(f"Vote to award {user.mention} the title '{title}'. React with 👍 to vote 'yes'.")
+    
+    await vote_message.add_reaction('👍')
 
-        # set the minimum vote count to grant the title. 
-        while self.votes[ctx.guild.id][user.id] < 1:
-            try:
-                reaction, voter = await self.bot.wait_for("reaction_add", check=check, timeout=300)
-                self.votes[ctx.guild.id][user.id] += 1
-                remaining_votes = 10 - self.votes[ctx.guild.id][user.id]
-                await ctx.send(f"{voter.mention} voted 'yes'. {remaining_votes} more 'yes' votes needed.")
-            except asyncio.TimeoutError:
-                await ctx.send(f"Voting for {user.mention} to receive the title '{title}' has ended due to inactivity.")
-                return
+    while self.votes[ctx.guild.id][user.id] < 2:
+        try:
+            reaction, voter = await self.bot.wait_for("reaction_add", check=check, timeout=300)
+            self.votes[ctx.guild.id][user.id] += 1
+            voters.add(voter.id)
+            remaining_votes = 10 - self.votes[ctx.guild.id][user.id]
+            await ctx.send(f"{voter.mention} voted 'yes'. {remaining_votes} more 'yes' votes needed.")
+        except asyncio.TimeoutError:
+            await ctx.send(f"Voting for {user.mention} to receive the title '{title}' has ended due to inactivity.")
+            return
 
-        await ctx.send(f"{user.mention} has received 1 'yes' votes and has been awarded the title '{title}'.")
+    await ctx.send(f"{user.mention} has received 10 'yes' votes and has been awarded the title '{title}'.")
 
-        # Reset votes and nominations for this user and title
-        self.votes[ctx.guild.id][user.id] = 0
-        self.nominations[ctx.guild.id][user.id] = 0
+    # Reset votes and nominations for this user and title
+    self.votes[ctx.guild.id][user.id] = 0
+    self.nominations[ctx.guild.id][user.id] = defaultdict(int)
