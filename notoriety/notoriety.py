@@ -58,32 +58,39 @@ class Notoriety(commands.Cog):
                 req_nominations = req_nominations 
 
     @commands.guild_only()
-@commands.command()
-async def nominate(self, ctx, user: discord.Member, title: str):
-    """Nominate a user for a Notoriety tile."""
-    
-    req_nominations = await self.config.guild(ctx.guild).req_nominations()
-
-    titles = await self.config.guild(ctx.guild).titles()
-    if title not in titles:
-        await ctx.send("This title does not exist.")
-        return
-    
-    user_nominations = self.nominations[ctx.guild.id].get(user.id, {})
-    if title in user_nominations:
-        await ctx.send(f"{user.mention} has already been nominated for the title '{title}'.")
-        return
-
-    self.nominations[ctx.guild.id][user.id][title] = True
-
-    if len(self.nominations[ctx.guild.id][user.id]) == req_nominations:
-        await ctx.send(f"{user.mention} has been nominated {req_nominations} times for the title '{title}'. Voting has started.")
-        await self.initiate_voting(ctx, user, title)
-    else:
-        remaining = req_nominations - len(self.nominations[ctx.guild.id][user.id])
-        await ctx.send(f"{user.mention} has been nominated for the title '{title}'. {remaining} more nominations needed.")
-
+    @commands.command()
+    async def nominate(self, ctx, user: discord.Member, title: str):
+        """Nominate a user for a Notoriety tile."""
         
+        req_nominations = await self.config.guild(ctx.guild).req_nominations()
+
+        titles = await self.config.guild(ctx.guild).titles()
+        if title not in titles:
+            await ctx.send("This title does not exist.")
+            return
+        
+        user_nominations = self.nominations[ctx.guild.id].get(user.id, {})
+        nominations_count = sum(user_nominations.values())
+        if nominations_count >= req_nominations:
+            await ctx.send(f"{user.mention} has already been nominated {req_nominations} times for various titles. Voting has started.")
+            return
+
+        title_nominations_count = user_nominations.get(title, 0)
+        if title_nominations_count >= 1:
+            await ctx.send(f"{user.mention} has already been nominated for the title '{title}'.")
+            return
+
+        self.nominations[ctx.guild.id][user.id][title] = True
+
+        if len(user_nominations) == req_nominations:
+            await ctx.send(f"{user.mention} has been nominated {req_nominations} times for various titles. Voting has started.")
+            await self.initiate_voting(ctx, user, None)
+        elif title_nominations_count == 1:
+            await ctx.send(f"{user.mention} has been nominated for the title '{title}'. {req_nominations - nominations_count} more nominations needed for other titles.")
+        else:
+            remaining = 1 - title_nominations_count
+            await ctx.send(f"{user.mention} has been nominated for the title '{title}'. {remaining} more nominations needed for this title.")
+
     async def initiate_voting(self, ctx, user, title):
         self.votes[ctx.guild.id][user.id] = 0
 
@@ -98,7 +105,8 @@ async def nominate(self, ctx, user: discord.Member, title: str):
         
         await vote_message.add_reaction('👍')
 
-        while self.votes[ctx.guild.id][user.id] < 10:
+        # set the minimum vote count to grant the title. 
+        while self.votes[ctx.guild.id][user.id] < 1:
             try:
                 reaction, voter = await self.bot.wait_for("reaction_add", check=check, timeout=300)
                 self.votes[ctx.guild.id][user.id] += 1
@@ -108,7 +116,7 @@ async def nominate(self, ctx, user: discord.Member, title: str):
                 await ctx.send(f"Voting for {user.mention} to receive the title '{title}' has ended due to inactivity.")
                 return
 
-        await ctx.send(f"{user.mention} has received 10 'yes' votes and has been awarded the title '{title}'.")
+        await ctx.send(f"{user.mention} has received 1 'yes' votes and has been awarded the title '{title}'.")
 
         # Reset votes and nominations for this user and title
         self.votes[ctx.guild.id][user.id] = 0
