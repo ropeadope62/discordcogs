@@ -93,6 +93,8 @@ class Notoriety(commands.Cog):
             await ctx.send(f"{user.mention} has been nominated for the title '{title}'. {remaining} more nominations needed for this title.")
 
     async def initiate_voting(self, ctx, user, title):
+        self.votes = {}
+        self.votes[ctx.guild.id] = {}
         self.votes[ctx.guild.id][user.id] = 0
         voters = set()
 
