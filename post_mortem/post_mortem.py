@@ -235,11 +235,23 @@ class PostMortem(commands.Cog):
             progress_bar_length = 30  # length of the progress bar
             progress_bar_filled = int(progress * progress_bar_length)
             progress_bar = "[" + ("=" * progress_bar_filled) 
-            progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
+            progress_bar += " " * (progress_bar_length - progress_bar_filled) + "]"
             marker = "🔴"
             if progress_bar_filled < progress_bar_length:  # only add marker if there is room
                 progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
 
+
+            user_data = {
+                    "progress_bar": progress_bar,
+                    "risk_factor": risk_factor,
+                    "approximate_age": approximate_age,
+                    "death_year": death_year,
+                    "approximate_death_age": approximate_death_age,
+                    "years_left": years_left,
+                    "cause_of_death": cause_of_death,
+                }
+            
+            self.cache[user.id] = user_data
 
             embed = discord.Embed(
                 title="**Broad Street Labs™ - Post Mortem®**",
@@ -267,16 +279,7 @@ class PostMortem(commands.Cog):
 
             await ctx.send(embed=embed)
 
-            user_data = {
-                    "progress_bar": progress_bar,
-                    "risk_factor": risk_factor,
-                    "approximate_age": approximate_age,
-                    "death_year": death_year,
-                    "approximate_death_age": approximate_death_age,
-                    "years_left": years_left,
-                    "cause_of_death": cause_of_death,
-                }
-            self.cache[user.id] = user_data
+
         else:
             await ctx.send("A subject is required for analysis... try postmortem @discorduser")
 
