@@ -125,7 +125,7 @@ class PostMortem(commands.Cog):
             timestamp = self.discord_id_to_timestamp(user.id)
             account_age = datetime.now() - timestamp
             account_age_years = account_age.days // 365
-            approximate_age = account_age_years + 30
+            approximate_age = account_age_years + random.randint(25, 32)
             print(f'Time: {timestamp}, Age: {account_age}, Years: {account_age_years}, Approximate Age: {approximate_age}')
         
         user_hash = hash(user)
@@ -148,7 +148,7 @@ class PostMortem(commands.Cog):
         await asyncio.sleep(random.uniform(1, 2))
         await msg.edit(content=f"Calculating Vitals...\nProcessing age covariates...\n{user}'s approximate age is *{approximate_age}* years old.\nAnalyzing *{user}'s* Life Choices...\nProcessing *{user}* mortality risk factors...")
         await asyncio.sleep(random.uniform(1, 2))
-        await msg.edit(content='Calculating Vitals...\nProcessing age covariates...\n{user}\'s approximate age is *{approximate_age}* years old.\nAnalyzing *{user}\'s* Life Choices...\nProcessing *{user}* mortality risk factors...\nAnalysis Completed Successfully')
+        await msg.edit(content=f"Calculating Vitals...\nProcessing age covariates...\n{user}'s approximate age is *{approximate_age}* years old.\nAnalyzing *{user}'s* Life Choices...\nProcessing *{user}* mortality risk factors...\nAnalysis Completed Successfully")
         await asyncio.sleep(random.uniform(1, 2))
 
 
@@ -165,6 +165,9 @@ class PostMortem(commands.Cog):
                 ]
                 await ctx.send(f"{ctx.author.mention}{choice(bot_msg)}")
             else:
+                life_expectancy = random.randint(25, 90)
+                approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
+                years_left = approximate_death_age - approximate_age
                 hash_result_asint = int(str(user_hash)[:2])
                 #userid_as_int = int(user.id)
                 #age.append(userid_as_int)
@@ -172,7 +175,7 @@ class PostMortem(commands.Cog):
                 days = hash_result_asint * 365
                 weeks = hash_result_asint * 52
                 months = hash_result_asint * 12
-                death_year = current_year + hash_result_asint
+                death_year = current_year + years_left
 
 
 
@@ -183,8 +186,8 @@ class PostMortem(commands.Cog):
             )
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
             embed.add_field(name="Subject", value=user.mention, inline=False)
-            embed.add_field(name="Death Year", value=f"{death_year}", inline=False)
             embed.add_field(name="Approximate Age", value=f"{approximate_age}", inline=False)
+            embed.add_field(name="Death Year", value=f"{death_year}", inline=False)
             embed.add_field(name="Approximate Age at Death", value=f"{approximate_age + years}", inline=False)
             embed.add_field(
                 name="Time Left",
