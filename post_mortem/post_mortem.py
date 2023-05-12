@@ -14,7 +14,7 @@ from redbot.core.i18n import Translator
 from redbot.core import commands
 from cachetools import TTLCache
 from datetime import timedelta
-from pm_embeds import pm_embeds
+from .pm_embeds import pm_embeds
 
 
 _ = Translator("PostMortem", __file__)
