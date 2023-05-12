@@ -193,6 +193,11 @@ class PostMortem(commands.Cog):
             progress_bar_filled = int(progress * progress_bar_length)
             progress_bar = f"[{'=' * progress_bar_filled}{' ' * (progress_bar_length - progress_bar_filled)}]"
 
+            progress_bar_green = "🟢" * progress_bar_filled
+            progress_bar_yellow = "🟡" * (progress_bar_length - progress_bar_filled if progress_bar_length - progress_bar_filled <= progress_bar_length // 2 else progress_bar_length // 2)
+            progress_bar_red = "🔴" * (progress_bar_length - len(progress_bar_green) - len(progress_bar_yellow))
+            progress_bar = progress_bar_green + progress_bar_yellow + progress_bar_red
+
 
 
             embed = discord.Embed(
@@ -200,9 +205,10 @@ class PostMortem(commands.Cog):
                 description="*Final Report Summary*",
                 color=discord.Color.dark_red(),
             )
-            embed.add_field(name="Death Progress", value=f"{progress_bar} {progress * 100:.1f}%", inline=False)
+            
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
             embed.add_field(name="Subject", value=user.mention, inline=False)
+            embed.add_field(name="Death Progress", value=f"{progress_bar} {progress * 100:.1f}%", inline=False)
             embed.add_field(name="Subject Risk Factors", value=f"{risk_factor}", inline=False)
             embed.add_field(name="Approximate Age", value=f"{approximate_age}", inline=False)
             embed.add_field(name="Death Year", value=f"{death_year}", inline=False)
