@@ -3,6 +3,7 @@
 
 # Required modules before bot
 import discord
+import asyncio
 from redbot.core import commands
 import random
 from random import choice
@@ -132,17 +133,17 @@ class PostMortem(commands.Cog):
         random.random()
 
         await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n')
-        sleep(1)
+        await asyncio.sleep(1)
         await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n')
-        sleep(1)
+        await asyncio.sleep(1)
         await ctx.send(f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n')
-        sleep(1)
+        await asyncio.sleep(1)
         await ctx.send('Calculating Vitals...\n')
-        sleep(1)
+        await asyncio.sleep(1)
         await ctx.send(f"{user}'s approximate age is *{approximate_age}* years old.\n")
-
+        await asyncio.sleep(1)
         await ctx.send(f"Analyzing *{user}'s* Life Choices...\n")
-        sleep(1)
+        await asyncio.sleep(1)
         await ctx.send('Analysis Completed Successfully\n')
         sleep(1) 
 
