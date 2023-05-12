@@ -82,7 +82,17 @@ class PostMortem(commands.Cog):
     _('Extreme face sitting'),
     _('Declared themselves the reincarnation of David Koresh - Shot 193 times in an ATF shootout.'),
     _('Drowned in the toddler splash pool'),
-    _('Hit a deer which bounced up into the windshield. Subject was kicked the shit out of until deceased.')
+    _('Hit a deer which bounced up into the windshield. Subject was kicked the shit out of until deceased.'),
+    _('While pulled over by the cops and in possession of pepper spray which is a violation of their parole, shoved the can into their anus which was accidentally discharged.\n Subject experienced disorientation, panic, and loss of control of motor activity before multiple organ failure.'),
+    _('Heart failure: Connected car jumper cables from a wall socket to their genitalia while attempting "e-stimulation".'),
+    _('Victim intended to fill their anus using a can of whipped cream. Nitrous Oxide resulted in flash freezing and immediate necrosis of the intestinal tissue'), 
+    _('In an armed robbery gone wrong, subject hid in a drainage pipe and became stuck. Later that night, rats swarmed and start eating him alive, eventually eating into their brain'),
+    _('After group Water Sports, urine penetration into an open scratch caused leptospirosis, patient died a week later.'),
+    _('In an armed robbery gone wrong, subject hid in a drainage pipe and became stuck. Later that night, rats swarmed and start eating him alive, eventually eating into their brain'),
+    _('Asked their spouse to punch them in the stomach after stating that their spouse was "a pussy ass bitch" Subject later died of internal bleeding.'),
+    _('Allergic reaction to Latex after being placed into a latex gimp suit by their dominatrix.'),
+    _('Crushed to death at a Taylor Swift concert.'),
+    _('Drowned in a chemsex fueled Bukkake')
     ]
 
 
@@ -128,9 +138,9 @@ class PostMortem(commands.Cog):
             approximate_age = account_age_years + random.randint(25, 35)
             print(f'Time: {timestamp}, Age: {account_age}, Years: {account_age_years}, Approximate Age: {approximate_age}')
 
-        user_hash = hash(user)
+        #user_hash = hash(user)
         current_year = date.today().year
-        random.random()
+        #random.random()
 
         await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n')
         await asyncio.sleep(1)
@@ -165,6 +175,19 @@ class PostMortem(commands.Cog):
                 ]
                 await ctx.send(f"{ctx.author.mention}{choice(bot_msg)}")
             else:
+                # Death calculations: 
+                # This block of code is calculating the life expectancy of the user and their
+                # approximate death age based on their current age. The `life_expectancy` variable is
+                # set to a random integer between 25 and 90, representing the average life expectancy.
+                # The `approximate_death_age` variable is then calculated based on whether the user's
+                # current age is less than the life expectancy or not. If it is less, then
+                # `approximate_death_age` is set to `life_expectancy`, otherwise it is set to
+                # `approximate_age` plus a random integer between 1 and 30. The `years_left` variable
+                # is then calculated as the difference between `approximate_death_age` and
+                # `approximate_age`. The remaining variables (`hash_result_asint`, `days`, `weeks`,
+                # `months`, and `death_year`) are not used in the rest of the code and appear to be
+                # remnants of previous versions or unused variables.
+
                 life_expectancy = random.randint(25, 90)
                 approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
                 years_left = approximate_death_age - approximate_age
@@ -173,6 +196,11 @@ class PostMortem(commands.Cog):
                 weeks = years_left * 52
                 months = years_left * 12
                 death_year = current_year + years_left
+
+                # The below  code is assigning a risk factor based on the number of years left until death. If the
+                # years left are less than 10, the risk factor is "Extreme". If the years left are between 10 and 20,
+                # the risk factor is "High", and so on. The risk factor is assigned to the variable "risk_factor".
+
                 risk_factor = ""
                 if years_left in range(10):
                     risk_factor = 'Extreme'
@@ -187,6 +215,8 @@ class PostMortem(commands.Cog):
                 elif years_left > 50: 
                     risk_factor = 'Negligible'
 
+
+            # Create the progress bar for the embed
 
             progress = approximate_age / (approximate_age + years_left)
             progress_bar_length = 30  # length of the progress bar
