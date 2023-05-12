@@ -151,6 +151,34 @@ class PostMortem(commands.Cog):
             # Check if the user's data is in the cache
             if user.id in self.cache:
                 user_data = self.cache[user.id]
+
+                progress = approximate_age / (approximate_age + user_data['years_left'])
+                progress_bar_length = 30  # length of the progress bar
+                progress_bar_filled = int(progress * progress_bar_length)
+                progress_bar = "[" + ("=" * progress_bar_filled) 
+                progress_bar += " " * (progress_bar_length - progress_bar_filled) + "]"
+                marker = "🔴"
+                if progress_bar_filled < progress_bar_length:  # only add marker if there is room
+                    progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
+
+        
+                risk_factor = ""
+                if user_data['years_left'] <= 5:
+                    risk_factor = 'Death Wish'
+                if user_data['years_left'] in range(10,15):
+                    risk_factor = 'Extreme'
+                elif user_data['years_left'] in range(15,20):
+                    risk_factor = 'High'
+                elif user_data['years_left'] in range(20,35):
+                    risk_factor = 'Medium'
+                elif user_data['years_left'] in range(35,45):
+                    risk_factor = 'Low'
+                elif user_data['years_left'] in range(45,60):
+                    risk_factor = 'Minimal'
+                elif user_data['years_left'] > 60: 
+                    risk_factor = 'Negligible'
+
+                    
                 await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n')
                 await asyncio.sleep(1)
                 msg = await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n')
