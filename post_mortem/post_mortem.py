@@ -9,7 +9,7 @@ from random import choice
 from datetime import date
 from time import sleep
 from typing import List
-
+import datetime
 from redbot.core.i18n import Translator
 from redbot.core import commands
 
@@ -82,6 +82,7 @@ class PostMortem(commands.Cog):
     _('Extreme face sitting'),
     _('Declared themselves the reincarnation of David Koresh - Shot 193 times in an ATF shootout.')
     _('Drowned in the toddler splash pool'),
+    _('Hit a deer which bounced up into the windshield. Subject was kicked the shit out of until deceased.')
     ]
 
 
@@ -105,10 +106,14 @@ class PostMortem(commands.Cog):
     def get_str():
         return '100'
 
-
-    @commands.cooldown(1, 30, commands.BucketType.user)  
-    @commands.group()       
-    @commands.command()
+    @staticmethod
+    def discord_id_to_timestamp(user_id: int) -> datetime.datetime:
+        discord_epoch = 1420070400000
+        timestamp = ((user_id >> 22) + discord_epoch) / 1000.0
+        return datetime.datetime.fromtimestamp(timestamp)
+    
+    @commands.group()
+    @postmortem.command()
     async def postmortem(self, ctx: commands.Context, user: discord.Member = None) -> None:
         """
           
@@ -116,27 +121,31 @@ class PostMortem(commands.Cog):
 
         `user` the user you would like to assess.
         """
+        if user:
+            timestamp = self.discord_id_to_timestamp(user.id)
+            account_age = datetime.datetime.now() - timestamp
+            account_age_years = account_age.days // 365
+            approximate_age = account_age_years + 20
+        
         user_hash = hash(user)
-        #def get_memberhash(user: discord.Member):
-        #    return(hash(user))  
-        hash_method = str(user_hash)[:2]
-        hash_result_asint = int(hash_method)
         current_year = date.today().year
         random.random()
 
-        await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n') 
-        sleep(1) 
+        await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n')
+        sleep(1)
         await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n')
-        sleep(1)  
+        sleep(1)
         await ctx.send(f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n')
-        sleep(1) 
+        sleep(1)
         await ctx.send('Calculating Vitals...\n')
         sleep(1)
+        await ctx.send(f"{user}'s approximate age is *{approximate_age}* years old.\n")
+
         await ctx.send(f"Analyzing *{user}'s* Life Choices...\n")
-        sleep(1) 
+        sleep(1)
         await ctx.send('Analysis Completed Successfully\n')
         sleep(1) 
-        
+
 
         if user:
             if user.id == self.bot.user.id:
@@ -151,16 +160,17 @@ class PostMortem(commands.Cog):
                 ]
                 await ctx.send(f"{ctx.author.mention}{choice(bot_msg)}")
             else:
+                hash_result_asint = int(str(user_hash)[:2])
                 #userid_as_int = int(user.id)
                 #age.append(userid_as_int)
                 years = hash_result_asint
                 days = hash_result_asint * 365
                 weeks = hash_result_asint * 52
-                months = hash_result_asint * 12 
+                months = hash_result_asint * 12
                 death_year = current_year + hash_result_asint
 
-            
-                
+
+
             embed = discord.Embed(
                 title="**Broad Street Labs™ - Post Mortem®**",
                 description="*Final Report Summary*",
@@ -169,6 +179,7 @@ class PostMortem(commands.Cog):
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
             embed.add_field(name="Subject", value=user.mention, inline=False)
             embed.add_field(name="Death Year", value=f"{death_year}", inline=False)
+            embed.add_field(name="Approximate Age at Death", value=f"{approximate_age + years}", inline=False)
             embed.add_field(
                 name="Time Left",
                 value=f"{years} years... *or* {months} months... *or* {weeks} weeks... *or* {days} days",
