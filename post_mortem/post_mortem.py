@@ -127,7 +127,7 @@ class PostMortem(commands.Cog):
             account_age_years = account_age.days // 365
             approximate_age = account_age_years + random.randint(25, 32)
             print(f'Time: {timestamp}, Age: {account_age}, Years: {account_age_years}, Approximate Age: {approximate_age}')
-        
+
         user_hash = hash(user)
         current_year = date.today().year
         random.random()
@@ -173,6 +173,19 @@ class PostMortem(commands.Cog):
                 weeks = years_left * 52
                 months = years_left * 12
                 death_year = current_year + years_left
+                risk_factor = ""
+                if years_left in range(10):
+                    risk_factor = 'Extreme'
+                elif years_left in range(10,20):
+                    risk_factor = 'High'
+                elif years_left in range(20,30):
+                    risk_factor = 'Medium'
+                elif years_left in range(30,40):
+                    risk_factor = 'Low'
+                elif years_left in range(40,50):
+                    risk_factor = 'Minimal'
+                elif years_left > 50: 
+                    risk_factor = 'Negligible'
 
 
 
@@ -183,9 +196,10 @@ class PostMortem(commands.Cog):
             )
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
             embed.add_field(name="Subject", value=user.mention, inline=False)
+            embed.add_field(name="Subject Risk Factors", value=f"{risk_factor}", inline=False)
             embed.add_field(name="Approximate Age", value=f"{approximate_age}", inline=False)
             embed.add_field(name="Death Year", value=f"{death_year}", inline=False)
-            embed.add_field(name="Approximate Age at Death", value=f"{approximate_age + years_left}", inline=False)
+            embed.add_field(name="Approximate Death Age", value=f"{approximate_age + years_left}", inline=False)
             embed.add_field(
                 name="Time Left",
                 value=f"{years_left} years... *or* {months} months... *or* {weeks} weeks... *or* {days} days",
