@@ -210,7 +210,7 @@ class PostMortem(commands.Cog):
                 value=choice(self.deaths),
                 inline=False,
             )
-            embed.set_footer(text="**Sponsored by Empties :tm:**")
+            embed.set_footer(text="Sponsored by Empties")
 
             await ctx.send(embed=embed)
         else:
