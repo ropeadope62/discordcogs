@@ -113,7 +113,7 @@ class PostMortem(commands.Cog):
         return datetime.datetime.fromtimestamp(timestamp)
     
     @commands.group()
-    @postmortem.command()
+    @commands.command()
     async def postmortem(self, ctx: commands.Context, user: discord.Member = None) -> None:
         """
           
