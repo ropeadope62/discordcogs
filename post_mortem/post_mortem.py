@@ -5,8 +5,7 @@
 import discord
 import asyncio
 from redbot.core import commands
-import random
-from random import choice
+from random import choice, random
 from datetime import date
 from time import sleep
 from typing import List
@@ -137,16 +136,20 @@ class PostMortem(commands.Cog):
         await asyncio.sleep(1)
         await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n')
         await asyncio.sleep(1)
-        await ctx.send(f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n')
-        await asyncio.sleep(1)
-        await ctx.send('Calculating Vitals...\n')
-        await asyncio.sleep(1)
-        await ctx.send(f"{user}'s approximate age is *{approximate_age}* years old.\n")
-        await asyncio.sleep(1)
-        await ctx.send(f"Analyzing *{user}'s* Life Choices...\n")
-        await asyncio.sleep(1)
-        await ctx.send('Analysis Completed Successfully\n')
-        sleep(1) 
+        msg = await ctx.send (f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n')
+        await asyncio.sleep(random.uniform(1, 2))
+        await msg.edit(content='Calculating Vitals...')
+        await asyncio.sleep(random.uniform(1, 2))
+        await msg.edit(content='Calculating Vitals...\nProcessing age covariates...')
+        await asyncio.sleep(random.uniform(1, 2))
+        await msg.edit(content=f"Calculating Vitals...\nProcessing age covariates...\n{user}'s approximate age is *{approximate_age}* years old.")
+        await asyncio.sleep(random.uniform(1, 2))
+        await msg.edit(content=f"Calculating Vitals...\nProcessing age covariates...\n{user}'s approximate age is *{approximate_age}* years old.\nAnalyzing *{user}'s* Life Choices...")
+        await asyncio.sleep(random.uniform(1, 2))
+        await msg.edit(content=f"Calculating Vitals...\nProcessing age covariates...\n{user}'s approximate age is *{approximate_age}* years old.\nAnalyzing *{user}'s* Life Choices...\nProcessing *{user}* mortality risk factors...")
+        await asyncio.sleep(random.uniform(1, 2))
+        await msg.edit(content='Calculating Vitals...\nProcessing age covariates...\n{user}\'s approximate age is *{approximate_age}* years old.\nAnalyzing *{user}\'s* Life Choices...\nProcessing *{user}* mortality risk factors...\nAnalysis Completed Successfully')
+        await asyncio.sleep(random.uniform(1, 2))
 
 
         if user:
@@ -181,6 +184,7 @@ class PostMortem(commands.Cog):
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
             embed.add_field(name="Subject", value=user.mention, inline=False)
             embed.add_field(name="Death Year", value=f"{death_year}", inline=False)
+            embed.add_field(name="Approximate Age", value=f"{approximate_age}", inline=False)
             embed.add_field(name="Approximate Age at Death", value=f"{approximate_age + years}", inline=False)
             embed.add_field(
                 name="Time Left",
