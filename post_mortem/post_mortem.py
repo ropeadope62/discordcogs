@@ -14,7 +14,7 @@ from redbot.core.i18n import Translator
 from redbot.core import commands
 from cachetools import TTLCache
 from datetime import timedelta
-
+from pm_embeds import pm_embeds
 
 
 _ = Translator("PostMortem", __file__)
@@ -97,6 +97,8 @@ class PostMortem(commands.Cog):
     _('Drowned in a chemsex fueled Bukkake')
     ]
 
+    pm_embeds = pm_embeds()
+
 
     def __init__(self, bot):
         self.bot = bot
@@ -127,7 +129,7 @@ class PostMortem(commands.Cog):
     
 
     @commands.command()
-    async def postmortem(self, ctx: commands.Context, user: discord.Member = None) -> None:
+    async def postmortem(self, ctx: commands.Context, action: str, user: discord.Member = None) -> None:
         """
           
         Post Mortem reads multiple user data points and returns an accurate assessment predicting their manner and time of death 
@@ -146,10 +148,10 @@ class PostMortem(commands.Cog):
         #user_hash = hash(user)
         #random.random()
 
-
+        
         if user:
             # Check if the user's data is in the cache
-            if user.id in self.cache:
+            if user.id in self.cache:                  
                 user_data = self.cache[user.id]
                 await ctx.send(f'Existing report found for {user.name}, retrieving report from Post Mortem:registered: database...')
                 await asyncio.sleep(2)
@@ -162,20 +164,20 @@ class PostMortem(commands.Cog):
                 if progress_bar_filled < progress_bar_length:  # only add marker if there is room
                     progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
 
-        
-                embed = discord.Embed(title="**Broad Street Labs™ - Post Mortem®**",description="*Final Report Summary*",color=discord.Color.dark_red(),)
-                embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
-                embed.add_field(name="Subject", value=user.mention, inline=False)
-                embed.add_field(name="Death Progress", value=f"{user_data['progress_bar']} {progress * 100:.1f}%", inline=False)
-                embed.add_field(name="Subject Risk Factors", value=f"{user_data['risk_factor']}", inline=False)
-                embed.add_field(name="Approximate Age", value=f"{user_data['approximate_age']}", inline=False)
-                embed.add_field(name="Death Year", value=f"{user_data['death_year']}", inline=False)
-                embed.add_field(name="Approximate Death Age", value=f"{user_data['approximate_death_age']}", inline=False)
-                embed.add_field(name="Time Left", value=f"({user_data['years_left']} years... or {user_data['months_left']} months... or {user_data['weeks_left']} weeks... or {user_data['days_left']} days left to live.", inline=False)
-                embed.add_field(name="** Post Mortem® Likely result of death:**", value=f"*{user_data['cause_of_death']}*",inline=False,)
-                embed.set_footer(text="\n Sponsored by Empties")
 
-                await ctx.send(embed=embed)
+                #embed = discord.Embed(title="**Broad Street Labs™ - Post Mortem®**",description="*Final Report Summary*",color=discord.Color.dark_red(),)
+                #embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
+                #embed.add_field(name="Subject", value=user.mention, inline=False)
+                #embed.add_field(name="Death Progress", value=f"{user_data['progress_bar']} {progress * 100:.1f}%", inline=False)
+                #embed.add_field(name="Subject Risk Factors", value=f"{user_data['risk_factor']}", inline=False)
+                #embed.add_field(name="Approximate Age", value=f"{user_data['approximate_age']}", inline=False)
+                #embed.add_field(name="Death Year", value=f"{user_data['death_year']}", inline=False)
+                #embed.add_field(name="Approximate Death Age", value=f"{user_data['approximate_death_age']}", inline=False)
+                #embed.add_field(name="Time Left", value=f"({user_data['years_left']} years... or {user_data['months_left']} months... or {user_data['weeks_left']} weeks... or {user_data['days_left']} days left to live.", inline=False)
+                #embed.add_field(name="** Post Mortem® Likely result of death:**", value=f"*{user_data['cause_of_death']}*",inline=False,)
+                #embed.set_footer(text="\n Sponsored by Empties")
+
+                await ctx.send(pm_embeds)
                 
             elif user.id == self.bot.user.id:
                 user = ctx.message.author
@@ -188,6 +190,7 @@ class PostMortem(commands.Cog):
                     ),
                 ]
                 await ctx.send(f"{ctx.author.mention}{choice(bot_msg)}")
+            
             else:
                 # Death calculations: 
                 # This block of code is calculating the life expectancy of the user and their
@@ -300,9 +303,9 @@ class PostMortem(commands.Cog):
             await ctx.send("A subject is required for analysis... try postmortem @discorduser")
 
 
-      
-
         
-    
 
+            
         
+
+            
