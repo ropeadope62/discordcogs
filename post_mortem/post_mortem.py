@@ -132,7 +132,8 @@ class PostMortem(commands.Cog):
         current_year = date.today().year
         random.random()
 
-        msg = await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n')
+        msg = '**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n'
+        await ctx.send(msg)
         await asyncio.sleep(1)
         await msg.edit('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n')
         await asyncio.sleep(1)
