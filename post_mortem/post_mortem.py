@@ -211,6 +211,19 @@ class PostMortem(commands.Cog):
                 # years left are less than 10, the risk factor is "Extreme". If the years left are between 10 and 20,
                 # the risk factor is "High", and so on. The risk factor is assigned to the variable "risk_factor".
 
+
+            # Create the progress bar for the embed
+
+                progress = approximate_age / (approximate_age + years_left)
+                progress_bar_length = 30  # length of the progress bar
+                progress_bar_filled = int(progress * progress_bar_length)
+                progress_bar = "[" + ("=" * progress_bar_filled) 
+                progress_bar += " " * (progress_bar_length - progress_bar_filled) + "]"
+                marker = "🔴"
+                if progress_bar_filled < progress_bar_length:  # only add marker if there is room
+                    progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
+
+        
                 risk_factor = ""
                 if years_left <= 5:
                     risk_factor = 'Death Wish'
@@ -227,55 +240,42 @@ class PostMortem(commands.Cog):
                 elif years_left > 60: 
                     risk_factor = 'Negligible'
 
+                user_data = {
+                        "progress_bar": progress_bar,
+                        "risk_factor": risk_factor,
+                        "approximate_age": approximate_age,
+                        "death_year": death_year,
+                        "approximate_death_age": approximate_death_age,
+                        "years_left": years_left,
+                        "months_left": months_left, 
+                        "weeks_left": weeks_left,
+                        "days_left": days_left,
+                        "cause_of_death": cause_of_death,
+                    }
+                
+                self.cache[user.id] = user_data
 
-            # Create the progress bar for the embed
+                embed = discord.Embed(
+                    title="**Broad Street Labs™ - Post Mortem®**",
+                    description="*Final Report Summary*",
+                    color=discord.Color.dark_red(),
+                )
+                embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
+                embed.add_field(name="Subject", value=user.mention, inline=False)
+                embed.add_field(name="Death Progress", value=f"{user_data['progress_bar']} {progress * 100:.1f}%", inline=False)
+                embed.add_field(name="Subject Risk Factors", value=f"{user_data['risk_factor']}", inline=False)
+                embed.add_field(name="Approximate Age", value=f"{user_data['approximate_age']}", inline=False)
+                embed.add_field(name="Death Year", value=f"{user_data['death_year']}", inline=False)
+                embed.add_field(name="Approximate Death Age", value=f"{user_data['approximate_death_age']}", inline=False)
+                embed.add_field(name="Time Left", value=f"({user_data['years_left']} + 'years... or' {user_data['months_left']} + 'months... or' + {user_data['weeks_left']} + 'weeks... or' +  {user_data['days_left']} + 'days left to live.", inline=False)
+                embed.add_field(
+                    name="** Post Mortem® Likely result of death:**",
+                    value=f"*{user_data['cause_of_death']}*",
+                    inline=False,
+                )
+                embed.set_footer(text="\n Sponsored by Empties")
 
-            progress = approximate_age / (approximate_age + years_left)
-            progress_bar_length = 30  # length of the progress bar
-            progress_bar_filled = int(progress * progress_bar_length)
-            progress_bar = "[" + ("=" * progress_bar_filled) 
-            progress_bar += " " * (progress_bar_length - progress_bar_filled) + "]"
-            marker = "🔴"
-            if progress_bar_filled < progress_bar_length:  # only add marker if there is room
-                progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
-
-
-            user_data = {
-                    "progress_bar": progress_bar,
-                    "risk_factor": risk_factor,
-                    "approximate_age": approximate_age,
-                    "death_year": death_year,
-                    "approximate_death_age": approximate_death_age,
-                    "years_left": years_left,
-                    "months_left": months_left, 
-                    "weeks_left": weeks_left,
-                    "days_left": days_left,
-                    "cause_of_death": cause_of_death,
-                }
-            
-            self.cache[user.id] = user_data
-
-            embed = discord.Embed(
-                title="**Broad Street Labs™ - Post Mortem®**",
-                description="*Final Report Summary*",
-                color=discord.Color.dark_red(),
-            )
-            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
-            embed.add_field(name="Subject", value=user.mention, inline=False)
-            embed.add_field(name="Death Progress", value=f"{user_data['progress_bar']} {progress * 100:.1f}%", inline=False)
-            embed.add_field(name="Subject Risk Factors", value=f"{user_data['risk_factor']}", inline=False)
-            embed.add_field(name="Approximate Age", value=f"{user_data['approximate_age']}", inline=False)
-            embed.add_field(name="Death Year", value=f"{user_data['death_year']}", inline=False)
-            embed.add_field(name="Approximate Death Age", value=f"{user_data['approximate_death_age']}", inline=False)
-            embed.add_field(name="Time Left", value=f"({user_data['years_left']} + 'years... or' {user_data['months_left']} + 'months... or' + {user_data['weeks_left']} + 'weeks... or' +  {user_data['days_left']} + 'days left to live.", inline=False)
-            embed.add_field(
-                name="** Post Mortem® Likely result of death:**",
-                value=f"*{user_data['cause_of_death']}*",
-                inline=False,
-            )
-            embed.set_footer(text="\n Sponsored by Empties")
-
-            await ctx.send(embed=embed)
+                await ctx.send(embed=embed)
 
 
         else:
