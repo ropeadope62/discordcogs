@@ -125,18 +125,18 @@ class PostMortem(commands.Cog):
             timestamp = self.discord_id_to_timestamp(user.id)
             account_age = datetime.now() - timestamp
             account_age_years = account_age.days // 365
-            approximate_age = account_age_years + random.randint(25, 32)
+            approximate_age = account_age_years + random.randint(25, 35)
             print(f'Time: {timestamp}, Age: {account_age}, Years: {account_age_years}, Approximate Age: {approximate_age}')
 
         user_hash = hash(user)
         current_year = date.today().year
         random.random()
 
-        await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n')
+        msg = await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n')
         await asyncio.sleep(1)
-        await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n')
+        await msg.edit('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n')
         await asyncio.sleep(1)
-        msg = await ctx.send (f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n')
+        await msg.edit (f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n')
         await asyncio.sleep(random.uniform(1, 2))
         await msg.edit(content='Calculating Vitals...')
         await asyncio.sleep(random.uniform(1, 2))
@@ -217,8 +217,8 @@ class PostMortem(commands.Cog):
                 inline=False,
             )
             embed.add_field(
-                name="*** Post Mortem® Likely result of death:***",
-                value=choice(self.deaths),
+                name="** Post Mortem® Likely result of death:**",
+                value=f"*{choice(self.deaths)}*",
                 inline=False,
             )
             embed.set_footer(text="\n Sponsored by Empties")
