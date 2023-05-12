@@ -80,7 +80,7 @@ class PostMortem(commands.Cog):
     _('Asphyxiated accidentaly while being Queened'),
     _('Victim drove their car into a wall while attempting to drive over school children'),
     _('Extreme face sitting'),
-    _('Declared themselves the reincarnation of David Koresh - Shot 193 times in an ATF shootout.')
+    _('Declared themselves the reincarnation of David Koresh - Shot 193 times in an ATF shootout.'),
     _('Drowned in the toddler splash pool'),
     _('Hit a deer which bounced up into the windshield. Subject was kicked the shit out of until deceased.')
     ]
