@@ -189,14 +189,10 @@ class PostMortem(commands.Cog):
 
 
             progress = approximate_age / (approximate_age + years_left)
-            progress_bar_length = 40  # length of the progress bar
+            progress_bar_length = 30  # length of the progress bar
             progress_bar_filled = int(progress * progress_bar_length)
             progress_bar = f"[{'=' * progress_bar_filled}{' ' * (progress_bar_length - progress_bar_filled)}]"
 
-            progress_bar_green = "🟢" * progress_bar_filled
-            progress_bar_yellow = "🟡" * (progress_bar_length - progress_bar_filled if progress_bar_length - progress_bar_filled <= progress_bar_length // 2 else progress_bar_length // 2)
-            progress_bar_red = "🔴" * (progress_bar_length - len(progress_bar_green) - len(progress_bar_yellow))
-            progress_bar = progress_bar_green + progress_bar_yellow + progress_bar_red
 
 
 
