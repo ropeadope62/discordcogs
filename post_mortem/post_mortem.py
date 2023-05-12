@@ -188,10 +188,10 @@ class PostMortem(commands.Cog):
                 # `months`, and `death_year`) are not used in the rest of the code and appear to be
                 # remnants of previous versions or unused variables.
 
+                #hash_result_asint = int(str(user_hash)[:2])
                 life_expectancy = random.randint(25, 90)
                 approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
                 years_left = approximate_death_age - approximate_age
-                hash_result_asint = int(str(user_hash)[:2])
                 days = years_left * 365
                 weeks = years_left * 52
                 months = years_left * 12
