@@ -1,6 +1,6 @@
 import discord
 
-class pm_embeds:
+class ReportEmbeds:
         
     def __init__(self, user, user_data):
         self.user = user

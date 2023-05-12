@@ -14,7 +14,7 @@ from redbot.core.i18n import Translator
 from redbot.core import commands
 from cachetools import TTLCache
 from datetime import timedelta
-from .pm_embeds import pm_embeds
+from reportembeds import ReportEmbeds
 
 
 _ = Translator("PostMortem", __file__)
@@ -97,7 +97,7 @@ class PostMortem(commands.Cog):
     _('Drowned in a chemsex fueled Bukkake')
     ]
 
-    pm_embeds = pm_embeds()
+    reportembeds = ReportEmbeds()
 
 
     def __init__(self, bot):
@@ -177,7 +177,7 @@ class PostMortem(commands.Cog):
                 #embed.add_field(name="** Post Mortem® Likely result of death:**", value=f"*{user_data['cause_of_death']}*",inline=False,)
                 #embed.set_footer(text="\n Sponsored by Empties")
 
-                await ctx.send(pm_embeds)
+                await ctx.send(ReportEmbeds.report_embed)
                 
             elif user.id == self.bot.user.id:
                 user = ctx.message.author
