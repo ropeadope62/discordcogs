@@ -97,7 +97,7 @@ class PostMortem(commands.Cog):
     _('Drowned in a chemsex fueled Bukkake')
     ]
 
-    reportembeds = ReportEmbeds()
+
 
 
     def __init__(self, bot):
@@ -164,6 +164,8 @@ class PostMortem(commands.Cog):
                 if progress_bar_filled < progress_bar_length:  # only add marker if there is room
                     progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
 
+                final_report = ReportEmbeds(user, user_data)
+                embed = final_report.report_embed()
 
                 #embed = discord.Embed(title="**Broad Street Labs™ - Post Mortem®**",description="*Final Report Summary*",color=discord.Color.dark_red(),)
                 #embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
@@ -177,7 +179,7 @@ class PostMortem(commands.Cog):
                 #embed.add_field(name="** Post Mortem® Likely result of death:**", value=f"*{user_data['cause_of_death']}*",inline=False,)
                 #embed.set_footer(text="\n Sponsored by Empties")
 
-                await ctx.send(ReportEmbeds.report_embed)
+                await ctx.send(embed)
                 
             elif user.id == self.bot.user.id:
                 user = ctx.message.author
