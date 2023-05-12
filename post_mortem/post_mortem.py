@@ -189,7 +189,7 @@ class PostMortem(commands.Cog):
 
 
             progress = approximate_age / (approximate_age + years_left)
-            progress_bar_length = 20  # length of the progress bar
+            progress_bar_length = 40  # length of the progress bar
             progress_bar_filled = int(progress * progress_bar_length)
             progress_bar = f"[{'=' * progress_bar_filled}{' ' * (progress_bar_length - progress_bar_filled)}]"
 
