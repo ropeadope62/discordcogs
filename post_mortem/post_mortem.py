@@ -14,7 +14,7 @@ from redbot.core.i18n import Translator
 from redbot.core import commands
 from cachetools import TTLCache
 from datetime import timedelta
-from reportembeds import ReportEmbeds
+from .reportembeds import ReportEmbeds
 
 
 _ = Translator("PostMortem", __file__)
