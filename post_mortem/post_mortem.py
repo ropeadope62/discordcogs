@@ -5,11 +5,11 @@
 import discord
 import asyncio
 from redbot.core import commands
-from random import choice, random
-from datetime import date
+import random
+from random import choice
+from datetime import date, datetime
 from time import sleep
 from typing import List
-import datetime
 from redbot.core.i18n import Translator
 from redbot.core import commands
 
