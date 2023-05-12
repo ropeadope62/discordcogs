@@ -169,12 +169,9 @@ class PostMortem(commands.Cog):
                 approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
                 years_left = approximate_death_age - approximate_age
                 hash_result_asint = int(str(user_hash)[:2])
-                #userid_as_int = int(user.id)
-                #age.append(userid_as_int)
-                years = hash_result_asint
-                days = hash_result_asint * 365
-                weeks = hash_result_asint * 52
-                months = hash_result_asint * 12
+                days = years_left * 365
+                weeks = years_left * 52
+                months = years_left * 12
                 death_year = current_year + years_left
 
 
@@ -188,10 +185,10 @@ class PostMortem(commands.Cog):
             embed.add_field(name="Subject", value=user.mention, inline=False)
             embed.add_field(name="Approximate Age", value=f"{approximate_age}", inline=False)
             embed.add_field(name="Death Year", value=f"{death_year}", inline=False)
-            embed.add_field(name="Approximate Age at Death", value=f"{approximate_age + years}", inline=False)
+            embed.add_field(name="Approximate Age at Death", value=f"{approximate_age + years_left}", inline=False)
             embed.add_field(
                 name="Time Left",
-                value=f"{years} years... *or* {months} months... *or* {weeks} weeks... *or* {days} days",
+                value=f"{years_left} years... *or* {months} months... *or* {weeks} weeks... *or* {days} days",
                 inline=False,
             )
             embed.add_field(
