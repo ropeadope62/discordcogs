@@ -127,6 +127,7 @@ class PostMortem(commands.Cog):
             account_age = datetime.datetime.now() - timestamp
             account_age_years = account_age.days // 365
             approximate_age = account_age_years + 20
+            print(f'Time: {timestamp}, Age: {account_age}, Years: {account_age_years}, Approximate Age: {approximate_age}')
         
         user_hash = hash(user)
         current_year = date.today().year
@@ -177,7 +178,7 @@ class PostMortem(commands.Cog):
                 description="*Final Report Summary*",
                 color=discord.Color.dark_red(),
             )
-            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url_as())
             embed.add_field(name="Subject", value=user.mention, inline=False)
             embed.add_field(name="Death Year", value=f"{death_year}", inline=False)
             embed.add_field(name="Approximate Age at Death", value=f"{approximate_age + years}", inline=False)
