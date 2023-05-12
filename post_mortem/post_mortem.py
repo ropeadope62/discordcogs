@@ -188,12 +188,19 @@ class PostMortem(commands.Cog):
                     risk_factor = 'Negligible'
 
 
+            progress = approximate_age / (approximate_age + years_left)
+            progress_bar_length = 20  # length of the progress bar
+            progress_bar_filled = int(progress * progress_bar_length)
+            progress_bar = f"[{'=' * progress_bar_filled}{' ' * (progress_bar_length - progress_bar_filled)}]"
+
+
 
             embed = discord.Embed(
                 title="**Broad Street Labs™ - Post Mortem®**",
                 description="*Final Report Summary*",
                 color=discord.Color.dark_red(),
             )
+            embed.add_field(name="Death Progress", value=f"{progress_bar} {progress * 100:.1f}%", inline=False)
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
             embed.add_field(name="Subject", value=user.mention, inline=False)
             embed.add_field(name="Subject Risk Factors", value=f"{risk_factor}", inline=False)
