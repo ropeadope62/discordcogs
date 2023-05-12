@@ -82,7 +82,7 @@ class PostMortem(commands.Cog):
     _('Extreme face sitting'),
     _('Declared themselves the reincarnation of David Koresh - Shot 193 times in an ATF shootout.'),
     _('Drowned in the toddler splash pool'),
-    _('Hit a deer which bounced up into the windshield. Subject was kicked the shit out of until deceased.')
+    _('Hit a deer which bounced up into the windshield. Subject was kicked the shit out of until deceased.'),
     ]
 
 
