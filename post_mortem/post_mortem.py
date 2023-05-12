@@ -136,7 +136,7 @@ class PostMortem(commands.Cog):
         await asyncio.sleep(1)
         msg = await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n')
         await asyncio.sleep(2)
-        await msg.edit (f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n')
+        await msg.edit (content=f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n')
         await asyncio.sleep(random.uniform(1, 2))
         await msg.edit(content='Calculating Vitals...')
         await asyncio.sleep(random.uniform(1, 2))
