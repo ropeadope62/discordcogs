@@ -12,6 +12,8 @@ from time import sleep
 from typing import List
 from redbot.core.i18n import Translator
 from redbot.core import commands
+from cachetools import TTLCache
+from datetime import timedelta
 
 
 
@@ -98,6 +100,7 @@ class PostMortem(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.cache = TTLCache(maxsize=10000, ttl=timedelta(hours=24).total_seconds())
 
     def format_help_for_context(self, ctx: commands.Context) -> str:
         """
@@ -131,15 +134,16 @@ class PostMortem(commands.Cog):
 
         `user` the user you would like to assess.
         """
-        if user:
-            timestamp = self.discord_id_to_timestamp(user.id)
-            account_age = datetime.now() - timestamp
-            account_age_years = account_age.days // 365
-            approximate_age = account_age_years + random.randint(25, 35)
-            print(f'Time: {timestamp}, Age: {account_age}, Years: {account_age_years}, Approximate Age: {approximate_age}')
+        timestamp = self.discord_id_to_timestamp(user.id)
+        current_year = date.today().year
+        
+        account_age = datetime.now() - timestamp
+        account_age_years = account_age.days // 365
+        approximate_age = account_age_years + random.randint(25, 35)
+        print(f'Time: {timestamp}, Age: {account_age}, Years: {account_age_years}, Approximate Age: {approximate_age}')
+                
 
         #user_hash = hash(user)
-        current_year = date.today().year
         #random.random()
 
         await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n')
@@ -163,7 +167,11 @@ class PostMortem(commands.Cog):
 
 
         if user:
-            if user.id == self.bot.user.id:
+
+            # Check if the user's data is in the cache
+            if user.id in self.cache:
+                user_data = self.cache[user.id]
+            elif user.id == self.bot.user.id:
                 user = ctx.message.author
                 bot_msg = [
                     _(
@@ -189,6 +197,7 @@ class PostMortem(commands.Cog):
                 # remnants of previous versions or unused variables.
 
                 #hash_result_asint = int(str(user_hash)[:2])
+                
                 life_expectancy = random.randint(25, 90)
                 approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
                 years_left = approximate_death_age - approximate_age
@@ -196,23 +205,27 @@ class PostMortem(commands.Cog):
                 weeks = years_left * 52
                 months = years_left * 12
                 death_year = current_year + years_left
+                cause_of_death = random.choice(self.deaths)
+                
 
                 # The below  code is assigning a risk factor based on the number of years left until death. If the
                 # years left are less than 10, the risk factor is "Extreme". If the years left are between 10 and 20,
                 # the risk factor is "High", and so on. The risk factor is assigned to the variable "risk_factor".
 
                 risk_factor = ""
-                if years_left in range(10):
+                if years_left <= 5:
+                    risk_factor = 'Death Wish'
+                if years_left in range(10,15):
                     risk_factor = 'Extreme'
-                elif years_left in range(10,20):
+                elif years_left in range(15,20):
                     risk_factor = 'High'
-                elif years_left in range(20,30):
+                elif years_left in range(20,35):
                     risk_factor = 'Medium'
-                elif years_left in range(30,40):
+                elif years_left in range(35,45):
                     risk_factor = 'Low'
-                elif years_left in range(40,50):
+                elif years_left in range(45,60):
                     risk_factor = 'Minimal'
-                elif years_left > 50: 
+                elif years_left > 60: 
                     risk_factor = 'Negligible'
 
 
@@ -233,27 +246,37 @@ class PostMortem(commands.Cog):
                 description="*Final Report Summary*",
                 color=discord.Color.dark_red(),
             )
-            
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
             embed.add_field(name="Subject", value=user.mention, inline=False)
-            embed.add_field(name="Death Progress", value=f"{progress_bar} {progress * 100:.1f}%", inline=False)
-            embed.add_field(name="Subject Risk Factors", value=f"{risk_factor}", inline=False)
-            embed.add_field(name="Approximate Age", value=f"{approximate_age}", inline=False)
-            embed.add_field(name="Death Year", value=f"{death_year}", inline=False)
-            embed.add_field(name="Approximate Death Age", value=f"{approximate_age + years_left}", inline=False)
+            embed.add_field(name="Death Progress", value=f"{user_data['progress_bar']} {progress * 100:.1f}%", inline=False)
+            embed.add_field(name="Subject Risk Factors", value=f"{user_data['risk_factor']}", inline=False)
+            embed.add_field(name="Approximate Age", value=f"{user_data['approximate_age']}", inline=False)
+            embed.add_field(name="Death Year", value=f"{user_data['death_year']}", inline=False)
+            embed.add_field(name="Approximate Death Age", value=f"{user_data['approximate_death_age']}", inline=False)
             embed.add_field(
                 name="Time Left",
-                value=f"{years_left} years... *or* {months} months... *or* {weeks} weeks... *or* {days} days",
+                value=user_data['time_left'],
                 inline=False,
             )
             embed.add_field(
                 name="** Post Mortem® Likely result of death:**",
-                value=f"*{choice(self.deaths)}*",
+                value=f"*{user_data['cause_of_death']}*",
                 inline=False,
             )
             embed.set_footer(text="\n Sponsored by Empties")
 
             await ctx.send(embed=embed)
+
+            user_data = {
+                    "progress_bar": progress_bar,
+                    "risk_factor": risk_factor,
+                    "approximate_age": approximate_age,
+                    "death_year": death_year,
+                    "approximate_death_age": approximate_death_age,
+                    "years_left": years_left,
+                    "cause_of_death": cause_of_death,
+                }
+            self.cache[user.id] = user_data
         else:
             await ctx.send("A subject is required for analysis... try postmortem @discorduser")
 
