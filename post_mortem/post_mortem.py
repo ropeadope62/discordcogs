@@ -165,7 +165,7 @@ class PostMortem(commands.Cog):
                     progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
 
                 final_report = ReportEmbeds(user, user_data)
-                embed = final_report.report_embed()
+                embed = final_report.report_embed(user, user_data)
 
                 #embed = discord.Embed(title="**Broad Street Labs™ - Post Mortem®**",description="*Final Report Summary*",color=discord.Color.dark_red(),)
                 #embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
