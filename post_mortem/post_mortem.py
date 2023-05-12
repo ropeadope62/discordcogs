@@ -7,7 +7,7 @@ import asyncio
 from redbot.core import commands
 import random
 from random import choice
-from datetime import date, datetime
+from datetime import datetime, date
 from time import sleep
 from typing import List
 from redbot.core.i18n import Translator
@@ -107,10 +107,10 @@ class PostMortem(commands.Cog):
         return '100'
 
     @staticmethod
-    def discord_id_to_timestamp(user_id: int) -> datetime.datetime:
+    def discord_id_to_timestamp(user_id: int) -> datetime:
         discord_epoch = 1420070400000
         timestamp = ((user_id >> 22) + discord_epoch) / 1000.0
-        return datetime.datetime.fromtimestamp(timestamp)
+        return datetime.fromtimestamp(timestamp)
     
 
     @commands.command()
@@ -123,7 +123,7 @@ class PostMortem(commands.Cog):
         """
         if user:
             timestamp = self.discord_id_to_timestamp(user.id)
-            account_age = datetime.datetime.now() - timestamp
+            account_age = datetime.now() - timestamp
             account_age_years = account_age.days // 365
             approximate_age = account_age_years + 30
             print(f'Time: {timestamp}, Age: {account_age}, Years: {account_age_years}, Approximate Age: {approximate_age}')
