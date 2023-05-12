@@ -167,7 +167,6 @@ class PostMortem(commands.Cog):
 
 
         if user:
-
             # Check if the user's data is in the cache
             if user.id in self.cache:
                 user_data = self.cache[user.id]
@@ -201,9 +200,9 @@ class PostMortem(commands.Cog):
                 life_expectancy = random.randint(25, 90)
                 approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
                 years_left = approximate_death_age - approximate_age
-                days = years_left * 365
-                weeks = years_left * 52
-                months = years_left * 12
+                days_left = years_left * 365
+                weeks_left = years_left * 52
+                months_left = years_left * 12
                 death_year = current_year + years_left
                 cause_of_death = random.choice(self.deaths)
                 
@@ -248,6 +247,9 @@ class PostMortem(commands.Cog):
                     "death_year": death_year,
                     "approximate_death_age": approximate_death_age,
                     "years_left": years_left,
+                    "months_left": months_left, 
+                    "weeks_left": weeks_left,
+                    "days_left": days_left,
                     "cause_of_death": cause_of_death,
                 }
             
@@ -265,11 +267,7 @@ class PostMortem(commands.Cog):
             embed.add_field(name="Approximate Age", value=f"{user_data['approximate_age']}", inline=False)
             embed.add_field(name="Death Year", value=f"{user_data['death_year']}", inline=False)
             embed.add_field(name="Approximate Death Age", value=f"{user_data['approximate_death_age']}", inline=False)
-            embed.add_field(
-                name="Time Left",
-                value=user_data['time_left'],
-                inline=False,
-            )
+            embed.add_field(name="Time Left", value=f"({user_data['years_left']} + 'years... or' {user_data['months_left']} + 'months... or' + {user_data['weeks_left']} + 'weeks... or' +  {user_data['days_left']} + 'days left to live.", inline=False)
             embed.add_field(
                 name="** Post Mortem® Likely result of death:**",
                 value=f"*{user_data['cause_of_death']}*",
