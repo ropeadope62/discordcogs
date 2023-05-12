@@ -151,6 +151,38 @@ class PostMortem(commands.Cog):
             # Check if the user's data is in the cache
             if user.id in self.cache:
                 user_data = self.cache[user.id]
+                await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n')
+                await asyncio.sleep(1)
+                msg = await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n')
+                await asyncio.sleep(2)
+                await msg.edit (content=f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n')
+                await asyncio.sleep(random.uniform(1, 2))
+                await msg.edit(content='Calculating Vitals...')
+                await asyncio.sleep(random.uniform(1, 2))
+                await msg.edit(content='Calculating Vitals...\nProcessing age covariates...')
+                await asyncio.sleep(random.uniform(1, 2))
+                await msg.edit(content=f"Calculating Vitals...\nProcessing age covariates...\n{user}'s approximate age is *{approximate_age}* years old.")
+                await asyncio.sleep(random.uniform(1, 2))
+                await msg.edit(content=f"Calculating Vitals...\nProcessing age covariates...\n{user}'s approximate age is *{approximate_age}* years old.\nAnalyzing *{user}'s* Life Choices...")
+                await asyncio.sleep(random.uniform(1, 2))
+                await msg.edit(content=f"Calculating Vitals...\nProcessing age covariates...\n{user}'s approximate age is *{approximate_age}* years old.\nAnalyzing *{user}'s* Life Choices...\nProcessing *{user}* mortality risk factors...")
+                await asyncio.sleep(random.uniform(1, 2))
+                await msg.edit(content=f"Calculating Vitals...\nProcessing age covariates...\n{user}'s approximate age is *{approximate_age}* years old.\nAnalyzing *{user}'s* Life Choices...\nProcessing *{user}* mortality risk factors...\nAnalysis Completed Successfully")
+                await asyncio.sleep(random.uniform(1, 2))
+        
+                embed = discord.Embed(title="**Broad Street Labs™ - Post Mortem®**",description="*Final Report Summary*",color=discord.Color.dark_red(),)
+                embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
+                embed.add_field(name="Subject", value=user.mention, inline=False)
+                embed.add_field(name="Death Progress", value=f"{user_data['progress_bar']} {progress * 100:.1f}%", inline=False)
+                embed.add_field(name="Subject Risk Factors", value=f"{user_data['risk_factor']}", inline=False)
+                embed.add_field(name="Approximate Age", value=f"{user_data['approximate_age']}", inline=False)
+                embed.add_field(name="Death Year", value=f"{user_data['death_year']}", inline=False)
+                embed.add_field(name="Approximate Death Age", value=f"{user_data['approximate_death_age']}", inline=False)
+                embed.add_field(name="Time Left", value=f"({user_data['years_left']} years... or {user_data['months_left']} months... or {user_data['weeks_left']} weeks... or {user_data['days_left']} days left to live.", inline=False)
+                embed.add_field(name="** Post Mortem® Likely result of death:**", value=f"*{user_data['cause_of_death']}*",inline=False,)
+                embed.set_footer(text="\n Sponsored by Empties")
+
+                await ctx.send(embed=embed)
                 
             elif user.id == self.bot.user.id:
                 user = ctx.message.author
