@@ -143,11 +143,6 @@ class PostMortem(commands.Cog):
         account_age_years = account_age.days // 365
         approximate_age = account_age_years + random.randint(25, 35)
         print(f'Time: {timestamp}, Age: {account_age}, Years: {account_age_years}, Approximate Age: {approximate_age}')
-                
-
-        #user_hash = hash(user)
-        #random.random()
-
         
         if user:
             # Check if the user's data is in the cache
@@ -159,25 +154,13 @@ class PostMortem(commands.Cog):
                 progress_bar_length = 30  # length of the progress bar
                 progress_bar_filled = int(progress * progress_bar_length)
                 progress_bar = "[" + ("=" * progress_bar_filled) 
-                progress_bar += " " * (progress_bar_length - progress_bar_filled) + "]"
+                progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
                 marker = "🔴"
                 if progress_bar_filled < progress_bar_length:  # only add marker if there is room
                     progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
 
                 final_report = ReportEmbeds(user, user_data)
                 embed = final_report.report_embed()
-
-                #embed = discord.Embed(title="**Broad Street Labs™ - Post Mortem®**",description="*Final Report Summary*",color=discord.Color.dark_red(),)
-                #embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
-                #embed.add_field(name="Subject", value=user.mention, inline=False)
-                #embed.add_field(name="Death Progress", value=f"{user_data['progress_bar']} {progress * 100:.1f}%", inline=False)
-                #embed.add_field(name="Subject Risk Factors", value=f"{user_data['risk_factor']}", inline=False)
-                #embed.add_field(name="Approximate Age", value=f"{user_data['approximate_age']}", inline=False)
-                #embed.add_field(name="Death Year", value=f"{user_data['death_year']}", inline=False)
-                #embed.add_field(name="Approximate Death Age", value=f"{user_data['approximate_death_age']}", inline=False)
-                #embed.add_field(name="Time Left", value=f"({user_data['years_left']} years... or {user_data['months_left']} months... or {user_data['weeks_left']} weeks... or {user_data['days_left']} days left to live.", inline=False)
-                #embed.add_field(name="** Post Mortem® Likely result of death:**", value=f"*{user_data['cause_of_death']}*",inline=False,)
-                #embed.set_footer(text="\n Sponsored by Empties")
 
                 await ctx.send(embed=embed)
                 
@@ -207,8 +190,7 @@ class PostMortem(commands.Cog):
                 # `months`, and `death_year`) are not used in the rest of the code and appear to be
                 # remnants of previous versions or unused variables.
 
-                #hash_result_asint = int(str(user_hash)[:2])
-                
+             
                 life_expectancy = random.randint(25, 90)
                 approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
                 years_left = approximate_death_age - approximate_age
@@ -217,23 +199,22 @@ class PostMortem(commands.Cog):
                 months_left = years_left * 12
                 death_year = current_year + years_left
                 cause_of_death = random.choice(self.deaths)
-                
-
-                # The below  code is assigning a risk factor based on the number of years left until death. If the
-                # years left are less than 10, the risk factor is "Extreme". If the years left are between 10 and 20,
-                # the risk factor is "High", and so on. The risk factor is assigned to the variable "risk_factor".
 
 
-            # Create the progress bar for the embed
+                # Create the progress bar for the embed
 
                 progress = approximate_age / (approximate_age + years_left)
                 progress_bar_length = 30  # length of the progress bar
                 progress_bar_filled = int(progress * progress_bar_length)
                 progress_bar = "[" + ("=" * progress_bar_filled) 
-                progress_bar += " " * (progress_bar_length - progress_bar_filled) + "]"
+                progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
                 marker = "🔴"
                 if progress_bar_filled < progress_bar_length:  # only add marker if there is room
                     progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
+
+                # The below  code is assigning a risk factor based on the number of years left until death. If the
+                # years left are less than 10, the risk factor is "Extreme". If the years left are between 10 and 20,
+                # the risk factor is "High", and so on. The risk factor is assigned to the variable "risk_factor".
 
         
                 risk_factor = ""
@@ -286,19 +267,9 @@ class PostMortem(commands.Cog):
                 await asyncio.sleep(random.uniform(1, 2))
                 await msg.edit(content=f"Calculating Vitals...\nProcessing age covariates...\n{user}'s approximate age is *{approximate_age}* years old.\nAnalyzing *{user}'s* Life Choices...\nProcessing *{user}* mortality risk factors...\nAnalysis Completed Successfully")
                 await asyncio.sleep(random.uniform(1, 2))
-        
-                embed = discord.Embed(title="**Broad Street Labs™ - Post Mortem®**",description="*Final Report Summary*",color=discord.Color.dark_red(),)
-                embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar.url)
-                embed.add_field(name="Subject", value=user.mention, inline=False)
-                embed.add_field(name="Death Progress", value=f"{user_data['progress_bar']} {progress * 100:.1f}%", inline=False)
-                embed.add_field(name="Subject Risk Factors", value=f"{user_data['risk_factor']}", inline=False)
-                embed.add_field(name="Approximate Age", value=f"{user_data['approximate_age']}", inline=False)
-                embed.add_field(name="Death Year", value=f"{user_data['death_year']}", inline=False)
-                embed.add_field(name="Approximate Death Age", value=f"{user_data['approximate_death_age']}", inline=False)
-                embed.add_field(name="Time Left", value=f"({user_data['years_left']} years... or {user_data['months_left']} months... or {user_data['weeks_left']} weeks... or {user_data['days_left']} days left to live.", inline=False)
-                embed.add_field(name="** Post Mortem® Likely result of death:**", value=f"*{user_data['cause_of_death']}*",inline=False,)
-                embed.set_footer(text="\n Sponsored by Empties")
 
+                final_report = ReportEmbeds(user, user_data)
+                embed = final_report.report_embed()
                 await ctx.send(embed=embed)
 
 
