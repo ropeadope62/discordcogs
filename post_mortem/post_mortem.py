@@ -129,7 +129,7 @@ class PostMortem(commands.Cog):
     
 
     @commands.command()
-    async def postmortem(self, ctx: commands.Context, action: str, user: discord.Member = None) -> None:
+    async def postmortem(self, ctx: commands.Context, user: discord.Member = None) -> None:
         """
           
         Post Mortem reads multiple user data points and returns an accurate assessment predicting their manner and time of death 
