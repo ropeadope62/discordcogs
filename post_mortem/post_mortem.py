@@ -263,6 +263,7 @@ class PostMortem(commands.Cog):
                         "weeks_left": weeks_left,
                         "days_left": days_left,
                         "cause_of_death": cause_of_death,
+                        "progress": progress
                     }
                 
                 self.cache[user.id] = user_data
