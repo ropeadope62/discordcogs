@@ -127,26 +127,29 @@ class PostMortem(commands.Cog):
         timestamp = ((user_id >> 22) + discord_epoch) / 1000.0
         return datetime.fromtimestamp(timestamp)
     
+    use_cache = False
 
     @commands.command()
-    async def postmortem(self, ctx: commands.Context, user: discord.Member = None) -> None:
+    async def postmortem(self, ctx: commands.Context, user: discord.Member = None, action: str) -> None:
         """
           
         Post Mortem reads multiple user data points and returns an accurate assessment predicting their manner and time of death 
 
         `user` the user you would like to assess.
         """
+        # Calculate approx age
+
         timestamp = self.discord_id_to_timestamp(user.id)
         current_year = date.today().year
-        
         account_age = datetime.now() - timestamp
         account_age_years = account_age.days // 365
         approximate_age = account_age_years + random.randint(25, 35)
         print(f'Time: {timestamp}, Age: {account_age}, Years: {account_age_years}, Approximate Age: {approximate_age}')
-        
+        if action.lower() == 'recalculate':
+            use_cache = False
         if user:
             # Check if the user's data is in the cache
-            if user.id in self.cache:                  
+            if user.id in self.cache and action is None:                   
                 user_data = self.cache[user.id]
                 await ctx.send(f'Existing report found for {user.name}, retrieving report from Post Mortem:registered: database...')
                 await asyncio.sleep(2)
@@ -177,20 +180,9 @@ class PostMortem(commands.Cog):
                 await ctx.send(f"{ctx.author.mention}{choice(bot_msg)}")
             
             else:
-                # Death calculations: 
-                # This block of code is calculating the life expectancy of the user and their
-                # approximate death age based on their current age. The `life_expectancy` variable is
-                # set to a random integer between 25 and 90, representing the average life expectancy.
-                # The `approximate_death_age` variable is then calculated based on whether the user's
-                # current age is less than the life expectancy or not. If it is less, then
-                # `approximate_death_age` is set to `life_expectancy`, otherwise it is set to
-                # `approximate_age` plus a random integer between 1 and 30. The `years_left` variable
-                # is then calculated as the difference between `approximate_death_age` and
-                # `approximate_age`. The remaining variables (`hash_result_asint`, `days`, `weeks`,
-                # `months`, and `death_year`) are not used in the rest of the code and appear to be
-                # remnants of previous versions or unused variables.
 
-             
+                # Death calculations: 
+            
                 life_expectancy = random.randint(25, 90)
                 approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
                 years_left = approximate_death_age - approximate_age
@@ -199,7 +191,6 @@ class PostMortem(commands.Cog):
                 months_left = years_left * 12
                 death_year = current_year + years_left
                 cause_of_death = random.choice(self.deaths)
-
 
                 # Create the progress bar for the embed
 
@@ -212,13 +203,10 @@ class PostMortem(commands.Cog):
                 if progress_bar_filled < progress_bar_length:  # only add marker if there is room
                     progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
 
-                # The below  code is assigning a risk factor based on the number of years left until death. If the 
-                # years left are less than 10, the risk factor is "Extreme". If the years left are between 10 and 20,
-                # the risk factor is "High", and so on. The risk factor is assigned to the variable "risk_factor".
+                # The below  code is assigning a risk factor based on the number of years left until death
 
-        
                 risk_factor = ""
-                if years_left <= 5:
+                if years_left <= 10:
                     risk_factor = 'Death Wish'
                 if years_left in range(10,15):
                     risk_factor = 'Extreme'
@@ -248,7 +236,7 @@ class PostMortem(commands.Cog):
                     }
                 
                 self.cache[user.id] = user_data
-                
+                use_cache = True
                 await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n')
                 await asyncio.sleep(1)
                 msg = await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n')
@@ -257,15 +245,21 @@ class PostMortem(commands.Cog):
                 await asyncio.sleep(random.uniform(1, 2))
                 await msg.edit(content='Calculating Vitals...')
                 await asyncio.sleep(random.uniform(1, 2))
-                await msg.edit(content='Calculating Vitals...\nProcessing age covariates...')
+                await msg.edit(content='Processing age covariates...')
                 await asyncio.sleep(random.uniform(1, 2))
-                await msg.edit(content=f"Calculating Vitals...\nProcessing age covariates...\n{user}'s approximate age is *{approximate_age}* years old.")
+                await msg.edit(content=f"{user}'s approximate age is *{approximate_age}* years old.")
                 await asyncio.sleep(random.uniform(1, 2))
-                await msg.edit(content=f"Calculating Vitals...\nProcessing age covariates...\n{user}'s approximate age is *{approximate_age}* years old.\nAnalyzing *{user}'s* Life Choices...")
+                await msg.edit(content=f"Analyzing *{user}'s* Life Choices...")
                 await asyncio.sleep(random.uniform(1, 2))
-                await msg.edit(content=f"Calculating Vitals...\nProcessing age covariates...\n{user}'s approximate age is *{approximate_age}* years old.\nAnalyzing *{user}'s* Life Choices...\nProcessing *{user}* mortality risk factors...")
+                await msg.edit(content=f"Evaluating *{user}* sleep patterns...")
+                await asyncio.sleep(random.uniform(1, 1))
+                await msg.edit(content=f"Evaluating *{user}* sexual habits...")
+                await asyncio.sleep(random.uniform(1, 1))
+                await msg.edit(content=f"Evaluating *{user}* dietary intake...")
+                await asyncio.sleep(random.uniform(1, 1))
+                await msg.edit(content=f"Processing *{user}* overall mortality risk factors...")
                 await asyncio.sleep(random.uniform(1, 2))
-                await msg.edit(content=f"Calculating Vitals...\nProcessing age covariates...\n{user}'s approximate age is *{approximate_age}* years old.\nAnalyzing *{user}'s* Life Choices...\nProcessing *{user}* mortality risk factors...\nAnalysis Completed Successfully")
+                await msg.edit(content=f"**Analysis Completed Successfully.**")
                 await asyncio.sleep(random.uniform(1, 2))
 
                 final_report = ReportEmbeds(user, user_data)
