@@ -130,7 +130,7 @@ class PostMortem(commands.Cog):
     use_cache = False
 
     @commands.command()
-    async def postmortem(self, ctx: commands.Context, user: discord.Member = None, action: str) -> None:
+    async def postmortem(self, ctx: commands.Context, user: discord.Member = None, action: str = None) -> None:
         """
           
         Post Mortem reads multiple user data points and returns an accurate assessment predicting their manner and time of death 
@@ -145,12 +145,15 @@ class PostMortem(commands.Cog):
         account_age_years = account_age.days // 365
         approximate_age = account_age_years + random.randint(25, 35)
         print(f'Time: {timestamp}, Age: {account_age}, Years: {account_age_years}, Approximate Age: {approximate_age}')
-        if action.lower() == 'recalculate':
+
+        use_cache = True
+        if action and action.lower() == 'recalculate':
             use_cache = False
+            
         if user:
             if use_cache:
                 # Check if the user's data is in the cache
-                if user.id in self.cache and action is None:                   
+                if action is None and user.id in self.cache:                   
                     user_data = self.cache[user.id]
                     await ctx.send(f'Existing report found for {user.name}, retrieving report from Post Mortem:registered: database...')
                     await asyncio.sleep(2)
