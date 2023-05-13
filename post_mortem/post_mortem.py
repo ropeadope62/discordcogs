@@ -179,7 +179,7 @@ class PostMortem(commands.Cog):
                 #embed.add_field(name="** Post Mortem® Likely result of death:**", value=f"*{user_data['cause_of_death']}*",inline=False,)
                 #embed.set_footer(text="\n Sponsored by Empties")
 
-                await ctx.send(embed)
+                await ctx.send(embed=embed)
                 
             elif user.id == self.bot.user.id:
                 user = ctx.message.author
