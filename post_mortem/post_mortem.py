@@ -212,7 +212,7 @@ class PostMortem(commands.Cog):
                 if progress_bar_filled < progress_bar_length:  # only add marker if there is room
                     progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
 
-                # The below  code is assigning a risk factor based on the number of years left until death. If the
+                # The below  code is assigning a risk factor based on the number of years left until death. If the 
                 # years left are less than 10, the risk factor is "Extreme". If the years left are between 10 and 20,
                 # the risk factor is "High", and so on. The risk factor is assigned to the variable "risk_factor".
 
