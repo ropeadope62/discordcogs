@@ -7,15 +7,8 @@ class ReportEmbeds:
         self.user_data = user_data
         self.embed = discord.Embed(title="**Broad Street Labs™ - Post Mortem®**",description="*Final Report Summary*",color=discord.Color.dark_red())
 
-    def report_embed(self):
-        return self._extracted_from_report_initial_embed_2()
-    
-    def report_initial_embed(self): 
-        
-        return self._extracted_from_report_initial_embed_2()
-
     # TODO Rename this here and in `report_embed` and `report_initial_embed`
-    def _extracted_from_report_initial_embed_2(self):
+    def report_embed(self):
         self.embed.set_author(
             name=self.user.display_name, icon_url=self.user.display_avatar.url
         )

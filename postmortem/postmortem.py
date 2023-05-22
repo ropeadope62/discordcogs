@@ -176,6 +176,9 @@ class PostMortem(commands.Cog):
             user_data = self.cache[user.id]
             await ctx.send(f'Existing report found for {user.name}, retrieving report from Post Mortem:registered: database...')
             await asyncio.sleep(2)
+            final_report = ReportEmbeds(user, user_data)
+            embed = final_report.report_embed()
+            await ctx.send(embed=embed)
         else: 
             # Death calculations:
             life_expectancy = random.randint(25, 90)
