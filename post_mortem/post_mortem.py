@@ -98,7 +98,7 @@ class PostMortem(commands.Cog):
     ]
 
 
-
+    use_cache = True
 
     def __init__(self, bot):
         self.bot = bot
@@ -127,7 +127,7 @@ class PostMortem(commands.Cog):
         timestamp = ((user_id >> 22) + discord_epoch) / 1000.0
         return datetime.fromtimestamp(timestamp)
     
-    use_cache = False
+
 
     @commands.command()
     async def postmortem(self, ctx: commands.Context, user: discord.Member = None, action: str = None) -> None:
@@ -143,15 +143,14 @@ class PostMortem(commands.Cog):
         current_year = date.today().year
         account_age = datetime.now() - timestamp
         account_age_years = account_age.days // 365
-        approximate_age = account_age_years + random.randint(20, 32)
+        approximate_age = account_age_years + random.randint(25, 35)
         print(f'Time: {timestamp}, Age: {account_age}, Years: {account_age_years}, Approximate Age: {approximate_age}')
 
-        use_cache = True
+
         if action and action.lower() == 'recalculate':
             use_cache = False
-            
-        if user:
-            if use_cache:
+
+        if user and use_cache:
                 # Check if the user's data is in the cache
                 if action is None and user.id in self.cache:                   
                     user_data = self.cache[user.id]
@@ -170,7 +169,7 @@ class PostMortem(commands.Cog):
                     embed = final_report.report_embed()
 
                     await ctx.send(embed=embed)
-                    
+
                 elif user.id == self.bot.user.id:
                     user = ctx.message.author
                     bot_msg = [
@@ -182,11 +181,11 @@ class PostMortem(commands.Cog):
                         ),
                     ]
                     await ctx.send(f"{ctx.author.mention}{choice(bot_msg)}")
-                
+
                 else:
 
                     # Death calculations: 
-                
+
                     life_expectancy = random.randint(25, 90)
                     approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
                     years_left = approximate_death_age - approximate_age
@@ -201,7 +200,7 @@ class PostMortem(commands.Cog):
                     progress = approximate_age / (approximate_age + years_left)
                     progress_bar_length = 30  # length of the progress bar
                     progress_bar_filled = int(progress * progress_bar_length)
-                    progress_bar = "[" + ("=" * progress_bar_filled) 
+                    progress_bar = "[" + ("=" * progress_bar_filled)
                     progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
                     marker = "🔴"
                     if progress_bar_filled < progress_bar_length:  # only add marker if there is room
@@ -238,7 +237,7 @@ class PostMortem(commands.Cog):
                             "cause_of_death": cause_of_death,
                             "progress": progress
                         }
-                    
+
                     self.cache[user.id] = user_data
                     use_cache = True
                     await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n')
@@ -263,7 +262,7 @@ class PostMortem(commands.Cog):
                     await asyncio.sleep(random.uniform(1, 1))
                     await msg.edit(content=f"Processing *{user}* overall mortality risk factors...")
                     await asyncio.sleep(random.uniform(1, 2))
-                    await msg.edit(content=f"**Analysis Completed Successfully.**")
+                    await msg.edit(content="**Analysis Completed Successfully.**")
                     await asyncio.sleep(random.uniform(1, 2))
 
                     final_report = ReportEmbeds(user, user_data)
