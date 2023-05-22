@@ -257,10 +257,10 @@ class PostMortem(commands.Cog):
             await asyncio.sleep(random.uniform(1, 2))
 
 
-        # Send the final report as an embed
-        final_report = ReportEmbeds(user, user_data)
-        embed = final_report.report_embed()
-        await ctx.send(embed=embed)
+            # Send the final report as an embed
+            final_report = ReportEmbeds(user, user_data)
+            embed = final_report.report_embed()
+            await ctx.send(embed=embed)
 
 
 
