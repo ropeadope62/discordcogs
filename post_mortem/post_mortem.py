@@ -181,7 +181,7 @@ class PostMortem(commands.Cog):
                 await ctx.send(embed=embed)
                 await ctx.send(f"{ctx.author.mention}{choice(bot_msg)}")
 
-            else:
+        else:
                 # Death calculations:
                 life_expectancy = random.randint(25, 90)
                 approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
@@ -267,8 +267,6 @@ class PostMortem(commands.Cog):
                 await ctx.send(embed=embed)
 
 
-        else:
-            await ctx.send("A subject is required for analysis... try postmortem @discorduser")
 
 
 
