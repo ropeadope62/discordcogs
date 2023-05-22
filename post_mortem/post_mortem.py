@@ -158,6 +158,7 @@ class PostMortem(commands.Cog):
                 _("No Vital Signs detected. This test is not intended for robots.."),
                 _("I cannot die I am immortal."),
             ]
+            await ctx.send(f"{ctx.author.mention}{choice(bot_msg)}")
             return
 
         if user and use_cache:
@@ -174,14 +175,7 @@ class PostMortem(commands.Cog):
                 marker = "🔴"
                 if progress_bar_filled < progress_bar_length:  # only add marker if there is room
                     progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
-
-                final_report = ReportEmbeds(user, user_data)
-                embed = final_report.report_embed()
-
-                await ctx.send(embed=embed)
-                await ctx.send(f"{ctx.author.mention}{choice(bot_msg)}")
-
-        else:
+            else:
                 # Death calculations:
                 life_expectancy = random.randint(25, 90)
                 approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
@@ -262,9 +256,11 @@ class PostMortem(commands.Cog):
                 await msg.edit(content="**Analysis Completed Successfully.**")
                 await asyncio.sleep(random.uniform(1, 2))
 
-                final_report = ReportEmbeds(user, user_data)
-                embed = final_report.report_embed()
-                await ctx.send(embed=embed)
+
+            # Send the final report as an embed
+            final_report = ReportEmbeds(user, user_data)
+            embed = final_report.report_embed()
+            await ctx.send(embed=embed)
 
 
 
