@@ -202,32 +202,32 @@ class PostMortem(commands.Cog):
                 risk_factor = ""
                 if years_left <= 10:
                     risk_factor = 'Death Wish'
-                if years_left in range(10,15):
+                elif years_left in range(10, 15):
                     risk_factor = 'Extreme'
-                elif years_left in range(15,20):
+                elif years_left in range(15, 20):
                     risk_factor = 'High'
-                elif years_left in range(20,35):
+                elif years_left in range(20, 35):
                     risk_factor = 'Medium'
-                elif years_left in range(35,45):
+                elif years_left in range(35, 45):
                     risk_factor = 'Low'
-                elif years_left in range(45,60):
+                elif years_left in range(45, 60):
                     risk_factor = 'Minimal'
-                elif years_left > 60: 
+                elif years_left > 60:
                     risk_factor = 'Negligible'
 
                 user_data = {
-                        "progress_bar": progress_bar,
-                        "risk_factor": risk_factor,
-                        "approximate_age": approximate_age,
-                        "death_year": death_year,
-                        "approximate_death_age": approximate_death_age,
-                        "years_left": years_left,
-                        "months_left": months_left, 
-                        "weeks_left": weeks_left,
-                        "days_left": days_left,
-                        "cause_of_death": cause_of_death,
-                        "progress": progress
-                    }
+                    "progress_bar": progress_bar,
+                    "risk_factor": risk_factor,
+                    "approximate_age": approximate_age,
+                    "death_year": death_year,
+                    "approximate_death_age": approximate_death_age,
+                    "years_left": years_left,
+                    "months_left": months_left,
+                    "weeks_left": weeks_left,
+                    "days_left": days_left,
+                    "cause_of_death": cause_of_death,
+                    "progress": progress
+                }
 
                 self.cache[user.id] = user_data
                 use_cache = True
@@ -235,7 +235,7 @@ class PostMortem(commands.Cog):
                 await asyncio.sleep(1)
                 msg = await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n')
                 await asyncio.sleep(2)
-                await msg.edit (content=f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n')
+                await msg.edit(content=f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n')
                 await asyncio.sleep(random.uniform(1, 2))
                 await msg.edit(content='Calculating Vitals...')
                 await asyncio.sleep(random.uniform(1, 2))
@@ -257,10 +257,10 @@ class PostMortem(commands.Cog):
                 await asyncio.sleep(random.uniform(1, 2))
 
 
-            # Send the final report as an embed
-            final_report = ReportEmbeds(user, user_data)
-            embed = final_report.report_embed()
-            await ctx.send(embed=embed)
+        # Send the final report as an embed
+        final_report = ReportEmbeds(user, user_data)
+        embed = final_report.report_embed()
+        await ctx.send(embed=embed)
 
 
 
