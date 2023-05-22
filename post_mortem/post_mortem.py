@@ -130,15 +130,16 @@ class PostMortem(commands.Cog):
 
 
     @commands.command()
-    async def postmortem(self, ctx: commands.Context, user: discord.Member = None, action: str = None):
+    async def postmortem(self, ctx: commands.Context, user: discord.Member = None, action_str: str = None):
         """
-          
-        Post Mortem reads multiple user data points and returns an accurate assessment predicting their manner and time of death 
+        Post Mortem reads multiple user data points and returns an accurate assessment predicting their manner and time of death.
 
         `user` the user you would like to assess.
         """
-        # Calculate approx age
 
+        use_cache = True
+
+        # Calculate approx age
         timestamp = self.discord_id_to_timestamp(user.id)
         current_year = date.today().year
         account_age = datetime.now() - timestamp
@@ -146,135 +147,133 @@ class PostMortem(commands.Cog):
         approximate_age = account_age_years + random.randint(25, 35)
         print(f'Time: {timestamp}, Age: {account_age}, Years: {account_age_years}, Approximate Age: {approximate_age}')
 
-        action = action.lower()
-        if action == 'recalculate':
+        action_str = action_str.lower()
+        if action_str == 'recalculate':
             use_cache = False
+            if user.id in self.cache:
+                del self.cache[user.id]
 
         if user.id == self.bot.user.id:
             user = ctx.message.author
             bot_msg = [
-                _(
-                    " No Vital Signs detected. This test is not intended for robots.."
-                ),
-                _(
-                    " I cannot die I am immortal."
-                ),
+                _("No Vital Signs detected. This test is not intended for robots.."),
+                _("I cannot die I am immortal."),
             ]
-            return        
-        if user and use_cache is True:
-                # Check if the user's data is in the cache
-                if action is None and user.id in self.cache:                   
-                    user_data = self.cache[user.id]
-                    await ctx.send(f'Existing report found for {user.name}, retrieving report from Post Mortem:registered: database...')
-                    await asyncio.sleep(2)
-                    progress = approximate_age / (approximate_age + user_data['years_left'])
-                    progress_bar_length = 30  # length of the progress bar
-                    progress_bar_filled = int(progress * progress_bar_length)
-                    progress_bar = "[" + ("=" * progress_bar_filled) 
-                    progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
-                    marker = "🔴"
-                    if progress_bar_filled < progress_bar_length:  # only add marker if there is room
-                        progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
+            return
 
-                    final_report = ReportEmbeds(user, user_data)
-                    embed = final_report.report_embed()
+        if user and use_cache:
+            # Check if the user's data is in the cache
+            if user.id in self.cache:
+                user_data = self.cache[user.id]
+                await ctx.send(f'Existing report found for {user.name}, retrieving report from Post Mortem:registered: database...')
+                await asyncio.sleep(2)
+                progress = approximate_age / (approximate_age + user_data['years_left'])
+                progress_bar_length = 30  # length of the progress bar
+                progress_bar_filled = int(progress * progress_bar_length)
+                progress_bar = "[" + ("=" * progress_bar_filled)
+                progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
+                marker = "🔴"
+                if progress_bar_filled < progress_bar_length:  # only add marker if there is room
+                    progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
 
-                    await ctx.send(embed=embed)
-                    await ctx.send(f"{ctx.author.mention}{choice(bot_msg)}")
+                final_report = ReportEmbeds(user, user_data)
+                embed = final_report.report_embed()
 
-                else:
-                    # Death calculations: 
+                await ctx.send(embed=embed)
+                await ctx.send(f"{ctx.author.mention}{choice(bot_msg)}")
 
-                    life_expectancy = random.randint(25, 90)
-                    approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
-                    years_left = approximate_death_age - approximate_age
-                    days_left = years_left * 365
-                    weeks_left = years_left * 52
-                    months_left = years_left * 12
-                    death_year = current_year + years_left
-                    cause_of_death = random.choice(self.deaths)
+            else:
+                # Death calculations:
+                life_expectancy = random.randint(25, 90)
+                approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
+                years_left = approximate_death_age - approximate_age
+                days_left = years_left * 365
+                weeks_left = years_left * 52
+                months_left = years_left * 12
+                death_year = current_year + years_left
+                cause_of_death = random.choice(self.deaths)
 
-                    # Create the progress bar for the embed
+                # Create the progress bar for the embed
 
-                    progress = approximate_age / (approximate_age + years_left)
-                    progress_bar_length = 30  # length of the progress bar
-                    progress_bar_filled = int(progress * progress_bar_length)
-                    progress_bar = "[" + ("=" * progress_bar_filled)
-                    progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
-                    marker = "🔴"
-                    if progress_bar_filled < progress_bar_length:  # only add marker if there is room
-                        progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
+                progress = approximate_age / (approximate_age + years_left)
+                progress_bar_length = 30  # length of the progress bar
+                progress_bar_filled = int(progress * progress_bar_length)
+                progress_bar = "[" + ("=" * progress_bar_filled)
+                progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
+                marker = "🔴"
+                if progress_bar_filled < progress_bar_length:  # only add marker if there is room
+                    progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
 
-                    # The below  code is assigning a risk factor based on the number of years left until death
+                # The below  code is assigning a risk factor based on the number of years left until death
 
-                    risk_factor = ""
-                    if years_left <= 10:
-                        risk_factor = 'Death Wish'
-                    if years_left in range(10,15):
-                        risk_factor = 'Extreme'
-                    elif years_left in range(15,20):
-                        risk_factor = 'High'
-                    elif years_left in range(20,35):
-                        risk_factor = 'Medium'
-                    elif years_left in range(35,45):
-                        risk_factor = 'Low'
-                    elif years_left in range(45,60):
-                        risk_factor = 'Minimal'
-                    elif years_left > 60: 
-                        risk_factor = 'Negligible'
+                risk_factor = ""
+                if years_left <= 10:
+                    risk_factor = 'Death Wish'
+                if years_left in range(10,15):
+                    risk_factor = 'Extreme'
+                elif years_left in range(15,20):
+                    risk_factor = 'High'
+                elif years_left in range(20,35):
+                    risk_factor = 'Medium'
+                elif years_left in range(35,45):
+                    risk_factor = 'Low'
+                elif years_left in range(45,60):
+                    risk_factor = 'Minimal'
+                elif years_left > 60: 
+                    risk_factor = 'Negligible'
 
-                    user_data = {
-                            "progress_bar": progress_bar,
-                            "risk_factor": risk_factor,
-                            "approximate_age": approximate_age,
-                            "death_year": death_year,
-                            "approximate_death_age": approximate_death_age,
-                            "years_left": years_left,
-                            "months_left": months_left, 
-                            "weeks_left": weeks_left,
-                            "days_left": days_left,
-                            "cause_of_death": cause_of_death,
-                            "progress": progress
-                        }
+                user_data = {
+                        "progress_bar": progress_bar,
+                        "risk_factor": risk_factor,
+                        "approximate_age": approximate_age,
+                        "death_year": death_year,
+                        "approximate_death_age": approximate_death_age,
+                        "years_left": years_left,
+                        "months_left": months_left, 
+                        "weeks_left": weeks_left,
+                        "days_left": days_left,
+                        "cause_of_death": cause_of_death,
+                        "progress": progress
+                    }
 
-                    self.cache[user.id] = user_data
-                    use_cache = True
-                    await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n')
-                    await asyncio.sleep(1)
-                    msg = await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n')
-                    await asyncio.sleep(2)
-                    await msg.edit (content=f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n')
-                    await asyncio.sleep(random.uniform(1, 2))
-                    await msg.edit(content='Calculating Vitals...')
-                    await asyncio.sleep(random.uniform(1, 2))
-                    await msg.edit(content='Processing age covariates...')
-                    await asyncio.sleep(random.uniform(1, 2))
-                    await msg.edit(content=f"{user}'s approximate age is *{approximate_age}* years old.")
-                    await asyncio.sleep(random.uniform(1, 2))
-                    await msg.edit(content=f"Analyzing *{user}'s* Life Choices...")
-                    await asyncio.sleep(random.uniform(1, 2))
-                    await msg.edit(content=f"Evaluating *{user}* sleep patterns...")
-                    await asyncio.sleep(random.uniform(1, 1))
-                    await msg.edit(content=f"Evaluating *{user}* sexual habits...")
-                    await asyncio.sleep(random.uniform(1, 1))
-                    await msg.edit(content=f"Evaluating *{user}* dietary intake...")
-                    await asyncio.sleep(random.uniform(1, 1))
-                    await msg.edit(content=f"Processing *{user}* overall mortality risk factors...")
-                    await asyncio.sleep(random.uniform(1, 2))
-                    await msg.edit(content="**Analysis Completed Successfully.**")
-                    await asyncio.sleep(random.uniform(1, 2))
+                self.cache[user.id] = user_data
+                use_cache = True
+                await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n')
+                await asyncio.sleep(1)
+                msg = await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n')
+                await asyncio.sleep(2)
+                await msg.edit (content=f'Thank you, {ctx.author.mention}. Beginning Post Mortem for *{user}*...\n')
+                await asyncio.sleep(random.uniform(1, 2))
+                await msg.edit(content='Calculating Vitals...')
+                await asyncio.sleep(random.uniform(1, 2))
+                await msg.edit(content='Processing age covariates...')
+                await asyncio.sleep(random.uniform(1, 2))
+                await msg.edit(content=f"{user}'s approximate age is *{approximate_age}* years old.")
+                await asyncio.sleep(random.uniform(1, 2))
+                await msg.edit(content=f"Analyzing *{user}'s* Life Choices...")
+                await asyncio.sleep(random.uniform(1, 2))
+                await msg.edit(content=f"Evaluating *{user}* sleep patterns...")
+                await asyncio.sleep(random.uniform(1, 1))
+                await msg.edit(content=f"Evaluating *{user}* sexual habits...")
+                await asyncio.sleep(random.uniform(1, 1))
+                await msg.edit(content=f"Evaluating *{user}* dietary intake...")
+                await asyncio.sleep(random.uniform(1, 1))
+                await msg.edit(content=f"Processing *{user}* overall mortality risk factors...")
+                await asyncio.sleep(random.uniform(1, 2))
+                await msg.edit(content="**Analysis Completed Successfully.**")
+                await asyncio.sleep(random.uniform(1, 2))
 
-                    final_report = ReportEmbeds(user, user_data)
-                    embed = final_report.report_embed()
-                    await ctx.send(embed=embed)
+                final_report = ReportEmbeds(user, user_data)
+                embed = final_report.report_embed()
+                await ctx.send(embed=embed)
 
 
         else:
-                await ctx.send("A subject is required for analysis... try postmortem @discorduser")
+            await ctx.send("A subject is required for analysis... try postmortem @discorduser")
 
 
 
 
-            
+        
 
 
