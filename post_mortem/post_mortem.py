@@ -172,22 +172,19 @@ class PostMortem(commands.Cog):
             await ctx.send(f"{ctx.author.mention}{choice(bot_msg)}")
             return
 
-        if user and use_cache:
-            # Check if the user's data is in the cache
-            if action_str is None and user.id in self.cache:
-                user_data = self.cache[user.id]
-                await ctx.send(f'Existing report found for {user.name}, retrieving report from Post Mortem:registered: database...')
-                await asyncio.sleep(2)
-            else:
-                # Death calculations:
-                life_expectancy = random.randint(25, 90)
-                approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
-                years_left = approximate_death_age - approximate_age
-                days_left = years_left * 365
-                weeks_left = years_left * 52
-                months_left = years_left * 12
-                death_year = current_year + years_left
-                cause_of_death = random.choice(self.deaths)
+        if user and use_cache and (action_str is None and user.id in self.cache):
+            user_data = self.cache[user.id]
+            await ctx.send(f'Existing report found for {user.name}, retrieving report from Post Mortem:registered: database...')
+            await asyncio.sleep(2)
+            # Death calculations:
+            life_expectancy = random.randint(25, 90)
+            approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
+            years_left = approximate_death_age - approximate_age
+            days_left = years_left * 365
+            weeks_left = years_left * 52
+            months_left = years_left * 12
+            death_year = current_year + years_left
+            cause_of_death = random.choice(self.deaths)
 
             # Create the progress bar for the embed
 
@@ -196,8 +193,8 @@ class PostMortem(commands.Cog):
             progress_bar_filled = int(progress * progress_bar_length)
             progress_bar = "[" + ("=" * progress_bar_filled)
             progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
-            marker = "🔴"
             if progress_bar_filled < progress_bar_length:  # only add marker if there is room
+                marker = "🔴"
                 progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
 
             # The below  code is assigning a risk factor based on the number of years left until death
