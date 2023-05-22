@@ -171,7 +171,7 @@ class PostMortem(commands.Cog):
             ]
             await ctx.send(f"{ctx.author.mention}{choice(bot_msg)}")
             return
-        user_data = {}
+
         if user and use_cache:
             # Check if the user's data is in the cache
             if action_str is None and user.id in self.cache:
