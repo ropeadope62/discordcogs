@@ -137,6 +137,17 @@ class PostMortem(commands.Cog):
         `user` the user you would like to assess.
         """
 
+        if user is None:
+            help_menu = (
+            "**Post Mortem Help Menu**\n"
+            "To use the command, mention a user.\n"
+            "Example: `>postmortem @username`\n\n"
+            "Available actions:\n"
+            "- `recalculate`: Recalculates the user's death assessment\n"
+        )
+            await ctx.send(help_menu)
+            return
+
         use_cache = True
 
         # Calculate approx age
