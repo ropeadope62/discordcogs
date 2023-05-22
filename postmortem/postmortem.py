@@ -176,6 +176,7 @@ class PostMortem(commands.Cog):
             user_data = self.cache[user.id]
             await ctx.send(f'Existing report found for {user.name}, retrieving report from Post Mortem:registered: database...')
             await asyncio.sleep(2)
+        else: 
             # Death calculations:
             life_expectancy = random.randint(25, 90)
             approximate_death_age = life_expectancy if approximate_age < life_expectancy else approximate_age + random.randint(1, 30)
