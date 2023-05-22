@@ -147,7 +147,6 @@ class PostMortem(commands.Cog):
         approximate_age = account_age_years + random.randint(25, 35)
         print(f'Time: {timestamp}, Age: {account_age}, Years: {account_age_years}, Approximate Age: {approximate_age}')
 
-        action_str = action_str.lower()
         if action_str == 'recalculate':
             use_cache = False
             if user.id in self.cache:
@@ -163,7 +162,7 @@ class PostMortem(commands.Cog):
 
         if user and use_cache:
             # Check if the user's data is in the cache
-            if user.id in self.cache:
+            if action_str is None and user.id in self.cache:
                 user_data = self.cache[user.id]
                 await ctx.send(f'Existing report found for {user.name}, retrieving report from Post Mortem:registered: database...')
                 await asyncio.sleep(2)
