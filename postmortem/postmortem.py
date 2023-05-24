@@ -130,23 +130,23 @@ class PostMortem(commands.Cog):
 
 
     @commands.command()
-    async def postmortem(self, ctx: commands.Context, user: discord.Member = "", action_str: str = ""):
+    async def postmortem(self, ctx: commands.Context, user: discord.Member = None, action_str: str = None):
         """
         Post Mortem reads multiple user data points and returns an accurate assessment predicting their manner and time of death.
 
         `user` the user you would like to assess.
         """
         try: 
-            if user == "":
-                help_menu = (
-                "**Post Mortem Help Menu**\n"
-                "To use the command, mention a user.\n"
-                "Example: `>postmortem @username`\n\n"
-                "Available actions:\n"
-                "- `recalculate`: Recalculates the user's death assessment\n"
-            )
-                await ctx.send(help_menu)
-                return
+            if user is None:
+                    help_menu = (
+                    "**Post Mortem Help Menu**\n"
+                    "To use the command, mention a user.\n"
+                    "Example: `>postmortem @username`\n\n"
+                    "Available actions:\n"
+                    "- `recalculate`: Recalculates the user's death assessment\n"
+                )
+                    await ctx.send(help_menu)
+                    return
 
             use_cache = True
 
@@ -172,7 +172,7 @@ class PostMortem(commands.Cog):
                 await ctx.send(f"{ctx.author.mention}{choice(bot_msg)}")
                 return
 
-            if user and use_cache and (action_str is "" and user.id in self.cache):
+            if user and use_cache and (action_str is None and user.id in self.cache):
                 user_data = self.cache[user.id]
                 await ctx.send(f'Existing report found for {user.name}, retrieving report from Post Mortem:registered: database...')
                 await asyncio.sleep(2)
