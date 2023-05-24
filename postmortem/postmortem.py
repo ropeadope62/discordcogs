@@ -155,7 +155,7 @@ class PostMortem(commands.Cog):
             current_year = date.today().year
             account_age = datetime.now() - timestamp
             account_age_years = account_age.days // 365
-            approximate_age = account_age_years + random.randint(25, 35)
+            approximate_age = account_age_years + random.randint(29, 37)
             print(f'Time: {timestamp}, Age: {account_age}, Years: {account_age_years}, Approximate Age: {approximate_age}')
 
             if action_str == 'recalculate':
