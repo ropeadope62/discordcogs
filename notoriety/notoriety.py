@@ -13,6 +13,9 @@ class Notoriety(commands.Cog):
         default_guild = {
             "titles": ['king','serf','noble', 'CEO of Cuckolding'], "req_nominations": 1
         }
+        default_user = {
+            "nominations": {}
+        }
         self.config.register_guild(**default_guild)
 
 
