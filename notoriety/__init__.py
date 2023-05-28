@@ -1,4 +1,5 @@
 from .notoriety import Notoriety 
+import asyncio
 
-def setup(bot):
-    bot.add_cog(Notoriety(bot))
+async def setup(bot):
+    await bot.add_cog(Notoriety(bot))
