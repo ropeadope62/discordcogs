@@ -85,7 +85,7 @@ class Notoriety(commands.Cog):
             await ctx.send(f"{user.mention} has already been nominated for the title '{title}'.")
             return
 
-        self.nominations[ctx.guild.id][user.id][title] += 1
+        self.nominations[ctx.guild.id][user.id][title] = 1
 
         if len(user_nominations) == req_nominations:
             await ctx.send(f"{user.mention} has been nominated {req_nominations} times for various titles. Voting has started.")
