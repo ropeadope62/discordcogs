@@ -40,7 +40,7 @@ class Notoriety(commands.Cog):
                 await ctx.send("This title does not exist")
             else:
                 titles.remove(title)
-                await ctx.send(f"Title '{title} removed successfully ")
+                await ctx.send(f"Title {title} removed successfully")
 
     @commands.guild_only()
     @commands.group()
@@ -53,7 +53,7 @@ class Notoriety(commands.Cog):
         """Notoriety: Set the number of required nominations to call a vote"""
         async with self.config.guild(ctx.guild).req_nominations() as req_nominations:
             await ctx.send(req_nominations)
-            if req_nominations[0] <= 5:
+            if req_nominations <= 5:
                 await ctx.send("The number of required nominations can be set from 5 to 10")
             else: 
                 req_nominations = req_nominations 
@@ -116,13 +116,13 @@ class Notoriety(commands.Cog):
                 reaction, voter = await self.bot.wait_for("reaction_add", check=check, timeout=300)
                 self.votes[ctx.guild.id][user.id] += 1
                 voters.add(voter.id)
-                remaining_votes = 10 - self.votes[ctx.guild.id][user.id]
+                remaining_votes = 1 - self.votes[ctx.guild.id][user.id]
                 await ctx.send(f"{voter.mention} voted 'yes'. {remaining_votes} more 'yes' votes needed.")
             except asyncio.TimeoutError:
                 await ctx.send(f"Voting for {user.mention} to receive the title '{title}' has ended due to inactivity.")
                 return
 
-        await ctx.send(f"{user.mention} has received 10 'yes' votes and has been awarded the title '{title}'.")
+        await ctx.send(f"{user.mention} has received 1t 'yes' votes and has been awarded the title '{title}'.")
 
         # Reset votes and nominations for this user and title
         self.votes[ctx.guild.id][user.id] = 0
