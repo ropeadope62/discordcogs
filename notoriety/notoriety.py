@@ -19,6 +19,8 @@ class Notoriety(commands.Cog):
         if not os.path.isfile("notoriety_titles.json"):
             return {}
         with open("notoriety_titles.json", 'r') as f:
+            titles = json.load(f)
+            print(titles)
             return json.load(f)
     
     @commands.guild_only()
