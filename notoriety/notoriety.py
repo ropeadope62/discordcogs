@@ -85,7 +85,7 @@ class Notoriety(commands.Cog):
 
         if len(user_nominations) == req_nominations:
             await ctx.send(f"{user.mention} has been nominated {req_nominations} times for various titles. Voting has started.")
-            await self.initiate_voting(ctx, user, None)
+            await self.initiate_voting(ctx, user)
         elif title_nominations_count == 1:
             await ctx.send(f"{user.mention} has been nominated for the title '{title}'. {req_nominations - nominations_count} more nominations needed for other titles.")
         else:
