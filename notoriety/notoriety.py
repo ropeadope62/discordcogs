@@ -21,7 +21,7 @@ class Notoriety(commands.Cog):
         with open("notoriety_titles.json", 'r') as f:
             return json.load(f)
     
-    @commands.command()
+    @commands.guild_only()
     @commands.group()
     async def notoriety(self, ctx):
         if ctx.invoked_subcommand is None:
