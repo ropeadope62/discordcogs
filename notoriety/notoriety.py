@@ -1,133 +1,80 @@
 import discord
-from redbot.core import Config, commands, checks
-from collections import defaultdict
+from discord.ext import commands
+from datetime import datetime, timedelta
 import asyncio
+import json
+import os
 
 class Notoriety(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=402944901290)
-        self.nominations = defaultdict(lambda: defaultdict(int))
-        self.votes = defaultdict(lambda: defaultdict(int))
+        self.votes = {}
+        self.titles = self.load_titles()
+        self.nominee = None
+        self.nominator = None
+        self.current_title = None
+        self.cooldowns = {}
 
-        default_guild = {
-            "titles": ['king','serf','noble', 'CEO of Cuckolding'], "req_nominations": 1
-        }
-        default_user = {
-            "nominations": {}
-        }
-        self.config.register_guild(**default_guild)
+    def load_titles(self):
+        if not os.path.isfile("notoriety_titles.json"):
+            return {}
+        with open("notoriety_titles.json", 'r') as f:
+            return json.load(f)
 
-
-    @commands.guild_only()
     @commands.group()
     async def notoriety(self, ctx):
-        """Notoriety: Manage Notoriety Titles"""
-        pass
+        if ctx.invoked_subcommand is None:
+            await ctx.send('Invalid Notoriety command passed...')
 
-    @notoriety.command(name="add")
-    async def _add_title(self, ctx, *, title: str):
-        """Notoriety: Add a new title to the list """
-        async with self.config.guild(ctx.guild).titles() as titles: 
-            if title in titles:
-                await ctx.send("This title already exists.")
-            else: 
-                titles.append(title)
-                await ctx.send(f"Title {title} added successfully. ")
-
-    @commands.guild_only()
-    @notoriety.command(name="remove")
-    async def _remove_title(self, ctx, *, title: str):
-        """Notoriety: Remove a title from the list"""
-        async with self.config.guild(ctx.guild).titles() as titles: 
-            if title not in titles: 
-                await ctx.send("This title does not exist")
-            else:
-                titles.remove(title)
-                await ctx.send(f"Title {title} removed successfully")
-
-    @commands.guild_only()
     @notoriety.command()
-    async def nominations(self, ctx):
-        """Notoriety: Manage Nomination Rules"""
-        pass
-
-    @notoriety.command(name="required")
-    async def _nominations_required(self, ctx, req_nominations: int):
-        """Notoriety: Set the number of required nominations to call a vote"""
-        async with self.config.guild(ctx.guild).req_nominations() as req_nominations:
-            await ctx.send(req_nominations)
-            if req_nominations <= 5:
-                await ctx.send("The number of required nominations can be set from 5 to 10")
-            else: 
-                req_nominations = req_nominations 
-
-    @commands.guild_only()
-    @notoriety.command()
-    async def nominate(self, ctx, user: discord.Member, title: str):
-        """Nominate a user for a Notoriety tile."""
-        
-        req_nominations = await self.config.guild(ctx.guild).req_nominations()
-
-        titles = await self.config.guild(ctx.guild).titles()
-        if title not in titles:
-            await ctx.send("This title does not exist.")
-            return
-        
-        user_nominations = self.nominations[ctx.guild.id].get(user.id, {})
-        nominations_count = sum(user_nominations.values())
-        if nominations_count >= req_nominations:
-            await ctx.send(f"{user.mention} has already been nominated {req_nominations} times for various titles. Voting has started.")
+    async def nominate(self, ctx, member: commands.MemberConverter, title: str):
+        if self.nominee is not None:
+            await ctx.send('A vote is currently in progress.')
             return
 
-        title_nominations_count = user_nominations.get(title, 0)
-        if title_nominations_count >= 1:
-            await ctx.send(f"{user.mention} has already been nominated for the title '{title}'.")
+        if title not in self.titles:
+            await ctx.send('Invalid title')
             return
 
-        self.nominations[ctx.guild.id][user.id][title] = 1
+        if member in self.cooldowns and title in self.cooldowns[member] and self.cooldowns[member][title] > datetime.now():
+            await ctx.send('Title cooldown still active.')
+            return
 
-        if len(user_nominations) == req_nominations:
-            await ctx.send(f"{user.mention} has been nominated {req_nominations} times for various titles. Voting has started.")
-            await self.initiate_voting(ctx, user, title)
-        elif title_nominations_count == 1:
-            await ctx.send(f"{user.mention} has been nominated for the title '{title}'. {req_nominations - nominations_count} more nominations needed for other titles.")
+        await ctx.send(f'{ctx.author.mention} has nominated {member.mention} for title {title}. Please vote using ">notoriety vote yes" or ">notoriety vote no". You have 5 minutes.')
+
+        self.nominee = member
+        self.nominator = ctx.author
+        self.current_title = title
+
+        await asyncio.sleep(300)
+
+        yes_votes = self.votes.get('yes', 0)
+
+        if yes_votes >= self.titles[title]['required_votes']:
+            await member.add_roles(discord.utils.get(ctx.guild.roles, name=title))
+            if member not in self.cooldowns:
+                self.cooldowns[member] = {}
+            self.cooldowns[member][title] = datetime.now() + timedelta(days=30)
+            await ctx.send(f'{member.mention} has been awarded the title {title}!')
         else:
-            remaining = 1 - title_nominations_count
-            await ctx.send(f"{user.mention} has been nominated for the title '{title}'. {remaining} more nominations needed for this title.")
+            await ctx.send(f'{member.mention} has not been awarded the title {title}.')
 
-    async def initiate_voting(self, ctx, user, title):
         self.votes = {}
-        self.votes[ctx.guild.id] = {}
-        self.votes[ctx.guild.id][user.id] = 0
-        voters = set()
+        self.nominee = None
+        self.nominator = None
+        self.current_title = None
 
-        def check(reaction, voter):
-            return (
-                str(reaction.emoji) == '👍'
-                and voter != self.bot.user
-                and reaction.message.id == vote_message.id
-                and voter.id not in voters
-            )
+    @notoriety.command()
+    async def vote(self, ctx, vote: str):
+        if self.nominee is None:
+            await ctx.send('No vote is currently in progress.')
+            return
+        if vote not in ['yes', 'no']:
+            await ctx.send('Invalid vote, please vote either "yes" or "no".')
+            return
+        if ctx.author in self.votes:
+            await ctx.send('You have already voted.')
+            return
 
-
-        vote_message = await ctx.send(f"Vote to award {user.mention} the title '{title}'. React with 👍 to vote 'yes'.")
-        
-        await vote_message.add_reaction('👍')
-
-        while self.votes[ctx.guild.id][user.id] < 2:
-            try:
-                reaction, voter = await self.bot.wait_for("reaction_add", check=check, timeout=300)
-                self.votes[ctx.guild.id][user.id] += 1
-                voters.add(voter.id)
-                remaining_votes = 1 - self.votes[ctx.guild.id][user.id]
-                await ctx.send(f"{voter.mention} voted 'yes'. {remaining_votes} more 'yes' votes needed.")
-            except asyncio.TimeoutError:
-                await ctx.send(f"Voting for {user.mention} to receive the title '{title}' has ended due to inactivity.")
-                return
-
-        await ctx.send(f"{user.mention} has received 1t 'yes' votes and has been awarded the title '{title}'.")
-
-        # Reset votes and nominations for this user and title
-        self.votes[ctx.guild.id][user.id] = 0
-        self.nominations[ctx.guild.id][user.id] = defaultdict(int)
+        self.votes[ctx.author] = vote
+        await ctx.send(f'{ctx.author.mention} voted {vote}!')
