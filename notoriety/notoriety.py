@@ -35,6 +35,7 @@ class Notoriety(commands.Cog):
                 titles.append(title)
                 await ctx.send(f"Title {title} added successfully. ")
 
+    @commands.guild_only()
     @notoriety.command(name="remove")
     async def _remove_title(self, ctx, *, title: str):
         """Notoriety: Remove a title from the list"""
@@ -46,12 +47,12 @@ class Notoriety(commands.Cog):
                 await ctx.send(f"Title {title} removed successfully")
 
     @commands.guild_only()
-    @commands.command()
+    @notoriety.command()
     async def nominations(self, ctx):
         """Notoriety: Manage Nomination Rules"""
         pass
 
-    @nominations.command(name="required")
+    @notoriety.command(name="required")
     async def _nominations_required(self, ctx, req_nominations: int):
         """Notoriety: Set the number of required nominations to call a vote"""
         async with self.config.guild(ctx.guild).req_nominations() as req_nominations:
@@ -62,7 +63,7 @@ class Notoriety(commands.Cog):
                 req_nominations = req_nominations 
 
     @commands.guild_only()
-    @commands.command()
+    @notoriety.command()
     async def nominate(self, ctx, user: discord.Member, title: str):
         """Nominate a user for a Notoriety tile."""
         
