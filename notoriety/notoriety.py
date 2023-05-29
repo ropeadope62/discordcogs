@@ -15,12 +15,8 @@ class Notoriety(commands.Cog):
         self.current_title = None
         self.cooldowns = {}
 
-    def load_titles(self):
-        if not os.path.isfile("notoriety_titles.json"):
-            return {}
+    def load_titles():
         with open("notoriety_titles.json", 'r') as f:
-            titles = json.load(f)
-            print(titles)
             return json.load(f)
     
     @commands.guild_only()
