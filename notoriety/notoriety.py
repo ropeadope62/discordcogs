@@ -51,7 +51,7 @@ class Notoriety(commands.Cog):
 
         await asyncio.sleep(300)
 
-        yes_votes = self.votes.get('yes', 0)
+        yes_votes = len(self.votes.get('yes', 0))
 
         if yes_votes >= self.titles[title]['required_votes']:
             await user.add_roles(discord.utils.get(ctx.guild.roles, name=title))
