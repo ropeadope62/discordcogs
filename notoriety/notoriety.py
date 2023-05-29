@@ -18,7 +18,7 @@ class Notoriety(commands.Cog):
     def load_titles(self):
         with open("notoriety_titles.json", 'r') as f:
             titles = json.load(f)
-        return titles
+        return titles.values()
     
     @commands.guild_only()
     @commands.group()
