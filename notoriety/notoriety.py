@@ -42,13 +42,13 @@ class Notoriety(commands.Cog):
             await ctx.send('Invalid title')
             return
 
-        if member in self.cooldowns and title in self.cooldowns[member] and self.cooldowns[member][title] > datetime.now():
+        if user in self.cooldowns and title in self.cooldowns[user] and self.cooldowns[user][title] > datetime.now():
             await ctx.send('Title cooldown still active.')
             return
 
-        await ctx.send(f'{ctx.author.mention} has nominated {member.mention} for title {title}. Please vote using ">notoriety vote yes" or ">notoriety vote no". You have 5 minutes.')
+        await ctx.send(f'{ctx.author.mention} has nominated {user.mention} for title {title}. Please vote using ">notoriety vote yes" or ">notoriety vote no". You have 5 minutes.')
 
-        self.nominee = member
+        self.nominee = user
         self.nominator = ctx.author
         self.current_title = title
 
@@ -57,13 +57,13 @@ class Notoriety(commands.Cog):
         yes_votes = self.votes.get('yes', 0)
 
         if yes_votes >= self.titles[title]['required_votes']:
-            await member.add_roles(discord.utils.get(ctx.guild.roles, name=title))
-            if member not in self.cooldowns:
-                self.cooldowns[member] = {}
-            self.cooldowns[member][title] = datetime.now() + timedelta(days=30)
-            await ctx.send(f'{member.mention} has been awarded the title {title}!')
+            await user.add_roles(discord.utils.get(ctx.guild.roles, name=title))
+            if user not in self.cooldowns:
+                self.cooldowns[user] = {}
+            self.cooldowns[user][title] = datetime.now() + timedelta(days=30)
+            await ctx.send(f'{user.mention} has been awarded the title {title}!')
         else:
-            await ctx.send(f'{member.mention} has not been awarded the title {title}.')
+            await ctx.send(f'{user.mention} has not been awarded the title {title}.')
 
         self.votes = {}
         self.nominee = None
