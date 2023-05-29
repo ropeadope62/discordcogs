@@ -1,15 +1,2 @@
-{
-    "titles": [
-        {
-            "title": "Mayor of Broadstreet",
-            "required_votes": 10
-        },
-        {
-            "title": "Head Chemist",
-            "required_votes": 15
-        },
-        {
-            "title": "Clown",
-            "required_votes": 1
-        }]
-}
+
+{"titles": ['Hobo', 'Mayor', 'Crack Ho']}
