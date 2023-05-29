@@ -15,9 +15,10 @@ class Notoriety(commands.Cog):
         self.current_title = None
         self.cooldowns = {}
 
-    def load_titles():
+    def load_titles(self):
         with open("notoriety_titles.json", 'r') as f:
-            return json.load(f)
+            titles = json.load(f)
+        return titles
     
     @commands.guild_only()
     @commands.group()
