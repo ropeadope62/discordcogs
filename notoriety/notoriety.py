@@ -16,9 +16,9 @@ class Notoriety(commands.Cog):
         self.cooldowns = {}
 
     def load_titles(self):
-        if not os.path.isfile("C:\\Users\\davec\\OneDrive\\Documents\\GitHub\\discordcogs\\notoriety\\notoriety_titles.json"):
+        if not os.path.isfile("notoriety_titles.json"):
             return {}
-        with open("C:\\Users\\davec\\OneDrive\\Documents\\GitHub\\discordcogs\\notoriety\\notoriety_titles.json", 'r') as f:
+        with open("notoriety_titles.json", 'r') as f:
             titles = json.load(f)
             print(titles)
             return json.load(f)
