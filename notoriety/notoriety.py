@@ -30,7 +30,7 @@ class Notoriety(commands.Cog):
             await ctx.send('Invalid Notoriety command passed...')
 
     @notoriety.command()
-    async def nominate(self, ctx, member: commands.MemberConverter, title: str):
+    async def nominate(self, ctx: commands.Context, user: discord.Member, title: str = None):
         if self.nominee is not None:
             print('A vote is currently in progress.')
             await ctx.send('A vote is currently in progress.')
