@@ -32,10 +32,13 @@ class Notoriety(commands.Cog):
     @notoriety.command()
     async def nominate(self, ctx, member: commands.MemberConverter, title: str):
         if self.nominee is not None:
+            print('A vote is currently in progress.')
             await ctx.send('A vote is currently in progress.')
             return
-
+        
         if title not in self.titles:
+            print('title')
+            print(f'{self.titles}')
             await ctx.send('Invalid title')
             return
 
