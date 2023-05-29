@@ -17,8 +17,8 @@ class Notoriety(commands.Cog):
 
     def load_titles(self):
         with open("notoriety_titles.json", 'r') as f:
-            titles = json.load(f)
-        return titles.values()
+            data = json.load(f)
+        return data['titles']
     
     @commands.guild_only()
     @commands.group()
@@ -34,7 +34,7 @@ class Notoriety(commands.Cog):
             return
         
         if title not in self.titles:
-            print('title')
+            print(title)
             print(f'{self.titles}')
             await ctx.send('Invalid title')
             return
