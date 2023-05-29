@@ -1,2 +1,5 @@
-
-{"titles": ["Hobo", "Mayor", "Crack Ho"]}
+{
+    "Hobo": {"required_votes": 1},
+    "Mayor": {"required_votes": 10},
+    "Crack Ho": {"required_votes": 1}
+}
