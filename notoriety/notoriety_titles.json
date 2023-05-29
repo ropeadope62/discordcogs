@@ -1,26 +1,15 @@
 {
-    "Mayor of Broadstreet": {
-        "required_votes": 15
-    },
-    "Head Chemist": {
-        "required_votes": 10
-    },
-    "Lot Lizard": {
-        "required_votes": 7
-    },
-    "Clown": {
-        "required_votes": 5
-    },
-    "Pimp": {
-        "required_votes": 3
-    },
-    "Hobo": {
-        "required_votes": 1
-    },
-    "Smoke Show":{
-        "required_votes": 1
-    }, 
-    "Juicepig":{
-        "required_votes": 1
-    }
-    }
+    "titles": [
+        {
+            "title": "Mayor of Broadstreet",
+            "required_votes": 10
+        },
+        {
+            "title": "Head Chemist",
+            "required_votes": 15
+        },
+        {
+            "title": "Clown",
+            "required_votes": 1
+        }]
+}
