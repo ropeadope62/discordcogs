@@ -18,7 +18,7 @@ class Notoriety(commands.Cog):
     def load_titles(self):
         with open("notoriety_titles.json", 'r') as f:
             data = json.load(f)
-        return data.keys()
+        return data
     
     @commands.guild_only()
     @commands.group()
@@ -49,7 +49,7 @@ class Notoriety(commands.Cog):
         self.nominator = ctx.author
         self.current_title = title
 
-        await asyncio.sleep(5)
+        await asyncio.sleep(20)
 
         yes_votes = self.votes.get('yes', 0)
 
