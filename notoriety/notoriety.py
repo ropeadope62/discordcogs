@@ -49,12 +49,12 @@ class Notoriety(commands.Cog):
         self.nominator = ctx.author
         self.current_title = title
 
-        await asyncio.sleep(300)
+        await asyncio.sleep(5)
 
-        yes_votes = len(self.votes.get('yes', 0))
+        yes_votes = self.votes.get('yes', 0)
 
         if yes_votes >= self.titles[title]['required_votes']:
-            await user.add_roles(discord.utils.get(ctx.guild.roles, name=title))
+            await self.titles[title]['Title Holder'].remove_roles(self.titles[title]['Role'])
             if user not in self.cooldowns:
                 self.cooldowns[user] = {}
             self.cooldowns[user][title] = datetime.now() + timedelta(days=30)

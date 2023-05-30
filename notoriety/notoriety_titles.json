@@ -1,5 +1,5 @@
 {
-    "Hobo": {"required_votes": 1},
-    "Mayor": {"required_votes": 10},
-    "Crack Ho": {"required_votes": 1}
+    "Hobo": {"required_votes": 1, "title_holder": "None"},
+    "Mayor": {"required_votes": 10, "title_holder": "None"},
+    "Crack Ho": {"required_votes": 1, "title_holder": "None"}
 }
