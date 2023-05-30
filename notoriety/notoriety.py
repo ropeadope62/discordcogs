@@ -13,6 +13,7 @@ class Notoriety(commands.Cog):
         self.nominee = None
         self.nominator = None
         self.cooldowns = {}
+        self.current_title = None
 
     def load_titles(self):
         with open("notoriety_titles.json", 'r') as f:
@@ -59,10 +60,12 @@ class Notoriety(commands.Cog):
         yes_votes = self.votes.get('yes', 0)
 
         if yes_votes >= self.titles[title]['required_votes']:
+            print(yes_votes)
+            print(self.titles[title]['required_votes'])
            # add the users id to notoriety_titles.json
             await self.add_title(user, title)
-        
             if user not in self.cooldowns:
+                print(self.cooldowns)
                 self.cooldowns[user] = {}
             self.cooldowns[user][title] = datetime.now() + timedelta(days=30)
             await ctx.send(f'{user.mention} has been awarded the title {title}!')
