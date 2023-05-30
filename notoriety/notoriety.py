@@ -12,13 +12,18 @@ class Notoriety(commands.Cog):
         self.titles = self.load_titles()
         self.nominee = None
         self.nominator = None
-        self.current_title = None
         self.cooldowns = {}
 
     def load_titles(self):
         with open("notoriety_titles.json", 'r') as f:
             data = json.load(f)
         return data
+
+    async def add_title(self, user, title):
+        self.titles[title]['title_holder'].append(user.id)
+        with open("notoriety_titles.json", 'w') as f:
+            json.dump(self.titles, f)
+
     
     @commands.guild_only()
     @commands.group()
@@ -54,7 +59,9 @@ class Notoriety(commands.Cog):
         yes_votes = self.votes.get('yes', 0)
 
         if yes_votes >= self.titles[title]['required_votes']:
-            await self.titles[title]['Title Holder'].remove_roles(self.titles[title]['Role'])
+           # add the users id to notoriety_titles.json
+            await self.add_title(user, title)
+        
             if user not in self.cooldowns:
                 self.cooldowns[user] = {}
             self.cooldowns[user][title] = datetime.now() + timedelta(days=30)
@@ -62,10 +69,6 @@ class Notoriety(commands.Cog):
         else:
             await ctx.send(f'{user.mention} has not been awarded the title {title}.')
 
-        self.votes = {}
-        self.nominee = None
-        self.nominator = None
-        self.current_title = None
 
     @notoriety.command()
     async def vote(self, ctx, vote: str):
