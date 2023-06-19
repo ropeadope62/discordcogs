@@ -54,7 +54,7 @@ class Notoriety(commands.Cog):
         else:
             await ctx.send("Please provide a positive number.")
 
-    @commands.command()
+    @notoriety.command()
     @checks.admin_or_permissions(manage_messages=True)
     async def vote_threshold(self, ctx, threshold: int):
         """Set the number of votes required to assign a title"""
