@@ -1,5 +1,9 @@
 {
-    "Hobo": {"required_votes": 1, "title_holder": "None"},
-    "Mayor": {"required_votes": 10, "title_holder": "None"},
-    "Crack Ho": {"required_votes": 1, "title_holder": "None"}
-}
+    "Titles": [
+      "Hobo",
+      "Crack Whore",
+      "PIMP",
+      "Lot Lizard",
+      "Class Clown"
+    ]
+  }
