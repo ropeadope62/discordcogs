@@ -26,11 +26,11 @@ class Notoriety(commands.Cog):
     
     @commands.group()
     @checks.admin_or_permissions(manage_messages=True)
-    async def notoriety(self, ctx, title: str, user: Union[discord.Member, discord.User] = None):
+    async def notoriety(self, ctx):
         """Command for nomination, voting and assignment of user titles"""
 
     @notoriety.command()
-    async def nominate(self, ctx, user: Union[discord.Member, discord.User], title: str):
+    async def nominate(self, ctx, user: discord.Member, title: str):
         """Nominate a user for a title"""
         async with self.config.guild(ctx.guild).nominations() as nominations:
             if user.id not in nominations[title]:
