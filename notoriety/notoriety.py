@@ -22,8 +22,6 @@ class Notoriety(commands.Cog):
         }
         self.config.register_guild(**default_guild)
 
-    
-
 
     @commands.command()
     @commands.group()
