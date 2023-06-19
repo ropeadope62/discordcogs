@@ -23,7 +23,7 @@ class Notoriety(commands.Cog):
         self.config.register_guild(**default_guild)
 
 
-    @commands.command()
+    
     @commands.group()
     @checks.admin_or_permissions(manage_messages=True)
     async def notoriety(self, ctx, title: str, user: Union[discord.Member, discord.User] = None):
