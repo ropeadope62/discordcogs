@@ -16,8 +16,8 @@ class Notoriety(commands.Cog):
             "nominations": defaultdict(dict),
             "votes": defaultdict(int),
             "nomination_counts": defaultdict(int),
-            "nomination_threshold": 5,
-            "vote_threshold": 10,
+            "nomination_threshold": 1,
+            "vote_threshold": 1,
             "duration": 30
         }
         self.config.register_guild(**default_guild)
