@@ -71,6 +71,12 @@ class Notoriety(commands.Cog):
     async def vote(self, ctx, user: Union[discord.Member, discord.User], title: str):
         """Vote for a user to receive a title"""
         async with self.config.guild(ctx.guild).votes() as votes:
+            if votes.get(title) is None:
+                votes[title] = {}
+
+            if votes[title].get(user.id) is None:
+                votes[title][user.id] = 0
+            
             votes[title][user.id] += 1
             await ctx.send(f"{ctx.author.mention} has voted for {user.mention} for the title: {title}")
 
