@@ -19,7 +19,7 @@ class Notoriety(commands.Cog):
             "nomination_counts": defaultdict(int),
             "nomination_threshold": 1,
             "vote_threshold": 1,
-            "duration": 30
+            "vote_duration": 30
         }
         self.config.register_guild(**default_guild)
 
