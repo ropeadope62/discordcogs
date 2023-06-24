@@ -58,7 +58,7 @@ class Notoriety(commands.Cog):
                                 async with self.config.guild(ctx.guild).titles() as titles:
                                     titles[title] = winner_id
                                 
-                                await ctx.send(f"The title: {title} has been awarded to <@{winner_id}>."))
+                                await ctx.send(f"The title: {title} has been awarded to <@{winner_id}>.")
 
     @notoriety.command()
     @checks.admin_or_permissions(manage_messages=True)
