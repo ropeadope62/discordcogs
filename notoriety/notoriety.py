@@ -45,10 +45,10 @@ class Notoriety(commands.Cog):
                     nomination_counts[title] = nomination_counts.get(title, 0) + 1
                     if nomination_counts[title] >= await self.config.guild(ctx.guild).nomination_threshold():
                         await ctx.send(f"Voting for the title: {title} has started. Use the `vote` command to cast your vote.")
-                        duration = await self.config.guild(ctx.guild).vote_duration()
-                        await asyncio.sleep(duration)
 
                         # Tally the votes and assign the title
+                        duration = await self.config.guild(ctx.guild).vote_duration()
+                        await asyncio.sleep(duration)
                         async with self.config.guild(ctx.guild).votes() as votes:
                             vote_counts = votes.get(title, {})
                             if vote_counts:
