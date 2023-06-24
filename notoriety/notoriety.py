@@ -12,7 +12,7 @@ class Notoriety(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=654649844651)
         default_guild = {
-            "titles": {},
+            "titles": {'Hobo': None, 'Peasant': None, 'Knight': None, 'Lord': None, 'King': None},
             "nominations": defaultdict(dict),
             "votes": defaultdict(int),
             "nomination_counts": defaultdict(int),
