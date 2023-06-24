@@ -4,6 +4,7 @@ from redbot.core.bot import Red
 from typing import Union
 from datetime import timedelta, datetime
 from collections import defaultdict
+import asyncio
 
 class Notoriety(commands.Cog):
     """User title system for Red DiscordBot"""
@@ -30,7 +31,7 @@ class Notoriety(commands.Cog):
         """Command for nomination, voting and assignment of user titles"""
 
     @notoriety.command()
-    async def nominate(self, ctx, user: discord.Member, title: str):
+    async def nominate(self, ctx, user: Union[discord.Member, discord.User], title: str):
         """Nominate a user for a title"""
         async with self.config.guild(ctx.guild).nominations() as nominations:
             if nominations.get(title) is None:
@@ -44,8 +45,20 @@ class Notoriety(commands.Cog):
                     nomination_counts[title] = nomination_counts.get(title, 0) + 1
                     if nomination_counts[title] >= await self.config.guild(ctx.guild).nomination_threshold():
                         await ctx.send(f"Voting for the title: {title} has started. Use the `vote` command to cast your vote.")
-            else:
-                await ctx.send(f"{user.mention} has already been nominated for the title: {title} by {ctx.author.mention}")
+                        await asyncio.sleep(self.config.guild.duration())  # wait for 5 minutes
+
+                        # Tally the votes and assign the title
+                        async with self.config.guild(ctx.guild).votes() as votes:
+                            vote_counts = votes.get(title, {})
+                            if vote_counts:
+                                # Get the user with the most votes
+                                winner_id, _ = max(vote_counts.items(), key=lambda x: x[1])
+
+                                # Assign the title to the winner
+                                async with self.config.guild(ctx.guild).titles() as titles:
+                                    titles[title] = winner_id
+                                
+                                await ctx.send(f"The title: {title} has been awarded to <@{winner_id}>."))
 
     @notoriety.command()
     @checks.admin_or_permissions(manage_messages=True)
@@ -70,13 +83,18 @@ class Notoriety(commands.Cog):
     @notoriety.command()
     async def vote(self, ctx, user: Union[discord.Member, discord.User], title: str):
         """Vote for a user to receive a title"""
+        async with self.config.guild(ctx.guild).nominations() as nominations:
+            if nominations.get(title) is None or user.id not in nominations[title]:
+                await ctx.send(f"{user.mention} has not been nominated for the title: {title}")
+                return
+
         async with self.config.guild(ctx.guild).votes() as votes:
             if votes.get(title) is None:
                 votes[title] = {}
 
             if votes[title].get(user.id) is None:
                 votes[title][user.id] = 0
-            
+
             votes[title][user.id] += 1
             await ctx.send(f"{ctx.author.mention} has voted for {user.mention} for the title: {title}")
 
