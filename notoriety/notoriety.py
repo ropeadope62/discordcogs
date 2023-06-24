@@ -33,12 +33,15 @@ class Notoriety(commands.Cog):
     async def nominate(self, ctx, user: discord.Member, title: str):
         """Nominate a user for a title"""
         async with self.config.guild(ctx.guild).nominations() as nominations:
+            if nominations.get(title) is None:
+                nominations[title] = {}
+            
             if user.id not in nominations[title]:
                 nominations[title][user.id] = ctx.author.id
                 await ctx.send(f"{ctx.author.mention} has nominated {user.mention} for the title: {title}")
 
                 async with self.config.guild(ctx.guild).nomination_counts() as nomination_counts:
-                    nomination_counts[title] += 1
+                    nomination_counts[title] = nomination_counts.get(title, 0) + 1
                     if nomination_counts[title] >= await self.config.guild(ctx.guild).nomination_threshold():
                         await ctx.send(f"Voting for the title: {title} has started. Use the `vote` command to cast your vote.")
             else:
