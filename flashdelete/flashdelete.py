@@ -13,6 +13,15 @@ class FlashDelete(commands.Cog):
         self.enabled = False
         self.timer = 5
 
+    def read_channel_ids(self):
+        with open(".\\flashdelete_channels.json", "r") as file:
+            data = json.load(file)
+            return data["channel_ids"]
+
+    def update_channel_ids(self):
+        with open(".\\flashdelete_channels.json", "w") as file:
+            json.dump(file)
+
     @commands.group()
     @checks.admin_or_permissions(manage_messages=True)
     async def flashdelete(self, ctx):
@@ -72,8 +81,3 @@ class FlashDelete(commands.Cog):
                             f"FlashDelete Cleanup Completed: Deleted {deleted_messages_count} messages."
                         )
             await asyncio.sleep(self.timer * 60)
-
-    def read_channel_ids(self):
-        with open("flashdelete_channels.json", "r") as file:
-            data = json.load(file)
-            return data["channel_ids"]
