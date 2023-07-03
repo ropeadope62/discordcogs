@@ -8,8 +8,6 @@ import json
 
 
 class FlashDelete(commands.Cog):
-    """FlashDelete - Gone in a #Flash!"""
-
     def __init__(self, bot):
         self.bot = bot
         self.enabled = False
@@ -18,7 +16,7 @@ class FlashDelete(commands.Cog):
     @commands.group()
     @checks.admin_or_permissions(manage_messages=True)
     async def flashdelete(self, ctx):
-        """Root Command for Flash Delete Configuration"""
+        """FlashDelete - Gone, in a #Flash!"""
 
     @flashdelete.command()
     async def status(self, ctx, status: str):
