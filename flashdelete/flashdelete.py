@@ -1,9 +1,6 @@
-import discord
 import asyncio
-from redbot.core import commands
-from datetime import datetime, timedelta
 from redbot.core import commands, checks
-from time import sleep
+from datetime import datetime, timedelta
 import json
 
 
