@@ -62,9 +62,10 @@ class FlashDelete(commands.Cog):
                     if channel:
                         messages_to_delete = []
                         async for message in channel.history(limit=None):
+                            time_diff = datetime.now().astimezone() - message.created_at
                             if (
-                                datetime.now() - message.created_at
-                                > timedelta(minutes=self.timer)
+                                time_diff > timedelta(minutes=self.timer)
+                                and time_diff < timedelta(days=14)
                                 and len(message.attachments) > 0
                             ):
                                 messages_to_delete.append(message)
