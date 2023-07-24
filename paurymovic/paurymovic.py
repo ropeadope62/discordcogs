@@ -75,7 +75,7 @@ class PauryMovic(commands.Cog):
                 img_url = img_path_father
 
             # Fetch the template image
-            img = Image.open(img_path_result)
+            img = Image.open(img_url)
 
             draw = ImageDraw.Draw(img)
             font = ImageFont.truetype(font_path, 24)
