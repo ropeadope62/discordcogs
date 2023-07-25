@@ -39,7 +39,7 @@ class PauryMovic(commands.Cog):
         return
 
     @commands.command()
-    @commands.cooldown(1, 1, commands.BucketType.user)
+    @commands.cooldown(1, 60, commands.BucketType.user)
     async def paurymovic(
         self, ctx: commands.Context, user1: discord.Member, user2: discord.Member
     ):
