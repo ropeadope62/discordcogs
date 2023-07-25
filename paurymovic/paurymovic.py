@@ -84,6 +84,8 @@ class PauryMovic(commands.Cog):
             print(img_path_father)
             print(img_path_not_father)
             print(img_path_result)
+            print(f"Image Path: {img_url}")
+            print(f"Image Extension: {os.path.splitext(img_url)[1]}")
             img = Image.open(img_url)
 
             draw = ImageDraw.Draw(img)
