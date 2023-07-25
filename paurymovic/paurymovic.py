@@ -69,7 +69,7 @@ class PauryMovic(commands.Cog):
             font_path = os.path.join(str(cog_data_path(self)), "GothamBold.ttf")
             account_age_difference = user1.created_at - user2.created_at
 
-            if account_age_difference < timedelta(days=2 * 365):  # 8 years difference
+            if account_age_difference < timedelta(days=3 * 365):  # 8 years difference
                 test_result = self.results[1]
                 img_url = img_path_not_father
             else:
