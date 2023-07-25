@@ -39,7 +39,7 @@ class PauryMovic(commands.Cog):
         return
 
     @commands.command()
-    @commands.cooldown(1, 60, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def paurymovic(
         self, ctx: commands.Context, user1: discord.Member, user2: discord.Member
     ):
@@ -89,7 +89,9 @@ class PauryMovic(commands.Cog):
             img = Image.open(img_url)
 
             draw = ImageDraw.Draw(img)
+            await ctx.send(draw)
             font = ImageFont.truetype(font_path, 24)
+            print(font)
             text = f"The results are in.. {user1.display_name}, when it comes to {user2.display_name}, {test_result}"
             wrapper = textwrap.TextWrapper(
                 width=22
