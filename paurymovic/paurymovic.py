@@ -10,6 +10,7 @@ from io import BytesIO
 import textwrap
 import os
 
+
 class PauryMovic(commands.Cog):
     """**Welcome to Broad Street Labs:tm: - PauryMovic DNA Test:registered:**"""
 
@@ -36,8 +37,6 @@ class PauryMovic(commands.Cog):
         Nothing to delete
         """
         return
-    
-    
 
     @commands.command()
     @commands.cooldown(1, 60, commands.BucketType.user)
@@ -59,12 +58,19 @@ class PauryMovic(commands.Cog):
                 )
                 await ctx.send(help_menu)
                 return
-        
-            img_path_father = os.path.join(str(cog_data_path(self)), 'you_are_the_father.png')
-            img_path_not_father = os.path.join(str(cog_data_path(self)), 'you_arenot_thefather.png')
-            img_path_result = os.path.join(str(cog_data_path(self)), 'pm_result.png')
-            font_path = os.path.join(str(cog_data_path(self)), 'GothamBold.ttf')
 
+            img_path_father = os.path.join(
+                str(cog_data_path(self)), "you_are_the_father.png"
+            )
+            print(img_path_father)
+            img_path_not_father = os.path.join(
+                str(cog_data_path(self)), "you_arenot_thefather.png"
+            )
+            print(img_path_not_father)
+            img_path_result = os.path.join(str(cog_data_path(self)), "pm_result.png")
+            print(img_path_result)
+            font_path = os.path.join(str(cog_data_path(self)), "GothamBold.ttf")
+            print(font_path)
             account_age_difference = user1.created_at - user2.created_at
 
             if account_age_difference < timedelta(days=2 * 365):  # 8 years difference
@@ -75,22 +81,30 @@ class PauryMovic(commands.Cog):
                 img_url = img_path_father
 
             # Fetch the template image
+            print(img_path_father)
+            print(img_path_not_father)
+            print(img_path_result)
             img = Image.open(img_url)
 
             draw = ImageDraw.Draw(img)
             font = ImageFont.truetype(font_path, 24)
-            text = (f"The results are in.. {user1.display_name}, when it comes to {user2.display_name}, {test_result}")
-            wrapper = textwrap.TextWrapper(width=22)  # Replace 40 with the actual maximum width
+            text = f"The results are in.. {user1.display_name}, when it comes to {user2.display_name}, {test_result}"
+            wrapper = textwrap.TextWrapper(
+                width=22
+            )  # Replace 40 with the actual maximum width
             lines = wrapper.wrap(text=text)
             y_text = 450
             for line in lines:
-                draw.text((425, y_text), line, fill= (58, 40, 100) , font=font, )
+                draw.text(
+                    (425, y_text),
+                    line,
+                    fill=(58, 40, 100),
+                    font=font,
+                )
                 y_text += 30
             img.save(img_path_result)
 
-            await ctx.send(
-                file=discord.File(img_path_result, filename="pm_result.png")
-            )
+            await ctx.send(file=discord.File(img_path_result, filename="pm_result.png"))
 
         except Exception as e:
             await ctx.send(f"An error occurred: {str(e)}")
@@ -98,6 +112,8 @@ class PauryMovic(commands.Cog):
     @paurymovic.error
     async def paurymovic_error(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send('Please wait for 1 minute before submitting another DNA test.')
+            await ctx.send(
+                "Please wait for 1 minute before submitting another DNA test."
+            )
         else:
             await ctx.send(f"An error occurred: {str(error)}")
