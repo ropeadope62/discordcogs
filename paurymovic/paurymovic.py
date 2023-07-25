@@ -1,12 +1,9 @@
 import discord
 from redbot.core import commands
 from redbot.core.data_manager import cog_data_path
-import random
 from datetime import timedelta, datetime
 from typing import List
 from PIL import Image, ImageDraw, ImageFont
-import requests
-from io import BytesIO
 import textwrap
 import os
 
@@ -62,15 +59,11 @@ class PauryMovic(commands.Cog):
             img_path_father = os.path.join(
                 str(cog_data_path(self)), "you_are_the_father.png"
             )
-            print(img_path_father)
             img_path_not_father = os.path.join(
                 str(cog_data_path(self)), "you_arenot_thefather.png"
             )
-            print(img_path_not_father)
             img_path_result = os.path.join(str(cog_data_path(self)), "pm_result.png")
-            print(img_path_result)
             font_path = os.path.join(str(cog_data_path(self)), "GothamBold.ttf")
-            print(font_path)
             account_age_difference = user1.created_at - user2.created_at
 
             if account_age_difference < timedelta(days=2 * 365):  # 8 years difference
@@ -81,17 +74,11 @@ class PauryMovic(commands.Cog):
                 img_url = img_path_father
 
             # Fetch the template image
-            print(img_path_father)
-            print(img_path_not_father)
-            print(img_path_result)
-            print(f"Image Path: {img_url}")
-            print(f"Image Extension: {os.path.splitext(img_url)[1]}")
             img = Image.open(img_url)
 
             draw = ImageDraw.Draw(img)
             await ctx.send(draw)
             font = ImageFont.truetype(font_path, 24)
-            print(font)
             text = f"The results are in.. {user1.display_name}, when it comes to {user2.display_name}, {test_result}"
             wrapper = textwrap.TextWrapper(
                 width=22
@@ -107,8 +94,16 @@ class PauryMovic(commands.Cog):
                 )
                 y_text += 30
             img.save(img_path_result)
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            img_path_result = os.path.join(
+                str(cog_data_path(self)), f"pm_result_{timestamp}.png"
+            )
 
-            await ctx.send(file=discord.File(img_path_result, filename="pm_result.png"))
+            await ctx.send(
+                file=discord.File(
+                    img_path_result, filename=f"pm_result_{timestamp}.png"
+                )
+            )
 
         except Exception as e:
             await ctx.send(f"An error occurred: {str(e)}")
