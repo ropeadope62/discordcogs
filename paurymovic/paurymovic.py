@@ -51,10 +51,10 @@ class PauryMovic(commands.Cog):
         try:
             if user1 is None or user2 is None:
                 help_menu = (
-                    "**Paury Movic Help Menu**\n"
+                    "**Welcome to Broad Street Labs:tm: - PauryMovic DNA Test:registered:**\n"
                     "To use the command, mention two users.\n"
                     "Example: `>paurymovic @user1 @user2`\n\n"
-                    "This test will determine if @user1 is the father of @user2.\n"
+                    "This test will determine if @user1 is the father of @user2 using user data corellated by our server farm.\n"
                 )
                 await ctx.send(help_menu)
                 return
@@ -66,7 +66,8 @@ class PauryMovic(commands.Cog):
                 str(cog_data_path(self)), "you_arenot_thefather.png"
             )
             img_path_result = os.path.join(str(cog_data_path(self)), "pm_result.png")
-            font_path = os.path.join(str(cog_data_path(self)), "GothamBold.ttf")
+            font_path = str(cog_data_path(self) / "GothamBold.ttf")
+            print(font_path)
             account_age_difference = user1.created_at - user2.created_at
 
             if account_age_difference < timedelta(days=3 * 365):  # 8 years difference

@@ -18,7 +18,6 @@ async def setup(bot):
     cog_folder = str(cog_data_path(cog))
 
     files = {
-        "https://1drv.ms/u/s!ArCyJDmwlibnob8ztJQYgM5Yi50mag?e=cvWTRP": os.path.join(cog_folder, "GothamBold.ttf"),
         "https://i.postimg.cc/pTP54jpF/you_are_the_father.png": os.path.join(cog_folder, "you_are_the_father.png"),
         "https://i.postimg.cc/pTP54jpF/you_arenot_thefather.png": os.path.join(cog_folder, "you_arenot_thefather.png")
     }
