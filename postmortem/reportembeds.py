@@ -1,11 +1,15 @@
 import discord
 
+
 class ReportEmbeds:
-        
     def __init__(self, user, user_data):
         self.user = user
         self.user_data = user_data
-        self.embed = discord.Embed(title="**Broad Street Labs™ - Post Mortem®**",description="*Final Report Summary*",color=discord.Color.dark_red())
+        self.embed = discord.Embed(
+            title="**Broad Street Labs™ - Post Mortem®**",
+            description="*Final Report Summary*",
+            color=discord.Color.dark_red(),
+        )
 
     # TODO Rename this here and in `report_embed` and `report_initial_embed`
     def report_embed(self):
@@ -50,9 +54,8 @@ class ReportEmbeds:
         )
         self.embed.set_footer(text="\n Sponsored by Empties")
         return self.embed
-    
+
     if __name__ == "__main__":
         # Test the embed_data function
-        data = f'test data'
+        data = f"test data"
         print(report_embed(data))
-    
