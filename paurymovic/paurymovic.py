@@ -81,7 +81,7 @@ class PauryMovic(commands.Cog):
             img = Image.open(img_url)
 
             draw = ImageDraw.Draw(img)
-            font = ImageFont.truetype("arial.ttf", 24)
+            font = ImageFont.load_default()
             text = f"The results are in.. {user1.display_name}, when it comes to {user2.display_name}, {test_result}"
             wrapper = textwrap.TextWrapper(
                 width=22
