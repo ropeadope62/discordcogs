@@ -9,7 +9,7 @@ class FlashDelete(commands.Cog):
         self.bot = bot
         self.enabled = False
         self.timer = 5
-        self.bot.loop.create_task(self.delete_messages())
+        self.bot.loop.create_task(self.flashdelete_task())
 
     def read_channel_ids(self):
         with open(".\\flashdelete_channels.json", "r") as file:
@@ -45,10 +45,10 @@ class FlashDelete(commands.Cog):
             await ctx.send(f"Flash Delete Timer set to {timer} minutes")
         except Exception:
             await ctx.send("Invalid timer value")
-
     @flashdelete.command()
     async def now(self, ctx):
         """Run Flash Delete Now"""
+        print("Running 'now' command")
         await self.delete_messages()
 
     async def flashdelete_task(self):
