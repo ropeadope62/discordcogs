@@ -63,20 +63,21 @@ class FlashDelete(commands.Cog):
             channel = self.bot.get_channel(channel_id)
             if channel:
                 messages_to_delete = []
+                print(f"Checking messages in channel {channel.id}")
                 async for message in channel.history(limit=None):
                     time_diff = datetime.now().astimezone() - message.created_at
                     if time_diff < timedelta(days=14) and len(message.attachments) > 0:
                         messages_to_delete.append(message)
+                        print(f"Selected message {message.id} for deletion")
                         if len(messages_to_delete) >= 100:
                             await channel.delete_messages(messages_to_delete)
                             deleted_messages_count += len(messages_to_delete)
+                            print(f"Deleted {len(messages_to_delete)} messages")
                             messages_to_delete = []
                 if messages_to_delete:
                     await channel.delete_messages(messages_to_delete)
                     deleted_messages_count += len(messages_to_delete)
-                    print(
-                        "FlashDelete Cleanup Completed: Deleted {deleted_messages_count} messages."
-                    )
-                    await channel.send(
-                        f"FlashDelete Cleanup Completed: Deleted {deleted_messages_count} messages."
-                    )
+                    print(f"Deleted {len(messages_to_delete)} messages")
+                await channel.send(
+                    f"FlashDelete Cleanup Completed: Deleted {deleted_messages_count} messages."
+                )
