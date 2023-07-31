@@ -54,7 +54,8 @@ class FlashDelete(commands.Cog):
         while True:
             if self.enabled:
                 deleted_messages_count = 0
-                for channel_id in self.read_channel_ids():
+                # for channel_id in self.read_channel_ids(): For use with json, we will use the hardcoded list for now
+                for channel_id in [1020933443179253800, 1130587895665807371]:
                     channel = self.bot.get_channel(channel_id)
                     if channel:
                         messages_to_delete = []
