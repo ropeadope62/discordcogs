@@ -59,18 +59,13 @@ class FlashDelete(commands.Cog):
 
     async def delete_messages(self):
         deleted_messages_count = 0
-        # for channel_id in self.read_channel_ids(): For use with json, we will use the hardcoded list for now
         for channel_id in [1020933443179253800, 1130587895665807371]:
             channel = self.bot.get_channel(channel_id)
             if channel:
                 messages_to_delete = []
                 async for message in channel.history(limit=None):
                     time_diff = datetime.now().astimezone() - message.created_at
-                    if (
-                        time_diff > timedelta(minutes=self.timer)
-                        and time_diff < timedelta(days=14)
-                        and len(message.attachments) > 0
-                    ):
+                    if time_diff < timedelta(days=14) and len(message.attachments) > 0:
                         messages_to_delete.append(message)
                         if len(messages_to_delete) >= 100:
                             await channel.delete_messages(messages_to_delete)
@@ -79,9 +74,9 @@ class FlashDelete(commands.Cog):
                 if messages_to_delete:
                     await channel.delete_messages(messages_to_delete)
                     deleted_messages_count += len(messages_to_delete)
-                print(
-                    "FlashDelete Cleanup Completed: Deleted {deleted_messages_count} messages."
-                )
-                await channel.send(
-                    f"FlashDelete Cleanup Completed: Deleted {deleted_messages_count} messages."
-                )
+                    print(
+                        "FlashDelete Cleanup Completed: Deleted {deleted_messages_count} messages."
+                    )
+                    await channel.send(
+                        f"FlashDelete Cleanup Completed: Deleted {deleted_messages_count} messages."
+                    )
