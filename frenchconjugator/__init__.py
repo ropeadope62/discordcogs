@@ -1,6 +1,7 @@
+import asyncio
 from .frenchconjugator import french 
 
 
-def setup(bot):
+asyc def setup(bot):
     await bot.add_cog(french(bot))
 
