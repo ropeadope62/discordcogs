@@ -21,7 +21,7 @@ _ = Translator("PostMortem", __file__)
 
 
 class PostMortem(commands.Cog):
-    """Broad Street Labs - Post Mortem"""
+    """Post Mortem"""
     
     __author__ = ["Slurms Mackenzie"]
     __version__ = "0.1.0"
@@ -235,7 +235,7 @@ class PostMortem(commands.Cog):
 
                 self.cache[user.id] = user_data
                 use_cache = True
-                await ctx.send('**Welcome to Broad Street Labs:tm: - Post Mortem:registered:**\n')
+                await ctx.send('**Welcome to Post Mortem:tm:**\n')
                 await asyncio.sleep(1)
                 msg = await ctx.send('*Post Mortem reads multiple user data points and returns an accurate assessment of time and cause of death.*\n')
                 await asyncio.sleep(2)
