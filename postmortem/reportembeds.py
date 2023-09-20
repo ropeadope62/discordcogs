@@ -6,7 +6,7 @@ class ReportEmbeds:
         self.user = user
         self.user_data = user_data
         self.embed = discord.Embed(
-            title="**Broad Street Labs™ - Post Mortem®**",
+            title="***Post Mortem®*** - brought to you by Slurm!:registered:",
             description="*Final Report Summary*",
             color=discord.Color.dark_red(),
         )
@@ -52,7 +52,7 @@ class ReportEmbeds:
             value=f"*{self.user_data['cause_of_death']}*",
             inline=False,
         )
-        self.embed.set_footer(text="\n Sponsored by Empties")
+        self.embed.set_footer(text="\n Brought to you by Slurm!:tm:")
         return self.embed
 
     if __name__ == "__main__":
