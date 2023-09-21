@@ -45,6 +45,7 @@ class Recap(commands.Cog):
         with open(file_name, "w") as file:
             file.write(collected_text)
         await ctx.send(f"Stopped collecting messages. Recap saved to {file_name}.")
+        print(collected_text)
         self.temp_messages = []
 
     @recap.command()
