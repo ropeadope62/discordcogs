@@ -5,6 +5,7 @@ import json
 from typing import List
 import os
 from .recap_ai.recap_ai import OpenAI
+from recap_ai.recap_ai import recap_to_story
 import glob
 
 
@@ -62,7 +63,7 @@ class Recap(commands.Cog):
         file_name = self.get_latest_recap()
         with open(file_name, "r") as file:
             prompt = file.read()
-            response = openai.recap_to_story(prompt)
+            response = recap_to_story(prompt)
             await ctx.send(response)
 
     @recap.command()
