@@ -35,6 +35,12 @@ class Recap(commands.Cog):
         self.collecting = True
         await ctx.send("Collecting messages since last Recap")
 
+    @recap.command()
+    async def stop(self, ctx):
+        """Stop collecting messages"""
+        self.collecting = False
+        await ctx.send("Stopped collecting messages")
+
     @commands.Cog.listener("on_message")
     async def on_message_listener(self, message):
         if message.author.bot:
