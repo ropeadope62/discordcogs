@@ -41,6 +41,18 @@ class Recap(commands.Cog):
         self.collecting = False
         await ctx.send("Stopped collecting messages")
 
+    @recap.command()
+    async def announce(self, ctx, message):
+        """Announce to the town crier"""
+        await ctx.send(message)
+        # send the message in a specific channel
+        target_channel = self.bot.get_channel(1154282874401456149)
+        if target_channel is None:
+            await ctx.send("Channel not found")
+            return
+        await target_channel.send(message)
+        await ctx.send("Announcement posted to Town Crier")
+
     @commands.Cog.listener("on_message")
     async def on_message_listener(self, message):
         if message.author.bot:
