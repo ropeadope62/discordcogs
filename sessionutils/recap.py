@@ -5,7 +5,7 @@ import json
 from typing import List
 import os
 from .recap_ai.recap_ai import OpenAI
-from recap_ai.recap_ai import recap_to_story
+from recap_ai import recap_to_story
 import glob
 
 
