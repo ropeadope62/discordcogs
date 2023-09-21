@@ -3,6 +3,7 @@ from redbot.core import commands, checks
 from datetime import datetime, timedelta
 import json
 from typing import List
+import os
 
 
 class Recap(commands.Cog):
@@ -28,18 +29,23 @@ class Recap(commands.Cog):
     async def recap(self, ctx):
         pass
 
+
     @recap.command()
-    async def collect(self, ctx, end: str = "CONCLUDED"):
-        """Collect messages for recap"""
-        self.end_word = end
+    async def collect(self, ctx):
+        """Collect messages for recap."""
         self.collecting = True
-        await ctx.send("Collecting messages since last Recap")
+        await ctx.send("Started collecting messages for the recap.")
 
     @recap.command()
     async def stop(self, ctx):
-        """Stop collecting messages"""
+        """Stop collecting messages."""
         self.collecting = False
-        await ctx.send("Stopped collecting messages")
+        collected_text = " ".join(self.temp_messages)
+        file_name = f"recap_{datetime.now().strftime('%Y%m%d%H%M%S')}.txt"
+        with open(file_name, "w") as file:
+            file.write(collected_text)
+        await ctx.send(f"Stopped collecting messages. Recap saved to {file_name}.")
+        self.temp_messages = []
 
     @recap.command()
     async def announce(self, ctx, message: str):
@@ -62,8 +68,3 @@ class Recap(commands.Cog):
 
         if self.collecting:
             self.temp_messages.append(message.content)
-            if self.end_word in message.content:
-                self.collecting = False
-                collected_text = " ".join(self.temp_messages)
-                await message.channel.send(f"Recap:\n{collected_text}")
-                self.temp_messages = []
