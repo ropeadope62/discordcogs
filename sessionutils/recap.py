@@ -5,7 +5,6 @@ import json
 from typing import List
 import os
 from .recap_ai.recap_ai import OpenAI
-from recap_ai.recap_ai import recap_to_story
 import glob
 
 
@@ -36,7 +35,7 @@ class Recap(commands.Cog):
     @commands.group()
     @checks.admin_or_permissions(manage_messages=True)
     async def recap(self, ctx):
-        """Record a log of the DND session and recap the story so far with gpt4."""
+        """Record a log of the DND session and recap the story so far with."""
         pass
 
     @recap.command()
@@ -63,7 +62,7 @@ class Recap(commands.Cog):
         file_name = self.get_latest_recap()
         with open(file_name, "r") as file:
             prompt = file.read()
-            response = recap_to_story(prompt)
+            response = openai.recap_to_story(prompt)
             await ctx.send(response)
 
     @recap.command()
