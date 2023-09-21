@@ -42,7 +42,7 @@ class Recap(commands.Cog):
         await ctx.send("Stopped collecting messages")
 
     @recap.command()
-    async def announce(self, ctx, message):
+    async def announce(self, ctx, message: str):
         """Announce to the town crier"""
         await ctx.send(message)
         # send the message in a specific channel
@@ -50,7 +50,9 @@ class Recap(commands.Cog):
         if target_channel is None:
             await ctx.send("Channel not found")
             return
-        await target_channel.send(message)
+        header = f"__**DND Session Recap__**"
+        full_message =f"{header}\n{message}"
+        await target_channel.send(full_message)
         await ctx.send("Announcement posted to Town Crier")
 
     @commands.Cog.listener("on_message")
