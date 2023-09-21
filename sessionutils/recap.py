@@ -5,6 +5,7 @@ import json
 from typing import List
 import os
 from .recap_ai.recap_ai import OpenAI
+import glob
 
 
 class Recap(commands.Cog):
@@ -14,7 +15,6 @@ class Recap(commands.Cog):
         self.timer = 5
         self.temp_messages = []
         self.collecting = False
-        self.end_word = "CONCLUDED"
         openai = OpenAI()
 
     def read_recap(self):
@@ -25,6 +25,9 @@ class Recap(commands.Cog):
     def update_recap(self, data_to_update):
         with open(".\\recap.json", "w") as file:
             json.dump(data_to_update, file)
+
+    def get_latest_recap(self):
+        return max(glob.glob("recap_*.txt"), key=os.path.getctime)
 
     @commands.group()
     @checks.admin_or_permissions(manage_messages=True)
@@ -60,14 +63,14 @@ class Recap(commands.Cog):
 
     @recap.command()
     async def announce(self, ctx, message: str):
-        """Announce to the town crier"""
+        """Announce to the Town Crier"""
         await ctx.send(message)
         # send the message in a specific channel
         target_channel = self.bot.get_channel(1154282874401456149)
         if target_channel is None:
             await ctx.send("Channel not found")
             return
-        header = f"__**DND Session Recap__**"
+        header = "__**DND Session Recap__"
         full_message = f"{header}\n{message}"
         await target_channel.send(full_message)
         await ctx.send("Announcement posted to Town Crier")
@@ -79,6 +82,7 @@ class Recap(commands.Cog):
 
         if self.collecting:
             self.temp_messages.append(message.content)
+
+
 def setup(bot):
     bot.add_cog(Recap(bot))
-    
