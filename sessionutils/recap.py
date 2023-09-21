@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import json
 from typing import List
 import os
+from openai import OpenAI
 
 
 class Recap(commands.Cog):
@@ -14,6 +15,7 @@ class Recap(commands.Cog):
         self.temp_messages = []
         self.collecting = False
         self.end_word = "CONCLUDED"
+        openai = OpenAI()
 
     def read_recap(self):
         with open(".\\recap.json", "r") as file:
@@ -28,7 +30,6 @@ class Recap(commands.Cog):
     @checks.admin_or_permissions(manage_messages=True)
     async def recap(self, ctx):
         pass
-
 
     @recap.command()
     async def collect(self, ctx):
@@ -45,8 +46,17 @@ class Recap(commands.Cog):
         with open(file_name, "w") as file:
             file.write(collected_text)
         await ctx.send(f"Stopped collecting messages. Recap saved to {file_name}.")
-        print(collected_text)
         self.temp_messages = []
+
+    @recap.command()
+    async def generate(self, ctx):
+        await ctx.send("Generating recap...")
+        file_name = self.get_latest_file_name()
+        with open(file_name, "r") as file:
+            prompt = file.read()
+            response = self.openai.recap_to_story(prompt)
+            await ctx.send(response)
+        # os.remove(file_name)
 
     @recap.command()
     async def announce(self, ctx, message: str):
@@ -58,7 +68,7 @@ class Recap(commands.Cog):
             await ctx.send("Channel not found")
             return
         header = f"__**DND Session Recap__**"
-        full_message =f"{header}\n{message}"
+        full_message = f"{header}\n{message}"
         await target_channel.send(full_message)
         await ctx.send("Announcement posted to Town Crier")
 
