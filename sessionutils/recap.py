@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import json
 from typing import List
 import os
-from openai import OpenAI
+from .recap_ai import OpenAI
 
 
 class Recap(commands.Cog):
