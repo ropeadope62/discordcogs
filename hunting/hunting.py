@@ -410,7 +410,8 @@ class Hunting(commands.Cog):
     async def _latest_message_check(self, channel):
         hunt_int_max = await self.config.guild(channel.guild).hunt_interval_maximum()
         async for message in channel.history(limit=5):
-            delta = datetime.datetime.utcnow() - message.created_at
+            utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
+            delta = utc_now - message.created_at
             if delta.total_seconds() < hunt_int_max * 2 and message.author.id != self.bot.user.id:
                 if channel.id in self.paused_games:
                     self.paused_games.remove(channel.id)
