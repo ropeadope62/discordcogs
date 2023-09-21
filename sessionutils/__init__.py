@@ -1,5 +1,5 @@
 from .recap import Recap
-from openai import OpenAI
+from ..openai import OpenAI
 
 
 async def setup(bot):
