@@ -1,4 +1,4 @@
-from recap import Recap
+from .recap import Recap
 
 
 async def setup(bot):
