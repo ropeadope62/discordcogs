@@ -44,6 +44,6 @@ class Recap(commands.Cog):
             self.temp_messages.append(message.content)
             if self.end_word in message.content:
                 self.collecting = False
-                collected_text = "\n".join(self.temp_messages)
+                collected_text = " ".join(self.temp_messages)
                 await message.channel.send(f"Recap:\n{collected_text}")
                 self.temp_messages = []
