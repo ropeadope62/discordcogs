@@ -11,8 +11,8 @@ import glob
 class Recap(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.enabled = False
-        self.timer = 5
+        self.enabled = False  # Still to add global enable/disable command
+        self.timer = 5  # Placeholder for timer
         self.temp_messages = []
         self.collecting = False
         openai = OpenAI()
@@ -54,18 +54,17 @@ class Recap(commands.Cog):
     @recap.command()
     async def generate(self, ctx):
         await ctx.send("Generating recap...")
-        file_name = self.get_latest_file_name()
+        file_name = self.get_latest_recap()
         with open(file_name, "r") as file:
             prompt = file.read()
             response = self.openai.recap_to_story(prompt)
             await ctx.send(response)
-        # os.remove(file_name)
 
     @recap.command()
     async def announce(self, ctx, message: str):
         """Announce to the Town Crier"""
         await ctx.send(message)
-        # send the message in a specific channel
+        # send the message in the town crier channel
         target_channel = self.bot.get_channel(1154282874401456149)
         if target_channel is None:
             await ctx.send("Channel not found")
