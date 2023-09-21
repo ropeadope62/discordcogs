@@ -35,11 +35,12 @@ class Recap(commands.Cog):
     @commands.group()
     @checks.admin_or_permissions(manage_messages=True)
     async def recap(self, ctx):
+        """Record a log of the DND session and recap the story so far with gpt4."""
         pass
 
     @recap.command()
     async def collect(self, ctx):
-        """Collect messages for recap."""
+        """Start collecting messages for recap."""
         self.collecting = True
         await ctx.send("Started collecting messages for the recap.")
 
@@ -56,6 +57,7 @@ class Recap(commands.Cog):
 
     @recap.command()
     async def generate(self, ctx):
+        """Send the latest recap to OpenAI for story generation."""
         await ctx.send("Generating recap...")
         file_name = self.get_latest_recap()
         with open(file_name, "r") as file:
