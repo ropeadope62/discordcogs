@@ -1,5 +1,7 @@
 from .recap import Recap
+from openai import OpenAI
 
 
 async def setup(bot):
     await bot.add_cog(Recap(bot))
+    await bot.add_cog(OpenAI(bot))
