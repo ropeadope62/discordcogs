@@ -1,4 +1,4 @@
-from .sessionutils import Recap
+from sessionutils import Recap
 import asyncio
 
 
