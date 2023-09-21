@@ -78,4 +78,6 @@ class Recap(commands.Cog):
             return
 
         if self.collecting:
-            self.temp_messages.append(message.content)
+            self.temp_messages.append(message.content).
+
+    
