@@ -18,13 +18,13 @@ class OpenAI:
 
     def recap_to_story(self, message):
         message_scrub = self.remove_special_characters(message)
-        prompt = f"""With the supplied string of text, craft the outline and high level details of this story into the style of a high fantasy novel written in the Dungeons and Dragons Universe. The party members are Seeker, Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter) and Epho (satyr Bard). Here is my message:\n{message_scrub}"""
+        prompt = f"""With the supplied string of text, craft the outline of this text into the style of a high fantasy novel written in the Dungeons and Dragons Universe. The party members are Seeker (aormaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter) and Epho (satyr Bard). Here is my message:\n{message_scrub}"""
         try:
             # Check if the message qualifies as meaningful feedback
             response = openai.Completion.create(
-                engine="text-davinci-003",
-                prompt=prompt,
-                max_tokens=300,
+                engine="gpt-4",
+                messages=prompt,
+                max_tokens=1000,
                 n=1,
                 stop=None,
                 temperature=0.9,
@@ -32,7 +32,8 @@ class OpenAI:
                 frequency_penalty=0.2,
                 presence_penalty=0.2,
             )
-            return response.choices[0].text.strip()
 
+            response_content = response.choices[0]["message"]["content"]
+            return response_content
         except openai.error.AuthenticationError:
             return "AuthenticationError: Please check your OpenAI API credentials."
