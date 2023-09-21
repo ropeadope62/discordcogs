@@ -8,6 +8,9 @@ from .recap_ai.recap_ai import OpenAI
 import glob
 
 
+openai = OpenAI()
+
+
 class Recap(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -15,7 +18,6 @@ class Recap(commands.Cog):
         self.timer = 5  # Placeholder for timer
         self.temp_messages = []
         self.collecting = False
-        openai = OpenAI()
 
     def read_recap(self):
         with open(".\\recap.json", "r") as file:
@@ -57,7 +59,7 @@ class Recap(commands.Cog):
         file_name = self.get_latest_recap()
         with open(file_name, "r") as file:
             prompt = file.read()
-            response = self.openai.recap_to_story(prompt)
+            response = openai.recap_to_story(prompt)
             await ctx.send(response)
 
     @recap.command()
