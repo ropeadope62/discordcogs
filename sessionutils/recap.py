@@ -4,9 +4,9 @@ from datetime import datetime, timedelta
 import json
 from typing import List
 
+
 class Recap(commands.Cog):
     def __init__(self, bot):
-
         self.bot = bot
         self.enabled = False
         self.timer = 5
@@ -18,17 +18,18 @@ class Recap(commands.Cog):
         with open(".\\recap.json", "r") as file:
             data = json.load(file)
             return data["recap"]
-        
-    def update_recap(self):
+
+    def update_recap(self, data_to_update):
         with open(".\\recap.json", "w") as file:
-            json.dump(file)
+            json.dump(data_to_update, file)
 
     @commands.group()
     @checks.admin_or_permissions(manage_messages=True)
     async def recap(self, ctx):
+        pass
 
     @recap.command()
-    async def collect(self, ctx, end:str = "CONCLUDED"):
+    async def collect(self, ctx, end: str = "CONCLUDED"):
         """Collect messages for recap"""
         self.end_word = end
         self.collecting = True
@@ -38,7 +39,7 @@ class Recap(commands.Cog):
     async def on_message_listener(self, message):
         if message.author.bot:
             return
-        
+
         if self.collecting:
             self.temp_messages.append(message.content)
             if self.end_word in message.content:
