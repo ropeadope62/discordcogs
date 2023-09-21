@@ -1,4 +1,4 @@
-from sessionutils import Recap
+from .recap import Recap
 
 
 async def setup(bot):

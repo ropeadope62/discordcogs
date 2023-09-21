@@ -79,5 +79,6 @@ class Recap(commands.Cog):
 
         if self.collecting:
             self.temp_messages.append(message.content)
-
+def setup(bot):
+    bot.add_cog(Recap(bot))
     
