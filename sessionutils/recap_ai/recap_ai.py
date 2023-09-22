@@ -26,7 +26,7 @@ class OpenAI:
         temperature=0.3, frequency_penalty=0.5, presence_penalty=0.5
     )
 
-        print(response['choices'][0]['message']['content'])
+        return(response['choices'][0]['message']['content'])
 
 
 

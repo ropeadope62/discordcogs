@@ -6,6 +6,7 @@ from typing import List
 import os
 from .recap_ai.recap_ai import OpenAI
 import glob
+import discord
 
 
 openai = OpenAI()
@@ -39,7 +40,7 @@ class Recap(commands.Cog):
         pass
 
     @recap.command()
-    async def collect(self, ctx):
+    async def start(self, ctx):
         """Start collecting messages for recap."""
         self.collecting = True
         await ctx.send("Started collecting messages for the recap.")
@@ -78,6 +79,38 @@ class Recap(commands.Cog):
         full_message = f"{header}\n{message}"
         await target_channel.send(full_message)
         await ctx.send("Announcement posted to Town Crier")
+
+    @recap.command()
+    async def help(self, ctx):
+        """Recap Help Menu"""
+        # make an embed
+        embed = discord.Embed(
+            title="Recap Help Menu", description="Recap Help Menu", color=0xEEE657
+        )
+
+        # set the fields of the embed
+        embed.add_field(
+            name="!recap start",
+            value="Start collecting messages for the recap",
+            inline=False,
+        )
+        embed.add_field(
+            name="!recap stop",
+            value="Stop collecting messages for the recap",
+            inline=False,
+        )
+        embed.add_field(
+            name="!recap generate",
+            value="Send the latest recap to OpenAI for story generation",
+            inline=False,
+        )
+        embed.add_field(
+            name="!recap announce",
+            value="Announce the latest recap to the Town Crier",
+            inline=False,
+        )
+
+        await ctx.send(embed=embed)
 
     @commands.Cog.listener("on_message")
     async def on_message_listener(self, message):
