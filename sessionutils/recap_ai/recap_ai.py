@@ -21,13 +21,9 @@ class OpenAI:
             model="gpt-4",
             messages=[
                 {
-                    "role": "system",
-                    "content": "You are a high fantasy novel writer in the Dungeons and Dragons Universe. You are writing a story about a party of adventurers. The party members are Seeker (aormaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter) and Epho (satyr Bard).",
-                },
-                {
-                    "role": "user",
+                    "role": "assistant",
                     "content": f"With the supplied string of text, craft the outline of this text into the style of a high fantasy novel written in the Dungeons and Dragons Universe. The party members are Seeker (aormaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter) and Epho (satyr Bard). Here is a part of the story:\n {message}:",
-                },
+                }
             ],
             temperature=0.3,
             frequency_penalty=0.5,
