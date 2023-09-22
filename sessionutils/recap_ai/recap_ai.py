@@ -32,7 +32,7 @@ class OpenAI:
                 frequency_penalty=0.2,
                 presence_penalty=0.2,
             )
-            return response.choices[0]["message"]
+            return response.choices[0].text.strip()
 
         except openai.error.AuthenticationError:
             return "AuthenticationError: Please check your OpenAI API credentials."
