@@ -22,7 +22,7 @@ class OpenAI:
             messages=[
                 {
                     "role": "assistant",
-                    "content": f"With the supplied string of text, craft the outline of this text into the style of a high fantasy novel written in the Dungeons and Dragons Universe. The party members are Seeker (aormaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter) and Epho (satyr Bard). Here is a part of the story:\n {message}:",
+                    "content": f"With the supplied text which is a brief synopsis, write the text into long form written in the Dungeons and Dragons Universe in the style of high fantasy. The party members are Seeker (aormaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter) and Epho (satyr Bard). Here is a part of the story:\n {message}:",
                 }
             ],
             temperature=0.3,
