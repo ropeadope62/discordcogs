@@ -69,7 +69,7 @@ class Recap(commands.Cog):
     @recap.command()
     async def announce(self, ctx, message: str):
         """Announce to the Town Crier"""
-        await ctx.send(message)
+
         # send the message in the town crier channel
         target_channel = self.bot.get_channel(1154282874401456149)
         if target_channel is None:
@@ -78,12 +78,13 @@ class Recap(commands.Cog):
         header = f"Recap for {datetime.now().strftime('%Y-%m-%d')}"
         # make a discord embed
         embed = discord.Embed(title="Recap", description=message, color=0xEEE657)
+        embed.add_field(name="Recap", value=message, inline=False)
         embed.set_author(name="Town Crier")
         embed.set_thumbnail(url="https://imgur.com/a/yid0sL7")
         embed.set_footer(text="Town Crier")
+        await ctx.send(f"{header} \n {message}")
 
-        full_message = f"{header}\n{message}"
-        await target_channel.send(full_message)
+        await target_channel.send(embed)
         await ctx.send("Announcement posted to Town Crier")
 
     @recap.command()
