@@ -31,12 +31,14 @@ class Recap(commands.Cog):
             json.dump(data_to_update, file)
 
     def get_latest_recap(self):
+        """Returns the path of the latest recap file based on the creation time."""
+
         return max(glob.glob("recap_*.txt"), key=os.path.getctime)
 
     @commands.group()
     @checks.admin_or_permissions(manage_messages=True)
     async def recap(self, ctx):
-        """Record a log of the DND session and recap the story so far with."""
+        """Record user messages and turn it into a story with GPT4. This is an empty command for grouping purposes."""
         pass
 
     @recap.command()
@@ -68,8 +70,7 @@ class Recap(commands.Cog):
 
     @recap.command()
     async def announce(self, ctx, message: str):
-        """Announce to the Town Crier"""
-
+        """Announce to the Town Crier channel."""
         # send the message in the town crier channel
         target_channel = self.bot.get_channel(1154282874401456149)
         if target_channel is None:
@@ -90,7 +91,7 @@ class Recap(commands.Cog):
 
     @recap.command()
     async def help(self, ctx):
-        """Recap Help Menu"""
+        """Displays the Recap Help Menu in an embed."""
         # make an embed
         embed = discord.Embed(
             title="Recap Help Menu",
@@ -124,6 +125,8 @@ class Recap(commands.Cog):
 
     @commands.Cog.listener("on_message")
     async def on_message_listener(self, message):
+        """Listens for messages and appends the content of non-bot messages to the temporary messages list if collecting is enabled."""
+
         if message.author.bot:
             return
 
