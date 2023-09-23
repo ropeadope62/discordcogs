@@ -75,7 +75,13 @@ class Recap(commands.Cog):
         if target_channel is None:
             await ctx.send("Channel not found")
             return
-        header = "__**DND Session Recap__"
+        header = f"Recap for {datetime.now().strftime('%Y-%m-%d')}"
+        # make a discord embed
+        embed = discord.Embed(title="Recap", description=message, color=0xEEE657)
+        embed.set_author(name="Town Crier")
+        embed.set_thumbnail(url="https://imgur.com/a/yid0sL7")
+        embed.set_footer(text="Town Crier")
+
         full_message = f"{header}\n{message}"
         await target_channel.send(full_message)
         await ctx.send("Announcement posted to Town Crier")
@@ -85,27 +91,29 @@ class Recap(commands.Cog):
         """Recap Help Menu"""
         # make an embed
         embed = discord.Embed(
-            title="Recap Help Menu", description="Recap Help Menu", color=0xEEE657
+            title="Recap Help Menu",
+            description="Recap will record a several messages and write them into a story in the style of high fantasy. Commands for Recap",
+            color=0xEEE657,
         )
 
         # set the fields of the embed
         embed.add_field(
-            name="!recap start",
+            name=">recap start",
             value="Start collecting messages for the recap",
             inline=False,
         )
         embed.add_field(
-            name="!recap stop",
+            name=">recap stop",
             value="Stop collecting messages for the recap",
             inline=False,
         )
         embed.add_field(
-            name="!recap generate",
+            name=">recap generate",
             value="Send the latest recap to OpenAI for story generation",
             inline=False,
         )
         embed.add_field(
-            name="!recap announce",
+            name=">recap announce",
             value="Announce the latest recap to the Town Crier",
             inline=False,
         )
