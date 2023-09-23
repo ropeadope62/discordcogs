@@ -56,6 +56,10 @@ class OpenAI:
                         "role": "system",
                         "content": "The user would like to add more details to the story.",
                     },
+                    {
+                        "role": "user",
+                        "content": f"Here is the previous story: {self.conversation_history}",
+                    },
                 ],
                 temperature=0.3,
                 frequency_penalty=0.5,
