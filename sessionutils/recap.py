@@ -78,11 +78,12 @@ class Recap(commands.Cog):
         header = f"Recap for {datetime.now().strftime('%Y-%m-%d')}"
         # make a discord embed
         embed = discord.Embed(title="Recap", description=message, color=0xEEE657)
-        embed.add_field(name="Recap", value=message, inline=False)
+        embed.add_field(name="Hello", value=header, inline=False)
+        embed.add_field(name="Message", value=message, inline=False)
         embed.set_author(name="Town Crier")
         embed.set_thumbnail(url="https://imgur.com/a/yid0sL7")
         embed.set_footer(text="Town Crier")
-        await ctx.send(f"{header} \n {message}")
+        await ctx.send(embed)
 
         await target_channel.send(embed)
         await ctx.send("Announcement posted to Town Crier")
