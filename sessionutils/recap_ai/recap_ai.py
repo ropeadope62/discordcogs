@@ -21,9 +21,17 @@ class OpenAI:
             model="gpt-4",
             messages=[
                 {
+                    "role": "system",
+                    "content": "You are an assistant trained to convert short DND recaps into high fantasy narratives.",
+                },
+                {
+                    "role": "user",
+                    "content": f"Convert the following DND session recap into a high fantasy narrative:\n {message}",
+                },
+                {
                     "role": "assistant",
-                    "content": f"With the supplied text which is a brief synopsis, write the text into long form written in the Dungeons and Dragons Universe in the style of high fantasy. The party members are Seeker (aormaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter) and Epho (satyr Bard). Here is a part of the story:\n {message}:",
-                }
+                    "content": "The party members are Seeker (automaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter), and Epho (satyr Bard).",
+                },
             ],
             temperature=0.3,
             frequency_penalty=0.5,
