@@ -69,6 +69,12 @@ class Recap(commands.Cog):
             await ctx.send(response)
 
     @recap.command()
+    async def add(self, ctx, message: str):
+        await ctx.send("Adding to recap...")
+        response = openai.add_to_recap(message)
+        await ctx.send(response)
+
+    @recap.command()
     async def announce(self, ctx, message: str):
         """Announce to the Town Crier channel."""
         # send the message in the town crier channel
