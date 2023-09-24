@@ -13,11 +13,11 @@ class OpenAI:
         self.conversation_history = []
 
     def save_conversation_history(self):
-        with open("conversation_history.json", "w") as file:
+        with open(".\\conversation_history.json", "w") as file:
             json.dump(self.conversation_history, file)
 
     def read_conversation_history(self):
-        with open("conversation_history.json", "r") as file:
+        with open(".\\conversation_history.json", "r") as file:
             return json.load(file)
     
     
@@ -30,6 +30,7 @@ class OpenAI:
     def recap_to_story_gpt4(self, message):
         try:
             self.conversation_history.append({"role": "user", "content": message})
+            self.save_conversation_history()
             response = openai.ChatCompletion.create(
                 model="gpt-4",
                 messages=[
@@ -55,6 +56,7 @@ class OpenAI:
                 presence_penalty=0.5,
             )
             self.conversation_history.append({"role": "assistant", "content": response})
+            self.save_conversation_history()
             return response["choices"][0]["message"]["content"]
 
         except openai.error.AuthenticationError:
