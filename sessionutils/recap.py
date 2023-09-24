@@ -45,13 +45,16 @@ class Recap(commands.Cog):
 
     @recap.command()
     async def start(self, ctx):
-        """Start collecting messages for recap."""
+        """Start collecting messages for recap.\n
+        Usage: >recap start
+        """
         self.collecting = True
         await ctx.send("Started collecting messages for the recap.")
 
     @recap.command()
     async def stop(self, ctx):
-        """Stop collecting messages."""
+        """Stop collecting messages.\n
+        Usage: >recap stop"""
         self.collecting = False
         collected_text = " ".join(self.temp_messages)
         file_name = f"recap_{datetime.now().strftime('%Y%m%d%H%M%S')}.txt"
@@ -62,7 +65,9 @@ class Recap(commands.Cog):
 
     @recap.command()
     async def generate(self, ctx):
-        """Send the latest recap to OpenAI for story generation."""
+        """Send the latest recap to OpenAI for story generation.\n
+        Usage: >recap generate"""
+
         await ctx.send("Generating recap...")
         file_name = self.get_latest_recap()
         with open(file_name, "r") as file:
@@ -72,18 +77,24 @@ class Recap(commands.Cog):
 
     @recap.command()
     async def add(self, ctx, message: str):
+        """Add a user message to the OpenAI conversation history.\n
+        Usage: >recap add <message>\n
+        This will modify story output from OpenAI."""
         await ctx.send("Adding to recap...")
         response = openai.add_to_recap(message)
         await ctx.send(response)
 
     @recap.command()
     async def history(self, ctx):
+        """Retrieve the current OpenAI conversation history.\n
+        Usage: >recap history"""
         conversation_history = openai.read_conversation_history()
         await ctx.send(conversation_history)
 
     @recap.command()
     async def announce(self, ctx, message: str):
-        """Announce to the Town Crier channel."""
+        """Announce to the Town Crier channel.\n
+        Usage: >recap announce <message>"""
         # send the message in the town crier channel
         target_channel = self.bot.get_channel(1154282874401456149)
         if target_channel is None:
