@@ -43,15 +43,8 @@ class OpenAI:
             self.conversation_history.append({"role": "user", "content": message})
             response = self.get_openai_response([
                 {
-                    "role": "system",
-                    "content": "You are an assistant trained to convert short DND recaps into high fantasy narratives.",
-                },
-                {
-                    "role": "user",
-                    "content": f"Convert the following DND session recap into a high fantasy narrative:\n {message}",
-                },
-                {
                     "role": "assistant",
+<<<<<<< HEAD
                     "content": "The party members are Seeker (automaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter), and Epho (satyr Bard).",
                 },
                 {
@@ -62,6 +55,35 @@ class OpenAI:
             self.conversation_history.append({"role": "assistant", "content": response})
             self.save_conversation_history()
             return response
+=======
+                    "content": f"With the supplied text which is a brief synopsis, write the text into long form written in the Dungeons and Dragons Universe in the style of high fantasy. The party members are Seeker (aormaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter) and Epho (satyr Bard). Here is a part of the story:\n {message}:",
+                }
+            ],
+            temperature=0.3,
+            frequency_penalty=0.5,
+            presence_penalty=0.5,
+        )
+
+        return response["choices"][0]["message"]["content"]
+
+    def recap_to_story(self, message):
+        message_scrub = self.remove_special_characters(message)
+        prompt = f"""With the supplied string of text, craft the outline of this text into the style of a high fantasy novel written in the Dungeons and Dragons Universe. The party members are Seeker (aormaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter) and Epho (satyr Bard). Here is my message:\n{message_scrub}"""
+        try:
+            # Check if the message qualifies as meaningful feedback
+            response = openai.Completion.create(
+                engine="text-davinci-003",
+                prompt=prompt,
+                max_tokens=300,
+                n=1,
+                stop=None,
+                temperature=0.9,
+                top_p=1,
+                frequency_penalty=0.2,
+                presence_penalty=0.2,
+            )
+            return response.choices[0].text.strip()
+>>>>>>> parent of 9124801 (Update recap_ai.py)
 
         except openai.error.AuthenticationError:
             return "AuthenticationError: Please check your OpenAI API credentials."
