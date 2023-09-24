@@ -12,6 +12,16 @@ class OpenAI:
         openai.api_key = os.getenv("OPENAI_API_KEY")
         self.conversation_history = []
 
+    def save_conversation_history(self):
+        with open("conversation_history.json", "w") as file:
+            json.dump(self.conversation_history, file)
+
+    def read_conversation_history(self):
+        with open("conversation_history.json", "r") as file:
+            return json.load(file)
+    
+    
+
     @staticmethod
     def remove_special_characters(input_string):
         pattern = r"[^a-zA-Z0-9\s]"
@@ -53,6 +63,7 @@ class OpenAI:
     def add_to_recap(self, instruction):
         try:
             self.conversation_history.append({"role": "system", "content": instruction})
+            self.save_conversation_history()
             new_response = openai.ChatCompletion.create(
                 model="gpt-4",
                 messages=[
