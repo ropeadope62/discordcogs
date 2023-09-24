@@ -84,6 +84,6 @@ class OpenAI:
                 {"role": "assistant", "content": new_response}
             )
             self.save_conversation_history()
-            return new_response
+            return new_response["choices"][0]["message"]["content"]
         except Exception as e:
             return str(e)
