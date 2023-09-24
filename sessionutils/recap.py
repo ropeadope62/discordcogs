@@ -77,7 +77,7 @@ class Recap(commands.Cog):
     @recap.command()
     async def history(self, ctx):
         conversation_history = openai.read_conversation_history()
-        await ctx.sent(conversation_history)
+        await ctx.send(conversation_history)
 
     @recap.command()
     async def announce(self, ctx, message: str):
