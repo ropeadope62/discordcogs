@@ -9,6 +9,8 @@ import glob
 import discord
 
 
+from discord import Embed
+
 openai = OpenAI()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -89,15 +91,23 @@ class Recap(commands.Cog):
             return
         header = f"Recap for {datetime.now().strftime('%Y-%m-%d')}"
         # make a discord embed
-        embed = discord.Embed(title="Recap", description=message, color=0xEEE657)
-        embed.add_field(name="Hello", value=header, inline=False)
-        embed.add_field(name="Message", value=message, inline=False)
+        embed = Embed(
+            title="Chat-SRD Commands",
+            description="Here's a list of available commands:",
+            color=0x00FF00,  # Green color
+        )
+        embed = discord.Embed(
+            title=f"Session Recap for {datetime.now().strftime('%Y-%m-%d')}",
+            description=message,
+            color=0xEEE657,
+        )
+        embed.add_field(name="Announcement", value=header, inline=False)
+        embed.add_field(name="Lorem ipsum yog sothoth", value=message, inline=False)
         embed.set_author(name="Town Crier")
         embed.set_thumbnail(url="https://imgur.com/a/yid0sL7")
         embed.set_footer(text="Town Crier")
-        await ctx.send(embed)
 
-        await target_channel.send(embed)
+        await target_channel.send(embed=embed)
         await ctx.send("Announcement posted to Town Crier")
 
     @recap.command()

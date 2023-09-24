@@ -25,34 +25,66 @@ class OpenAI:
         pattern = r"[^a-zA-Z0-9\s]"
         return re.sub(pattern, "", input_string)
 
-    def recap_to_story_gpt4(self, message):
+    def get_openai_response(self, messages):
         try:
-            self.conversation_history.append({"role": "user", "content": message})
-            self.save_conversation_history()
             response = openai.ChatCompletion.create(
                 model="gpt-4",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are an assistant trained to convert short DND recaps into high fantasy narratives.",
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Convert the following DND session recap into a high fantasy narrative:\n {message}",
-                    },
-                    {
-                        "role": "assistant",
-                        "content": "The party members are Seeker (automaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter), and Epho (satyr Bard).",
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Keep the story short, and do not add detail which was not in the session recap",
-                    },
-                ],
+                messages=messages,
                 temperature=0.3,
                 frequency_penalty=0.5,
                 presence_penalty=0.5,
             )
+            return response["choices"][0]["message"]["content"]
+        except openai.error.AuthenticationError:
+            return "AuthenticationError: Please check your OpenAI API credentials."
+
+    def recap_to_story_gpt4(self, message):
+        try:
+            self.conversation_history.append({"role": "user", "content": message})
+            response = self.get_openai_response([
+                {
+                    "role": "system",
+                    "content": "You are an assistant trained to convert short DND recaps into high fantasy narratives.",
+                },
+                {
+                    "role": "user",
+                    "content": f"Convert the following DND session recap into a high fantasy narrative:\n {message}",
+                },
+                {
+                    "role": "assistant",
+                    "content": "The party members are Seeker (automaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter), and Epho (satyr Bard).",
+                },
+                {
+                    "role": "user",
+                    "content": f"Keep the story short, and do not add detail which was not in the session recap",
+                },
+            ])
+            self.conversation_history.append({"role": "assistant", "content": response})
+            self.save_conversation_history()
+            return response
+
+        except openai.error.AuthenticationError:
+            return "AuthenticationError: Please check your OpenAI API credentials."
+
+    def add_to_recap(self, instruction):
+        try:
+            self.conversation_history.append({"role": "system", "content": instruction})
+            new_response = self.get_openai_response([
+                {
+                    "role": "system",
+                    "content": "The user would like to add more details to the story.",
+                },
+                {
+                    "role": "user",
+                    "content": f"Here is the previous story: {self.conversation_history}",
+                },
+            ])
+            self.conversation_history.append({"role": "assistant", "content": new_response})
+            self.save_conversation_history()
+            return new_response
+
+        except Exception as e:
+            return str(e)
             self.conversation_history.append({"role": "assistant", "content": response})
             self.save_conversation_history()
             return response["choices"][0]["message"]["content"]
@@ -63,7 +95,6 @@ class OpenAI:
     def add_to_recap(self, instruction):
         try:
             self.conversation_history.append({"role": "system", "content": instruction})
-            self.save_conversation_history()
             new_response = openai.ChatCompletion.create(
                 model="gpt-4",
                 messages=[
