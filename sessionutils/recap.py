@@ -12,7 +12,6 @@ import discord
 from discord import Embed
 
 openai = OpenAI()
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 class Recap(commands.Cog):
