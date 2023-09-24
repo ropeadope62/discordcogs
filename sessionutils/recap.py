@@ -98,14 +98,18 @@ class Recap(commands.Cog):
         )
         embed = discord.Embed(
             title=f"Session Recap for {datetime.now().strftime('%Y-%m-%d')}",
-            description=message,
+            description="The adventure continues...",
             color=0xEEE657,
         )
         embed.add_field(name="Announcement", value=header, inline=False)
-        embed.add_field(name="Lorem ipsum yog sothoth", value=message, inline=False)
+        embed.add_field(
+            name="The Story So Far...",
+            value=f"Recap for {datetime.now().strftime('%Y-%m-%d')} \n Recap for {datetime.now().strftime('%Y-%m-%d')} \n ",
+            inline=False,
+        )
         embed.set_author(name="Town Crier")
-        embed.set_thumbnail(url="https://imgur.com/a/yid0sL7")
-        embed.set_footer(text="Town Crier")
+        embed.set_thumbnail(url="https://i.imgur.com/3FaAUZI.png")
+        embed.set_footer(text="Feathered Crickets 2023 :registered:")
 
         await target_channel.send(embed=embed)
         await ctx.send("Announcement posted to Town Crier")
