@@ -35,6 +35,10 @@ class OpenAI:
                         "role": "assistant",
                         "content": "The party members are Seeker (automaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter), and Epho (satyr Bard).",
                     },
+                    {
+                        "role": "user",
+                        "content": f"Keep the story short, and do not add detail which was not in the session recap",
+                    },
                 ],
                 temperature=0.3,
                 frequency_penalty=0.5,
