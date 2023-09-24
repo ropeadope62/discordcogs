@@ -19,8 +19,6 @@ class OpenAI:
     def read_conversation_history(self):
         with open(".\\conversation_history.json", "r") as file:
             return json.load(file)
-    
-    
 
     @staticmethod
     def remove_special_characters(input_string):
@@ -85,6 +83,7 @@ class OpenAI:
             self.conversation_history.append(
                 {"role": "assistant", "content": new_response}
             )
+            self.save_conversation_history()
             return new_response
         except Exception as e:
             return str(e)
