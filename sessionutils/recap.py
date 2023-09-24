@@ -120,7 +120,7 @@ class Recap(commands.Cog):
         )
         embed.set_author(name="Town Crier")
         embed.set_thumbnail(url="https://i.imgur.com/3FaAUZI.png")
-        embed.set_footer(text="Feathered Crickets 2023 :registered:")
+        embed.set_footer(text="Feathered Crickets 2023")
 
         await target_channel.send(embed=embed)
         await ctx.send("Announcement posted to Town Crier")
