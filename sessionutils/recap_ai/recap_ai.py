@@ -68,16 +68,20 @@ class OpenAI:
         except Exception as e:
             return str(e)
 
-    def edit_story(self, command):
-        try: 
-            last_story = self.conversation_history[-1]['content'] if self.conversation_history else "No story has been generated yet."
-            
+    def edit_story(self, *, command):
+        try:
+            last_story = (
+                self.conversation_history[-1]["content"]
+                if self.conversation_history
+                else "No story has been generated yet."
+            )
+
             # Build a new prompt based on the command
             new_prompt = f"Based on the previous story: '{last_story}', {command}"
-            
+
             # Generate a new story based on the new prompt
             new_story = self.recap_to_story_gpt4(new_prompt)
-            
+
             return new_story
 
         except Exception as e:
