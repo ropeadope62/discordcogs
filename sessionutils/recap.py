@@ -81,7 +81,7 @@ class Recap(commands.Cog):
         This will modify the previously generated story."""
         await ctx.send("Processing New Story...")
         response = openai.add_to_recap(message)
-        await ctx.send(response)z
+        await ctx.send(response)
 
     @recap.command()
     async def history(self, ctx):
