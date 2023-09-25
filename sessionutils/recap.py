@@ -70,18 +70,18 @@ class Recap(commands.Cog):
         await ctx.send("Generating recap...")
         file_name = self.get_latest_recap()
         with open(file_name, "r") as file:
-            prompt = file.read()
-            response = openai.recap_to_story_gpt4(prompt)
+            messages = file.read()
+            response = openai.recap_to_story_gpt4(messages)
             await ctx.send(response)
 
     @recap.command()
-    async def add(self, ctx, message: str):
-        """Add a user message to the OpenAI conversation history.\n
-        Usage: >recap add <message>\n
-        This will modify story output from OpenAI."""
-        await ctx.send("Adding to recap...")
+    async def edit(self, ctx, message: str):
+        """Make changes to an existing story.\n
+        Usage: >recap edit <message>\n
+        This will modify the previously generated story."""
+        await ctx.send("Processing New Story...")
         response = openai.add_to_recap(message)
-        await ctx.send(response)
+        await ctx.send(response)z
 
     @recap.command()
     async def history(self, ctx):
