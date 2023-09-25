@@ -44,7 +44,7 @@ class Recap(commands.Cog):
 
     @recap.command()
     async def start(self, ctx):
-        """Start collecting messages for recap.\n
+        """Start collecting messages.\n
         Usage: >recap start
         """
         self.collecting = True
@@ -64,7 +64,7 @@ class Recap(commands.Cog):
 
     @recap.command()
     async def generate(self, ctx):
-        """Send the latest recap to OpenAI for story generation.\n
+        """Send the latest recap to OpenAI to generate a story.\n
         Usage: >recap generate"""
 
         await ctx.send("Generating recap...")
@@ -80,7 +80,7 @@ class Recap(commands.Cog):
         Usage: >recap edit <message>\n
         This will modify the previously generated story."""
         await ctx.send("Processing New Story...")
-        response = openai.add_to_recap(message)
+        response = openai.edit_story(message)
         await ctx.send(response)
 
     @recap.command()
@@ -153,6 +153,16 @@ class Recap(commands.Cog):
         embed.add_field(
             name=">recap announce",
             value="Announce the latest recap to the Town Crier",
+            inline=False,
+        )
+        embed.add_field(
+            name=">recap edit",
+            value="Edit the latest story",
+            inline=False,
+        )
+        embed.add_field(
+            name=">recap history",
+            value="Retrieve the current OpenAI conversation history",
             inline=False,
         )
 
