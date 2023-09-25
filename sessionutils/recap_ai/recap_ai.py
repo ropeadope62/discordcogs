@@ -38,9 +38,9 @@ class OpenAI:
         except openai.error.AuthenticationError:
             return "AuthenticationError: Please check your OpenAI API credentials."
 
-    def recap_to_story_gpt4(self, message):
+    def recap_to_story_gpt4(self, messages):
         try:
-            self.conversation_history.append({"role": "user", "content": message})
+            self.conversation_history.append({"role": "user", "content": messages})
             response = self.get_openai_response(
                 [
                     {
@@ -49,7 +49,7 @@ class OpenAI:
                     },
                     {
                         "role": "user",
-                        "content": f"Convert the following DND session recap into a high fantasy narrative:\n {message}",
+                        "content": f"Convert the following DND session recap into a high fantasy narrative:\n {messages}",
                     },
                     {
                         "role": "assistant",
@@ -65,29 +65,20 @@ class OpenAI:
             self.save_conversation_history()
             return response
 
-        except openai.error.AuthenticationError:
-            return "AuthenticationError: Please check your OpenAI API credentials."
+        except Exception as e:
+            return str(e)
 
-    def add_to_recap(self, instruction):
-        try:
-            self.conversation_history.append({"role": "system", "content": instruction})
-            new_response = self.get_openai_response(
-                [
-                    {
-                        "role": "system",
-                        "content": "The user would like to add more details to the story.",
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Here is the previous story: {self.conversation_history}",
-                    },
-                ]
-            )
-            self.conversation_history.append(
-                {"role": "assistant", "content": new_response}
-            )
-            self.save_conversation_history()
-            return new_response
+    def edit_story(self, command):
+        try: 
+            last_story = self.conversation_history[-1]['content'] if self.conversation_history else "No story has been generated yet."
+            
+            # Build a new prompt based on the command
+            new_prompt = f"Based on the previous story: '{last_story}', {command}"
+            
+            # Generate a new story based on the new prompt
+            new_story = self.recap_to_story_gpt4(new_prompt)
+            
+            return new_story
 
         except Exception as e:
             return str(e)
