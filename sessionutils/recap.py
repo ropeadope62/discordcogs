@@ -4,14 +4,14 @@ from datetime import datetime, timedelta
 import json
 from typing import List
 import os
-from .recap_ai.recap_ai import OpenAI
+from .recap_ai.recap_ai import Recap_AI
 import glob
 import discord
 
 
 from discord import Embed
 
-openai = OpenAI()
+recap_ai = Recap_AI()
 
 
 class Recap(commands.Cog):
@@ -35,6 +35,36 @@ class Recap(commands.Cog):
         """Returns the path of the latest recap file based on the creation time."""
 
         return max(glob.glob("recap_*.txt"), key=os.path.getctime)
+
+    def get_formatted_date_from_filename(file_name):
+        """Step 1: Extract date-time string from file name"""
+        date_str = file_name.split("_")[1].split(".")[
+            0
+        ]  # Assuming "recap_" prefix and ".txt" suffix
+        dt = datetime.strptime(date_str, "%Y%m%d%H%M%S")
+        day = int(dt.strftime("%d"))
+        suffix = (
+            "th" if 11 <= day <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+        )
+        formatted_date = f"{day}{suffix} of {dt.strftime('%B')}, {dt.year}"
+        return formatted_date
+
+    async def send_story_chunks(ctx, content: str, chunk_size: int = 2000):
+        if len(content) <= chunk_size:
+            await ctx.send(content)
+            return
+
+        lines = content.split("\n")
+        message = ""
+        for line in lines:
+            if len(message) + len(line) + 1 > chunk_size:
+                await ctx.send(message)
+                message = ""
+
+            message += line + "\n"
+
+        if message:
+            await ctx.send(message)
 
     @commands.group()
     @checks.admin_or_permissions(manage_messages=True)
@@ -63,16 +93,26 @@ class Recap(commands.Cog):
         self.temp_messages = []
 
     @recap.command()
-    async def generate(self, ctx):
+    async def generate(
+        self,
+        ctx,
+        temperature: float = 0.3,
+        frequency_penalty: float = 0.5,
+        presence_penalty: float = 0.5,
+    ):
         """Send the latest recap to OpenAI to generate a story.\n
         Usage: >recap generate"""
-
-        await ctx.send("Generating recap...")
+        adjustment_params = {
+            "temperature": temperature,
+            "frequency_penalty": frequency_penalty,
+            "presence_penalty": presence_penalty,
+        }
+        await ctx.send("Generating Story...")
         file_name = self.get_latest_recap()
         with open(file_name, "r") as file:
             messages = file.read()
-            response = openai.recap_to_story_gpt4(messages)
-            await ctx.send(response)
+            response = recap_ai.recap_to_story_gpt4(messages, adjustment_params)
+            await Recap.send_story_chunks(ctx, response)
 
     @recap.command()
     async def edit(self, ctx, message: str):
@@ -80,14 +120,14 @@ class Recap(commands.Cog):
         Usage: >recap edit <message>\n
         This will modify the previously generated story."""
         await ctx.send("Processing New Story...")
-        response = openai.edit_story(message)
+        response = recap_ai.edit_story(message)
         await ctx.send(response)
 
     @recap.command()
-    async def history(self, ctx):
+    async def conversation(self, ctx):
         """Retrieve the current OpenAI conversation history.\n
         Usage: >recap history"""
-        conversation_history = openai.read_conversation_history()
+        conversation_history = recap_ai.conversation_history
         await ctx.send(conversation_history)
 
     @recap.command()
@@ -167,6 +207,35 @@ class Recap(commands.Cog):
         )
 
         await ctx.send(embed=embed)
+
+    @recap.command()
+    async def history(self, ctx):
+        """Returns a list of all recap files."""
+        embed = discord.Embed(
+            title="Previous Recaps",
+            description="Here's a list of previous recaps:",
+            color=0xEEE657,
+        )
+        for file in glob.glob("recap_*.txt"):
+            embed.add_field(
+                name=file,
+                value=Recap.get_formatted_date_from_filename(file),
+                inline=False,
+            )
+
+        await ctx.send(embed=embed)
+
+    @recap.command()
+    async def get(self, ctx, filename):
+        """get a recap based on file in glob.glob("recap_*.txt")"""
+        if filename is None:
+            filename = self.get_latest_recap()
+            await ctx.send(f"Retrieving latest recap: {filename}")
+        else:
+            await ctx.send(f"Retrieving recap: {filename}")
+            with open(filename, "r") as file:
+                messages = file.read()
+            await ctx.send(messages)
 
     @commands.Cog.listener("on_message")
     async def on_message_listener(self, message):

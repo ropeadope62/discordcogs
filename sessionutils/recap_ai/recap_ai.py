@@ -7,17 +7,17 @@ import json
 load_dotenv()
 
 
-class OpenAI:
+class Recap_AI:
     def __init__(self):
         openai.api_key = os.getenv("OPENAI_API_KEY")
         self.conversation_history = []
 
     def save_conversation_history(self):
-        with open(".\\conversation_history.json", "w") as file:
+        with open(os.path.join(".", "conversation_history.json"), "w") as file:
             json.dump(self.conversation_history, file)
 
     def read_conversation_history(self):
-        with open(".\\conversation_history.json", "r") as file:
+        with open(os.path.join(".", "conversation_history.json"), "r") as file:
             return json.load(file)
 
     @staticmethod
@@ -38,8 +38,14 @@ class OpenAI:
         except openai.error.AuthenticationError:
             return "AuthenticationError: Please check your OpenAI API credentials."
 
-    def recap_to_story_gpt4(self, messages):
-        try:
+    def recap_to_story_gpt4(self, messages, adjustment_params=None):
+        
+        # Use adjustment_params to modify the API call
+        temperature = adjustment_params.get('temperature', 0.3) if adjustment_params else 0.3
+        frequency_penalty = adjustment_params.get('frequency_penalty', 0.5) if adjustment_params else 0.5
+        presence_penalty = adjustment_params.get('presence_penalty', 0.5) if adjustment_params else 0.5
+
+        try:        
             self.conversation_history.append({"role": "user", "content": messages})
             response = self.get_openai_response(
                 [
@@ -53,7 +59,7 @@ class OpenAI:
                     },
                     {
                         "role": "assistant",
-                        "content": "The party members are Seeker (automaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter), and Epho (satyr Bard).",
+                        "content": "The party members are Seeker (automaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter), and Yfo (satyr Bard).",
                     },
                     {
                         "role": "user",
@@ -65,10 +71,10 @@ class OpenAI:
             self.save_conversation_history()
             return response
 
-        except Exception as e:
-            return str(e)
+        except openai.error.AuthenticationError:
+            return "AuthenticationError: Please check your OpenAI API credentials."
 
-    def edit_story(self, *, command):
+    def edit_story(self, *command):
         try:
             last_story = (
                 self.conversation_history[-1]["content"]
