@@ -1,5 +1,5 @@
-from .recap import Recap
+from .storycraft import StoryCraft
 
 
 async def setup(bot):
-    await bot.add_cog(Recap(bot))
+    await bot.add_cog(StoryCraft(bot))
