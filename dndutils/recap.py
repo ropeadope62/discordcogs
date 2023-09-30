@@ -23,7 +23,7 @@ class Recap(commands.Cog):
         self.collecting = False
         self.last_story = None
         self.announce_channel = self.bot.get_channel(
-            1154282874401456149
+            1157129358406856704
         )  # 1154282874401456149 Test channel
 
     def read_recap(self):
