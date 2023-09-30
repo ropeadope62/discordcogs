@@ -21,13 +21,20 @@ class Recap(commands.Cog):
         self.timer = 5  # Placeholder for timer
         self.temp_messages = []
         self.collecting = False
+        self.last_story = None
+        self.announce_channel = self.bot.get_channel(
+            1154282874401456149
+        )  # 1154282874401456149 Test channel
 
     def read_recap(self):
+        """ Reads the recap.json file and returns the data"""
+        
         with open(".\\recap.json", "r") as file:
             data = json.load(file)
             return data["recap"]
 
     def update_recap(self, data_to_update):
+        """ Updates the recap.json file with the new data """
         with open(".\\recap.json", "w") as file:
             json.dump(data_to_update, file)
 
@@ -50,6 +57,7 @@ class Recap(commands.Cog):
         return formatted_date
 
     async def send_story_chunks(ctx, content: str, chunk_size: int = 2000):
+        """Splits the content into chunks that fit within Discord's 2000-character limit for messages."""
         if len(content) <= chunk_size:
             await ctx.send(content)
             return
@@ -65,6 +73,72 @@ class Recap(commands.Cog):
 
         if message:
             await ctx.send(message)
+
+    def split_chunks_for_embed(self, last_story, chunk_size=1024):
+        """Splits the content into chunks that fit within Discord's 1024-character limit for embed fields."""
+        chunks = []
+        for i in range(0, len(last_story), chunk_size):
+            chunks.append(last_story[i : i + chunk_size])
+        return chunks
+
+    async def send_paginated_embed(
+        self, ctx, target_channel, content_list, summary, *, announcement_title
+    ):
+        """For sending paginated embeds to be used with the recap announce command."""
+        # await ctx.send(f"Announce Channel: {self.announce_channel}")  # Debug line
+        # await ctx.send(
+        #    f"Debug: Entered send_paginated_embed. Target: {self.announce_channel}, Content Length: {len(content_list)}"
+        # )
+        target_channel = self.announce_channel
+        page = 0
+        embed = discord.Embed(
+            title=f"{announcement_title} - {datetime.now().strftime('%Y-%m-%d')}\n",
+            description=f"*{summary}*",
+            color=0xEEE657,
+        )
+        embed.add_field(name="The full story...", value=content_list[page][:1024])
+        embed.set_author(name="Town Crier")
+        embed.set_thumbnail(url="https://i.imgur.com/3FaAUZI.png")
+        embed.set_footer(text=f"Feathered Crickets 2023 | Page {page+1}")
+
+        message = await target_channel.send(embed=embed)
+
+        await message.add_reaction("◀️")
+        await message.add_reaction("▶️")
+
+        def check(reaction, user):
+            return user == ctx.author and str(reaction.emoji) in {"◀️", "▶️"}
+
+        while True:
+            try:
+                reaction, user = await ctx.bot.wait_for(
+                    "reaction_add", timeout=60, check=check
+                )
+
+                if str(reaction.emoji) == "▶️" and page < len(content_list) - 1:
+                    page += 1
+                    new_field_value = content_list[page][
+                        :1024
+                    ]  # Update the value of the field
+                    embed.set_field_at(
+                        0, name="The full story...", value=new_field_value
+                    )  # Update the first field
+                    await message.edit(embed=embed)
+
+                elif str(reaction.emoji) == "◀️" and page > 0:
+                    page -= 1
+                    new_field_value = content_list[page][
+                        :1024
+                    ]  # Update the value of the field
+                    embed.set_field_at(
+                        0, name="The full story...", value=new_field_value
+                    )  # Update the first field
+                    await message.edit(embed=embed)
+
+                await message.remove_reaction(reaction, user)
+
+            except asyncio.TimeoutError:
+                break
 
     @commands.group()
     @checks.admin_or_permissions(manage_messages=True)
@@ -82,7 +156,7 @@ class Recap(commands.Cog):
 
     @recap.command()
     async def stop(self, ctx):
-        """Stop collecting messages.\n
+        """Stop collecting messages, join them into one string and save to a txt file.\n
         Usage: >recap stop"""
         self.collecting = False
         collected_text = " ".join(self.temp_messages)
@@ -99,9 +173,10 @@ class Recap(commands.Cog):
         temperature: float = 0.3,
         frequency_penalty: float = 0.5,
         presence_penalty: float = 0.5,
-    ):
+        ):
         """Send the latest recap to OpenAI to generate a story.\n
         Usage: >recap generate"""
+
         adjustment_params = {
             "temperature": temperature,
             "frequency_penalty": frequency_penalty,
@@ -112,16 +187,19 @@ class Recap(commands.Cog):
         with open(file_name, "r") as file:
             messages = file.read()
             response = recap_ai.recap_to_story_gpt4(messages, adjustment_params)
+            self.last_story = response
+            recap_ai.set_last_story(response)
             await Recap.send_story_chunks(ctx, response)
 
     @recap.command()
-    async def edit(self, ctx, message: str):
+    async def edit(self, ctx, last_story, *, edit_prompt: str):
         """Make changes to an existing story.\n
         Usage: >recap edit <message>\n
         This will modify the previously generated story."""
+        last_story = self.last_story
         await ctx.send("Processing New Story...")
-        response = recap_ai.edit_story(message)
-        await ctx.send(response)
+        response = recap_ai.edit_story(last_story, edit_prompt)
+        await Recap.send_story_chunks(ctx, response)
 
     @recap.command()
     async def conversation(self, ctx):
@@ -130,38 +208,42 @@ class Recap(commands.Cog):
         conversation_history = recap_ai.conversation_history
         await ctx.send(conversation_history)
 
+    async def get_summary(self, ctx):
+        """Prompt the user to summarize the story into one line."""
+        last_story = self.last_story
+        summary_prompt = [
+            {
+                "role": "user",
+                "content": f"Summarize the following story into one line: {last_story}",
+            }
+        ]
+        summary = recap_ai.summarize_story_title(
+            last_story=last_story, summary_prompt=summary_prompt
+        )
+        return summary
+
     @recap.command()
-    async def announce(self, ctx, message: str):
+    async def announce(self, ctx, *, announcement_title):
         """Announce to the Town Crier channel.\n
         Usage: >recap announce <message>"""
         # send the message in the town crier channel
-        target_channel = self.bot.get_channel(1154282874401456149)
+        last_story = self.last_story
+        target_channel = self.announce_channel
+        summary = await self.get_summary(ctx)
         if target_channel is None:
             await ctx.send("Channel not found")
             return
-        header = f"Recap for {datetime.now().strftime('%Y-%m-%d')}"
         # make a discord embed
-        embed = Embed(
-            title="Chat-SRD Commands",
-            description="Here's a list of available commands:",
-            color=0x00FF00,  # Green color
-        )
-        embed = discord.Embed(
-            title=f"Session Recap for {datetime.now().strftime('%Y-%m-%d')}",
-            description="The adventure continues...",
-            color=0xEEE657,
-        )
-        embed.add_field(name="Announcement", value=header, inline=False)
-        embed.add_field(
-            name="The Story So Far...",
-            value=f"Recap for {datetime.now().strftime('%Y-%m-%d')} \n Recap for {datetime.now().strftime('%Y-%m-%d')} \n ",
-            inline=False,
-        )
-        embed.set_author(name="Town Crier")
-        embed.set_thumbnail(url="https://i.imgur.com/3FaAUZI.png")
-        embed.set_footer(text="Feathered Crickets 2023")
+        story_chunks = self.split_chunks_for_embed(last_story)
 
-        await target_channel.send(embed=embed)
+        await self.send_paginated_embed(
+            ctx,
+            target_channel,
+            story_chunks,
+            summary,
+            announcement_title=announcement_title,
+        )
+
         await ctx.send("Announcement posted to Town Crier")
 
     @recap.command()
