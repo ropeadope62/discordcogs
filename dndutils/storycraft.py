@@ -4,14 +4,14 @@ from datetime import datetime, timedelta
 import json
 from typing import List
 import os
-from .story_ai.story_ai import story_AI
+from .story_ai.story_ai import StoryCraft_AI
 import glob
 import discord
 
 
 from discord import Embed
 
-story_ai = story_AI()
+story_ai = StoryCraft_AI()
 
 
 class StoryCraft(commands.Cog):
@@ -27,14 +27,14 @@ class StoryCraft(commands.Cog):
         )  # 1154282874401456149 Test channel
 
     def read_story(self):
-        """ Reads the story.json file and returns the data"""
-        
+        """Reads the story.json file and returns the data"""
+
         with open(".\\story.json", "r") as file:
             data = json.load(file)
             return data["story"]
 
     def update_story(self, data_to_update):
-        """ Updates the story.json file with the new data """
+        """Updates the story.json file with the new data"""
         with open(".\\story.json", "w") as file:
             json.dump(data_to_update, file)
 
@@ -143,7 +143,9 @@ class StoryCraft(commands.Cog):
     @commands.group()
     @checks.admin_or_permissions(manage_messages=True)
     async def storycraft(self, ctx):
-        """Record user messages and turn it into a story with GPT4. This is an empty command for grouping purposes."""
+        """Convert DND game session notes into a high fantasy story with GPT4.\n
+        Usage: >storycraft <command>\n
+        To get started, use >storycraft help"""
         pass
 
     @storycraft.command()
@@ -173,7 +175,7 @@ class StoryCraft(commands.Cog):
         temperature: float = 0.3,
         frequency_penalty: float = 0.5,
         presence_penalty: float = 0.5,
-        ):
+    ):
         """Send the latest session to OpenAI to generate a story.\n
         Usage: >storycraft generate"""
 
