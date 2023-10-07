@@ -1,0 +1,10 @@
+{
+    "stories": [
+        {
+            "date": "2023-10-01",
+            "author": "User1",
+            "session_content": "These are the session notes",
+            "story_content": "This is the story back from the AI."
+        }
+    ]
+}
