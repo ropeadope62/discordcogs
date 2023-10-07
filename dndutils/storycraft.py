@@ -277,16 +277,23 @@ class StoryCraft(commands.Cog):
         # split the story into chunks that fit within Discord's 1024-character limit for embed fields
 
         story_chunks = self.split_chunks_for_embed(last_story)
-        pages = list(pagify(
-            last_story,
-            delims=('\n',),  # You can specify delimiters where page breaks will occur.
-            priority=False,  # Set to True to choose the page break delimiter based on the order of delims.
-            escape_mass_mentions=True,  # If True, mass mentions (here or everyone) will be silenced.
-            shorten_by=8,  # How much to shorten each page by. Defaults to 8.
-            page_length=2000  # The maximum length of each page. Defaults to 2000.
-            ))
+
+        # I am testing the pagify feature of Redbot over my own embed paginated embed function.
+
+        pages = list(
+            pagify(
+                last_story,
+                delims=(
+                    "\n",
+                ),  # You can specify delimiters where page breaks will occur.
+                priority=False,  # Set to True to choose the page break delimiter based on the order of delims.
+                escape_mass_mentions=True,  # If True, mass mentions (here or everyone) will be silenced.
+                shorten_by=8,  # How much to shorten each page by. Defaults to 8.
+                page_length=2000,  # The maximum length of each page. Defaults to 2000.
+            )
+        )
         for page in pages:
-            await ctx.send(page)      
+            await ctx.send(page)
 
         await self.send_paginated_embed(
             ctx,
@@ -302,11 +309,11 @@ class StoryCraft(commands.Cog):
     async def help(self, ctx):
         """Displays the StoryCraft Help Menu in an embed."""
 
-        # Create the embed 
+        # Create the embed
 
         embed = discord.Embed(
             title="StoryCraft Help Menu",
-            description="StoryCraft will record a several messages and write them into a story in the style of high fantasy.",
+            description="StoryCraft will record dnd session notes as user messages and write them into a story in the style of high fantasy.",
             color=0x8E7CC3,
         )
 
@@ -368,7 +375,6 @@ class StoryCraft(commands.Cog):
             with open(filename, "r") as file:
                 messages = file.read()
             await ctx.send(messages)
-
 
     @commands.Cog.listener("on_message")
     async def on_message_listener(self, message):
