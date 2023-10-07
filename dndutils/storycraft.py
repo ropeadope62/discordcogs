@@ -1,13 +1,14 @@
 import asyncio
-from redbot.core import commands, checks
 from datetime import datetime, timedelta
 import json
 from typing import List
 import os
-from .story_ai.story_ai import StoryCraft_AI
 import glob
 import discord
 
+from redbot.core import commands, checks, app_commands
+from redbot.core.utils.chat_formatting import pagify
+from .story_ai.story_ai import StoryCraft_AI
 
 from discord import Embed
 
@@ -22,11 +23,24 @@ class StoryCraft(commands.Cog):
         self.temp_messages = []
         self.collecting = False
         self.last_story = None
-        self.announce_channel = self.bot.get_channel(
-            1157129358406856704
-        )  # 1154282874401456149 Test channel
+        self.announce_channel = self.bot.get_channel(1157129358406856704)
 
-    def read_story(self):
+    async def read_story(self):
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self._read_story)
+
+    def _read_story(self):
+        with open(".\\story.json", "r") as file:
+            data = json.load(file)
+            return data["story"]
+
+    async def update_story(self, data_to_update):
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, self._update_story, data_to_update)
+
+    def _update_story(self, data_to_update):
+        # ... existing code to update story.json ...
+
         """Reads the story.json file and returns the data"""
 
         with open(".\\story.json", "r") as file:
@@ -89,7 +103,7 @@ class StoryCraft(commands.Cog):
         # await ctx.send(
         #    f"Debug: Entered send_paginated_embed. Target: {self.announce_channel}, Content Length: {len(content_list)}"
         # )
-        target_channel = self.announce_channel
+        target_channel = target_channel
         page = 0
         embed = discord.Embed(
             title=f"{announcement_title} - {datetime.now().strftime('%Y-%m-%d')}\n",
@@ -111,9 +125,7 @@ class StoryCraft(commands.Cog):
 
         while True:
             try:
-                reaction, user = await ctx.bot.wait_for(
-                    "reaction_add", timeout=60, check=check
-                )
+                reaction, user = await ctx.bot.wait_for("reaction_add", check=check)
 
                 if str(reaction.emoji) == "▶️" and page < len(content_list) - 1:
                     page += 1
@@ -230,7 +242,7 @@ class StoryCraft(commands.Cog):
         Usage: >storycraft announce <message>"""
         # send the message in the town crier channel
         last_story = self.last_story
-        target_channel = self.announce_channel
+        target_channel = self.bot.get_channel(1154282874401456149)
         summary = await self.get_summary(ctx)
         if target_channel is None:
             await ctx.send("Channel not found")
@@ -249,44 +261,80 @@ class StoryCraft(commands.Cog):
         await ctx.send("Announcement posted to Town Crier")
 
     @storycraft.command()
+    async def announce_test(self, ctx, *, announcement_title):
+        """Announce to the Town Crier channel.\n
+        Usage: >storycraft announce <message>"""
+
+        # send the message in the town crier channel
+
+        last_story = self.last_story
+        target_channel = self.bot.get_channel(1157129358406856704)
+        summary = await self.get_summary(ctx)
+        if target_channel is None:
+            await ctx.send("Channel not found")
+            return
+
+        # split the story into chunks that fit within Discord's 1024-character limit for embed fields
+
+        story_chunks = self.split_chunks_for_embed(last_story)
+        pages = list(pagify(
+            last_story,
+            delims=('\n',),  # You can specify delimiters where page breaks will occur.
+            priority=False,  # Set to True to choose the page break delimiter based on the order of delims.
+            escape_mass_mentions=True,  # If True, mass mentions (here or everyone) will be silenced.
+            shorten_by=8,  # How much to shorten each page by. Defaults to 8.
+            page_length=2000  # The maximum length of each page. Defaults to 2000.
+            ))
+        for page in pages:
+            await ctx.send(page)      
+
+        await self.send_paginated_embed(
+            ctx,
+            target_channel,
+            story_chunks,
+            summary,
+            announcement_title=announcement_title,
+        )
+
+        await ctx.send("Announcement posted to Town Crier")
+
+    @storycraft.command()
     async def help(self, ctx):
         """Displays the StoryCraft Help Menu in an embed."""
-        # make an embed
+
+        # Create the embed 
+
         embed = discord.Embed(
             title="StoryCraft Help Menu",
-            description="StoryCraft will record a several messages and write them into a story in the style of high fantasy. Commands for StoryCraft",
-            color=0xEEE657,
+            description="StoryCraft will record a several messages and write them into a story in the style of high fantasy.",
+            color=0x8E7CC3,
         )
 
         # set the fields of the embed
+
         embed.add_field(
             name=">storycraft start",
-            value="Start collecting messages for the story",
+            value="Start collecting messages for the story.\n Usage: >storycraft start",
             inline=False,
         )
         embed.add_field(
             name=">storycraft stop",
-            value="Stop collecting messages for the story",
+            value="Stop collecting messages for the story.\n Usage: >storycraft stop",
             inline=False,
         )
         embed.add_field(
             name=">storycraft generate",
-            value="Send the latest session to OpenAI for story generation",
+            value="Send the latest session to OpenAI for story generation. \n Usage: >storycraft generate \n Optional Parameters: \n temperature: (default 0.3) \n frequency_penalty: (default 0.5) \n presence_penalty: (default 0.5) \n Usage with custom parameters: >storycraft generate 0.5 0.5 0.5 ",
             inline=False,
         )
         embed.add_field(
             name=">storycraft announce",
-            value="Announce the latest story to the Town Crier",
+            value="Announce the latest story to the Town Crier.\n Usage: >storycraft announce <title>",
             inline=False,
         )
         embed.add_field(
             name=">storycraft edit",
-            value="Edit the latest story",
-            inline=False,
-        )
-        embed.add_field(
-            name=">storycraft history",
-            value="Retrieve the current OpenAI conversation history",
+            value="Edit the latest story. \n Usage: >storycraft edit <user message>",
             inline=False,
         )
 
@@ -298,7 +346,7 @@ class StoryCraft(commands.Cog):
         embed = discord.Embed(
             title="Previous Stories",
             description="Here's a list of previous sessions:",
-            color=0xEEE657,
+            color=0x8E7CC3,
         )
         for file in glob.glob("session_*.txt"):
             embed.add_field(
@@ -320,6 +368,7 @@ class StoryCraft(commands.Cog):
             with open(filename, "r") as file:
                 messages = file.read()
             await ctx.send(messages)
+
 
     @commands.Cog.listener("on_message")
     async def on_message_listener(self, message):

@@ -2,6 +2,7 @@ import openai
 from dotenv import load_dotenv
 import os
 import re
+import datetime
 import json
 
 load_dotenv()
@@ -16,6 +17,33 @@ class StoryCraft_AI:
     def set_last_story(self, last_story):
         """Set the last story to be used in the next conversation setup"""
         self.last_story = last_story
+
+    def save_story(self, author, content):
+        try:
+            with open("stories.json", "r") as file:
+                data = json.load(file)
+        except FileNotFoundError:
+            data = {"stories": []}
+
+            new_story = {
+                "date": datetime.now().strftime("%Y-%m-%d"),
+                "author": author,
+                "content": content,
+            }
+
+        data["stories"].append(new_story)
+
+        with open("stories.json", "w") as file:
+            json.dump(data, file, indent=4)
+
+    # To read all stories
+    def read_stories():
+        try:
+            with open("stories.json", "r") as file:
+                data = json.load(file)
+            return data["stories"]
+        except FileNotFoundError:
+            return []
 
     def save_conversation_history(self):
         """Save the conversation history to the conversation_history.json file"""
@@ -51,17 +79,20 @@ class StoryCraft_AI:
         """Convert DND session notes into a high fantasy narrative using GPT-4
         this is the main function that is called from the discord bot when the user calls the storycraft generate command
         """
-        temperature = (
-            adjustment_params.get("temperature", 0.3) if adjustment_params else 0.3
-        )
-        frequency_penalty = (
-            adjustment_params.get("frequency_penalty", 0.5)
-            if adjustment_params
-            else 0.5
-        )
-        presence_penalty = (
-            adjustment_params.get("presence_penalty", 0.5) if adjustment_params else 0.5
-        )
+        if adjustment_params and "temperature" in adjustment_params:
+            temperature = adjustment_params["temperature"]
+        else:
+            temperature = 0.3
+
+        if adjustment_params and "frequency_penalty" in adjustment_params:
+            frequency_penalty = adjustment_params["frequency_penalty"]
+        else:
+            frequency_penalty = 0.5
+
+        if adjustment_params and "presence_penalty" in adjustment_params:
+            presence_penalty = adjustment_params["presence_penalty"]
+        else:
+            presence_penalty = 0.5
 
         try:
             self.conversation_history.append({"role": "user", "content": messages})
