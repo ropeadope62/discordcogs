@@ -1,6 +1,7 @@
 # StoryCraft
 
-![Alt text](https://iili.io/J28Etst.png)
+<a href="url"><img src="https://iili.io/J28Etst.png" align="center" height="200" width="400" ></a>
+
 
 StoryCraft is a Discord bot built as a cog for the Redbot framework. It leverages the power of GPT-4 to turn your D&D session notes into high-fantasy stories. Record your adventures and let StoryCraft weave them into tales of valor and magic.
 
