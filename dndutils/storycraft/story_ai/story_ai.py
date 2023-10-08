@@ -61,6 +61,11 @@ class StoryCraft_AI:
         pattern = r"[^a-zA-Z0-9\s]"
         return re.sub(pattern, "", input_string)
 
+    def get_adjustment_params(self, adjustment_params, key, default_value):
+        if adjustment_params and key in adjustment_params:
+            return adjustment_params[key]
+        return default_value
+
     def get_openai_response(self, messages):
         """Get a response from the OpenAI API"""
         try:
@@ -79,6 +84,14 @@ class StoryCraft_AI:
         """Convert DND session notes into a high fantasy narrative using GPT-4
         this is the main function that is called from the discord bot when the user calls the storycraft generate command
         """
+        temperature = self.get_adjustment_params(adjustment_params, "temperature", 0.3)
+        frequency_penalty = self.get_adjustment_params(
+            adjustment_params, "frequency_penalty", 0.5
+        )
+        presence_penalty = self.get_adjustment_params(
+            adjustment_params, "presence_penalty", 0.5
+        )
+
         if adjustment_params and "temperature" in adjustment_params:
             temperature = adjustment_params["temperature"]
         else:
@@ -95,33 +108,50 @@ class StoryCraft_AI:
             presence_penalty = 0.5
 
         try:
-            self.conversation_history.append({"role": "user", "content": messages})
-            response = self.get_openai_response(
-                [
-                    {
-                        "role": "system",
-                        "content": "You are an assistant trained to convert short DND session notes into high fantasy narratives.",
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Convert the following DND session notes into a high fantasy narrative:\n {messages}",
-                    },
-                    {
-                        "role": "assistant",
-                        "content": "The party members are Seeker (automaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter), and Yfo (satyr Bard).",
-                    },
-                    {
-                        "role": "user",
-                        "content": "Keep the story short, and do not add detail which was not in the session notes",
-                    },
-                ]
-            )
+            conversation_setup = [
+                {
+                    "role": "system",
+                    "content": "You are an assistant trained to convert short DND session notes into high fantasy narratives.",
+                },
+                {
+                    "role": "user",
+                    "content": f"Convert the following DND session notes into a high fantasy narrative:\n {messages}",
+                },
+                {
+                    "role": "assistant",
+                    "content": "The party members are Seeker (automaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter), and Yfo (satyr Bard).",
+                },
+                {
+                    "role": "user",
+                    "content": "Keep the story short, and do not add detail which was not in the session notes.",
+                },
+            ]
+
+            self.conversation_history.extend(conversation_setup)
+            response = self.get_openai_response(self.conversation_history)
             self.conversation_history.append({"role": "assistant", "content": response})
             self.save_conversation_history()
             return response
 
         except openai.error.AuthenticationError:
             return "AuthenticationError: Please check your OpenAI API credentials."
+
+    def edit_story(self, edit_prompt):
+        """Edit the last story based on the editing prompt"""
+        try:
+            self.conversation_history.append(
+                {"role": "user", "content": f"Edit the last story to {edit_prompt}"}
+            )
+            edited_response = self.get_openai_response(self.conversation_history)
+
+            self.conversation_history.append(
+                {"role": "assistant", "content": edited_response}
+            )
+            self.save_conversation_history()
+            return edited_response
+
+        except Exception as e:
+            return str(e)
 
     def edit_story(self, last_story, edit_prompt):
         """Create a new conversation setup with the editing prompt and the last story"""

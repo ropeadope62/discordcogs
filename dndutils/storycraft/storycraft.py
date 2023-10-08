@@ -30,7 +30,7 @@ class StoryCraft(commands.Cog):
         return await loop.run_in_executor(None, self._read_story)
 
     def _read_story(self):
-        with open(".\\story.json", "r") as file:
+        with open(".\\story_history.json", "r") as file:
             data = json.load(file)
             return data["story"]
 
@@ -40,7 +40,7 @@ class StoryCraft(commands.Cog):
 
     def _update_story(self, data_to_update):
         """Updates the story.json file with the new data"""
-        with open(".\\story.json", "w") as file:
+        with open(".\\story_history.json", "w") as file:
             json.dump(data_to_update, file)
 
     def get_latest_story(self):
@@ -102,9 +102,11 @@ class StoryCraft(commands.Cog):
             color=0x8E7CC3,
         )
         embed.add_field(name="The full story...", value=content_list[page][:1024])
-        embed.set_author(name="Town Crier")
+        embed.set_author(name="StoryCraft")
         embed.set_thumbnail(url="https://i.imgur.com/3FaAUZI.png")
-        embed.set_footer(text=f"Feathered Crickets 2023 | Page {page+1}")
+        embed.set_footer(
+            text=f"{announcement_title} - {datetime.now().strftime('%Y-%m-%d')}  Page {page+1}"
+        )
 
         message = await target_channel.send(embed=embed)
 
@@ -180,7 +182,8 @@ class StoryCraft(commands.Cog):
         presence_penalty: float = 0.5,
     ):
         """Send the latest session to OpenAI to generate a story.\n
-        Usage: >storycraft generate"""
+        Usage: >storycraft generate\n Optional Parameters: \n temperature: (default 0.3) \n frequency_penalty: (default 0.5) \n presence_penalty: (default 0.5) \n Usage with custom parameters: >storycraft generate 0.5 0.5 0.5
+        """
 
         adjustment_params = {
             "temperature": temperature,
@@ -207,7 +210,7 @@ class StoryCraft(commands.Cog):
         await StoryCraft.send_story_chunks(ctx, response)
 
     @storycraft.command()
-    async def conversation(self, ctx):
+    async def history(self, ctx):
         """Retrieve the current OpenAI conversation history.\n
         Usage: >storycraft history"""
         conversation_history = story_ai.conversation_history
@@ -222,10 +225,9 @@ class StoryCraft(commands.Cog):
                 "content": f"Summarize the following story into one line: {last_story}",
             }
         ]
-        summary = story_ai.summarize_story_title(
+        return story_ai.summarize_story_title(
             last_story=last_story, summary_prompt=summary_prompt
         )
-        return summary
 
     @storycraft.command()
     async def announce(self, ctx, *, announcement_title):
