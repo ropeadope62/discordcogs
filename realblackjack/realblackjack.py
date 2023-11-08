@@ -101,7 +101,7 @@ class Participant:
 class Player(Participant):
     def __init__(self, name, ctx):
         super().__init__()
-        self.name = name  # Assume a name must be provided
+        self.name = name  
         self.ctx = ctx
         self.bet = 0
 
@@ -120,7 +120,7 @@ class Player(Participant):
 
     def place_bet(self, amount, available_balance):
         if amount > available_balance:
-            return False  # Not enough balance to place bet
+            return False  
         self.bet = amount
         return True
 
@@ -173,21 +173,16 @@ class GameState:
         self.state = "Waiting for bets"
 
     async def clear_states(self, ctx, channel_id):
-        # Reset the deck (shuffle the cards back into the deck)
         self.deck.shuffle()
-
-        # Clear each player's hand and reset round-specific information
         for player in self.player_objects.values():
             await player.clear_hand()
-
-        # Reset the dealer's hand and any round-specific information
         await self.dealer.clear_hand()
 
-        # Reset any game flags or round-specific data
+       
         self.end_game = False
-        self.current_bet = 0  # If there's a current bet attribute
+        self.current_bet = 0 
 
-        # Announce that the game state has been cleared and a new round can begin
+
         await ctx.send("The table has been cleared for the next round.")
 
     async def take_bets(self, ctx, channel_id):
@@ -196,7 +191,7 @@ class GameState:
             user = self.bot.get_user(player_id)
             player_balance = await bank.get_balance(
                 user
-            )  # Assuming 'bank' is your banking system object
+            )  
             await ctx.send(
                 f"{user.mention}, you have {player_balance} chips. How much do you want to bet? Enter '0' to skip."
             )
@@ -206,9 +201,8 @@ class GameState:
 
             try:
                 msg = await self.bot.wait_for("message", timeout=10.0, check=check_bet)
-                if msg.content.isdigit():  # Check if the message is a digit
+                if msg.content.isdigit(): 
                     bet = int(msg.content)
-                    # Check if the bet is within the player's balance and the player wants to bet
                     if 0 < bet <= player_balance:
                         player.bet = bet
                         await bank.withdraw_credits(user, bet)  # Deduct the bet amount
@@ -233,6 +227,7 @@ class GameState:
         await player.async_init(ctx)
         self.player_objects[player_id] = player
 
+    # The initial gameplay logic 
     async def setup_game(self, ctx, channel_id, embed):
         self.state = "Dealing cards"
         game = self.games.get(channel_id)
@@ -242,14 +237,15 @@ class GameState:
         if game.state == "End Game":
             print("Game is ending, skipping setup...")
             return
-
-        game.deck.shuffle()  # Shuffle the deck
+        
+        # Shuffle the deck
+        game.deck.shuffle()  
 
         # Deal cards to players and the dealer
         for player_id, player in game.player_objects.items():
             user = self.bot.get_user(player_id)
             if user is None:
-                continue  # Skip to the next player if this one can't be found
+                continue  
             player.draw_card(game.deck)
             player.draw_card(game.deck)
             player.calculate_score()
@@ -270,7 +266,7 @@ class GameState:
 
     async def reset_player_and_dealer_states(self):
         print(f"Clearing states for channel ID: {self.channel_id}")
-        await self.dealer.clear_hand()  # Note the await here if clear_hand is async
+        await self.dealer.clear_hand()  
         for player in self.player_objects.values():
             await player.clear_hand()
 
@@ -284,7 +280,8 @@ class GameState:
             # Announce the player's turn
             await ctx.send(f"{user.mention}, it's your turn.")
 
-            while True:  # Loop to allow for multiple hits or stands
+            # Loop to allow multiple hit and stand
+            while True:  
 
                 def check(m):
                     return (
@@ -304,23 +301,19 @@ class GameState:
                         # Update the embed with the new card and score
                         await self.card_table_update_embed(embed, game)
                         await self.game_message.edit(embed=embed)
-
                         if player.score > 21:
-                            # No need to update the embed here if the player is busted
-                            # since it's already been updated with the last hit
-                            break  # Break out of the loop since player is busted
+                            break
 
                     elif decision == "stand":
-                        # No update needed for the embed since no new card was drawn
-                        break  # Break out of the loop since player stands
+                        player.calculate_score()
+                        break 
 
                 except asyncio.TimeoutError:
-                    # No update needed for the embed since it's a timeout without a card draw
-                    break  # Break out of the loop since time is up
+                    break  
 
                 # Check for blackjack
                 if player.score == 21:
-                    # No update needed here if you only want to show cards dealt
+                    await ctx.send(f'Blackjack! {player.name}') 
                     break  # Break out of the loop since player got a blackjack
 
     async def card_table_update_embed(self, embed, game):
@@ -328,6 +321,8 @@ class GameState:
         embed.clear_fields()
 
         # Add fields for each player's hand
+        cards_left = game.deck.cards_remaining
+        
         for player_id, player in game.player_objects.items():
             user = self.bot.get_user(player_id)
             hand_str = ", ".join(str(card) for card in player.hand)
@@ -337,16 +332,25 @@ class GameState:
                 value=f"{hand_str} ({score_str})",
                 inline=False,
             )
-
+            embed.add_field(name="Cards Remaining in Shoe:", value=str(cards_left), inline=False)
         # Add a field for the dealer's hand (showing only one card if the round is in progress)
-        dealer_hand_str = ", ".join(str(card) for card in game.dealer.hand[:1])
-        embed.add_field(
-            name="Dealer's Hand",
-            value=f"{dealer_hand_str} and a hidden card",
-            inline=False,
-        )
-
-    async def dealer_turn(self, ctx, channel_id, embed):
+        if game.state == "Taking Bets":
+            
+            dealer_hand_str = ", ".join(str(card) for card in game.dealer.hand[:1])
+            embed.add_field(
+                name="Dealer's Hand",
+                value=f"{dealer_hand_str} and a hidden card",
+                inline=False,
+            )
+        else:
+            _dealer_hand_str = ", ".join(str(card) for card in game.dealer.hand)
+            embed.add_field(
+                name="Dealer's Hand",
+                value=f"{dealer_hand_str}",
+                inline=False)
+    
+    async def dealer_turn(self, ctx, channel_id, embed):  # noqa: E999
+        
         self.state = "Dealer turn"
         game = self.games[channel_id]
         dealer = game.dealer
@@ -357,18 +361,10 @@ class GameState:
 
         # Dealer rules: must hit until score is 17 or higher
         while dealer.score < 17:
-
             dealer.draw_card(game.deck)  # Add the card to the dealer's hand
             dealer.calculate_score()  # Recalculate the dealer's score
-            dealer_hand_str = ", ".join(str(card) for card in game.dealer.hand[:1])
-            embed.add_field(
-                name="Dealer's Hand",
-                value=f"{dealer_hand_str}",
-                inline=False,
-            )
             await self.card_table_update_embed(embed, game)
             await dealer_message.edit(embed=embed)
-            
 
             # Check if dealer is busted
             if dealer.score > 21:
@@ -394,25 +390,25 @@ class GameState:
         for player_id, player in game.player_objects.items():
             user = self.bot.get_user(player_id)
 
-            #* Player is busted
+            # * Player is busted
             if player.score > 21:
                 await ctx.send(
                     f"{user.mention}, you're busted. You lose your bet of {player.bet}."
                 )
                 await bank.withdraw_credits(user, player.bet)
 
-            #* Dealer is busted or player has higher score than dealer
+            # * Dealer is busted or player has higher score than dealer
             elif dealer.score > 21 or player.score > dealer.score:
                 win_amount = player.bet * self.payouts["Win"]
                 await ctx.send(f"{user.mention}, you win! You get {win_amount} chips.")
                 await bank.deposit_credits(user, win_amount)
 
-            #* It's a tie
+            # * It's a tie
             elif player.score == dealer.score:
                 await ctx.send(f"{user.mention}, it's a tie! You get your bet back.")
-                #* No change in chips
+                # * No change in chips
 
-            #* Dealer wins
+            # * Dealer wins
             else:
                 await ctx.send(
                     f"{user.mention}, dealer wins. You lose your bet of {player.bet}."
@@ -430,19 +426,16 @@ class GameState:
         # Update the embed with the current hands and scores
         await self.update_embed_with_hands(embed, game)
 
-        # Optionally, you can add a field for the state of the deck (number of cards left)
+        
         embed.add_field(
             name="Cards Left in Deck", value=str(len(game.deck.cards)), inline=False
         )
 
-        # Add any other game state information you think is relevant
-        # For example, the current phase of the game, any special messages, etc.
-
-        # Return the built embed
+    
         return embed
 
 
-#discord the RealBlackJack class is a cog that contains the commands for the game.
+
 class RealBlackJack(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -573,7 +566,7 @@ class RealBlackJack(commands.Cog):
         Handles any additional logic when a player leaves the game.
         """
         # Refund the player's bet if necessary
-        if game.current_bet and game.state == 'betting':
+        if game.current_bet and game.state == "betting":
             await bank.deposit_credits(player.user, game.current_bet)
 
         # Clear the player's hand and any other game-specific actions
@@ -675,7 +668,6 @@ class RealBlackJack(commands.Cog):
             await game.clear_states(ctx, channel_id)
 
             # Ask or check if players want to continue or end the game here
-            # Implement logic to either continue to the next round or break the loop
 
             await ctx.send(
                 "The Dealer clears the table, another round will begin in 5 seconds!"
