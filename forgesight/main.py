@@ -24,6 +24,7 @@ SUBSCRIBER_ROLE_ID = 1074071214022201378
 SUBSCRIBER_BONUS = 2
 MEDIA_BONUS = 2
 GOLD_AWARD = 1
+CHANNEL_ID_RESTRICTION = False
 ALLOWED_CHANNEL_IDs = [1171917207375183872, 1172234313400582315]
 
 # Set up the bot intents
@@ -47,7 +48,7 @@ handler.setFormatter(
 )
 logger.addHandler(handler)
 
-
+# Load the .env file
 load_dotenv()
 
 # utility function for getting all of the bot commands
@@ -73,8 +74,9 @@ def save_forgesight_vault(vault):
 def is_mod_or_admin():
     async def predicate(ctx):
         mod_role = discord.utils.get(ctx.guild.roles, name="Moderation Team")
-        admin_role = discord.utils.get(ctx.guild.roles, name="Owner")
-        return mod_role in ctx.author.roles or admin_role in ctx.author.roles
+        owner_role = discord.utils.get(ctx.guild.roles, name="Owner")
+        admin_role = discord.utils.get(ctx.guild.roles, name="Admin")
+        return mod_role in ctx.author.roles or admin_role in ctx.author.roles or owner_role in ctx.author.roles
 
     return commands.check(predicate)
 
@@ -222,21 +224,21 @@ async def set_subscriberbonus(Interaction: discord.Interaction, media_bonus: int
 @is_mod_or_admin()
 async def toggle_rewards(Interaction: discord.Interaction, toggle: str):
     global REWARDS
-    if toggle == "on":
-        REWARDS = True
-        await Interaction.response.send_message(
-            f"Gold rewards have been turned on.", ephemeral=False
-        )
-        logger.info(f"Gold rewards have been turned on by {Interaction.user}")
-    elif toggle == "off":
+    if toggle == "off":
         REWARDS = False
         await Interaction.response.send_message(
-            f"Gold rewards have been turned off.", ephemeral=False
+            "Gold rewards have been turned off.", ephemeral=False
         )
         logger.info(f"Gold rewards have been turned off by {Interaction.user}")
+    elif toggle == "on":
+        REWARDS = True
+        await Interaction.response.send_message(
+            "Gold rewards have been turned on.", ephemeral=False
+        )
+        logger.info(f"Gold rewards have been turned on by {Interaction.user}")
     else:
         await Interaction.response.send_message(
-            f"Invalid option. Use 'on' or 'off'.", ephemeral=True
+            "Invalid option. Use 'on' or 'off'.", ephemeral=True
         )
         logger.warning(
             f"Invalid option entered by {Interaction.user} for /forgesight rewards command."
@@ -348,7 +350,7 @@ async def check_gold(interaction: discord.Interaction, member: discord.Member):
 
         # Embed for gold balance
         embed = discord.Embed(
-            title=f"Gold Balance",
+            title="Gold Balance",
             description=f"{member.display_name}'s gold balance",
             color=0xCF2702,
         )
@@ -383,70 +385,65 @@ async def on_interaction(interaction: discord.Interaction):
 
 @bot.event
 async def on_message(event):
-    # We don't want the bot to reply to itself
-    if event.author == bot:
+    if should_ignore_message(event):
         return
-    if event.author.id == bot.user.id:
-        return
-    # Check that the rewards are enabled and that the message is in an allowed channel
-    if REWARDS == True:
-        vault = load_forgesight_vault()
-        if event.channel.id not in ALLOWED_CHANNEL_IDs:
-            print(
-                f"Message not in allowed channel {event.channel.id}"
-            )  #! Debug print statement, do not log this event due to spam
+
+    if REWARDS:
+        if not is_channel_allowed(event.channel.id):
+            print(f"Message not in allowed channel {event.channel.id}")
             return
 
-        current_gold_award = GOLD_AWARD
-        # Check if message length check is enabled
-        if MIN_MESSAGE_REQUIRED:
-            # If the message is long enough, award gold
-            if len(event.content) >= MIN_MESSAGE_LENGTH:
-                # If the user is a subscriber, apply the subscriber bonus
-                if any(role.id == SUBSCRIBER_ROLE_ID for role in event.author.roles):
-                    current_gold_award *= SUBSCRIBER_BONUS
-                    print(
-                        f"User {event.author.mention} has supporter role: Applying supporter bonus, new gold reward is {current_gold_award}"
-                    )  #! Debug print statement
-                # If the message has attachments, apply the media bonus
-                if event.attachments:
-                    current_gold_award *= MEDIA_BONUS
-                    print(
-                        f"Message has attachments: Applying media bonus, new gold reward is {current_gold_award}"
-                    )  #! Debug print statement
-                # Open the vault and retrieve the user's data
-                async with aiofiles.open("forgesight_vault.json", "r") as file:
-                    data = await file.read()
-                    vault = json.loads(data) if data else {}
-                user_id = str(event.author.id)
-                user_data = vault.get(user_id, {"gold": 0, "last_earned": 0})
-                # If the user has earned gold in the past MESSAGE_REWARD_TIMEOUT seconds, don't award gold
-                if time.time() - user_data["last_earned"] < MESSAGE_REWARD_TIMEOUT:
-                    print(
-                        f"{event.author.mention} has already earned gold in the past {MESSAGE_REWARD_TIMEOUT} seconds."
-                    )  #! Debug print statement
-                    return
-                # Award the gold and update the vault with new gold and last earned time
-                user_data["gold"] += current_gold_award
-                print(
-                    f"Message was length {len(event.content)}: Awarding {current_gold_award} gold to {user_id}"
-                )  #! Debug print statement
-                user_data["last_earned"] = time.time()
-                print(
-                    f'Setting last earned time to {user_data["last_earned"]}'
-                )  #! Debug print statement
-                vault[user_id] = user_data
-                logger.info(
-                    f'Awarding {current_gold_award} gold to {user_id} and updating last earned time to {user_data["last_earned"]}'
-                )
-                print(f"Vault updated for {user_data}")  #! Debug print statement
-                # Save the modified vault
-                async with aiofiles.open("forgesight_vault.json", "w") as file:
-                    await file.write(json.dumps(vault, indent=4))
+        current_gold_award = calculate_gold_award(event)
+
+        if current_gold_award > 0:
+            await update_user_rewards(event.author, current_gold_award)
         else:
-            print(f"Message was not long enough for rewards")
+            print("Message was not long enough for rewards")
     else:
         print(f"Gold rewards are disabled. Message not awarded in {event.channel.id}")
+
+def should_ignore_message(event):
+    return event.author == bot or event.author.id == bot.user.id
+
+def is_channel_allowed(channel_id):
+    return not CHANNEL_ID_RESTRICTION or channel_id in ALLOWED_CHANNEL_IDs
+
+def calculate_gold_award(event):
+    if not MIN_MESSAGE_REQUIRED or len(event.content) < MIN_MESSAGE_LENGTH:
+        return 0
+
+    gold_award = GOLD_AWARD
+    gold_award *= SUBSCRIBER_BONUS if has_subscriber_role(event.author) else 1
+    gold_award *= MEDIA_BONUS if event.attachments else 1
+    return gold_award
+
+def has_subscriber_role(author):
+    return any(role.id == SUBSCRIBER_ROLE_ID for role in author.roles)
+
+async def update_user_rewards(author, gold_award):
+    vault = await load_vault()
+
+    user_id = str(author.id)
+    user_data = vault.get(user_id, {"gold": 0, "last_earned": 0})
+
+    if time.time() - user_data["last_earned"] < MESSAGE_REWARD_TIMEOUT:
+        print(f"{author.mention} has already earned gold in the past {MESSAGE_REWARD_TIMEOUT} seconds.")
+        return
+
+    user_data["gold"] += gold_award
+    user_data["last_earned"] = time.time()
+    vault[user_id] = user_data
+    logger.info(f'Awarding {gold_award} gold to {user_id} {author} and updating last earned time to {user_data["last_earned"]}')
+    await save_vault(vault)
+
+async def load_vault():
+    async with aiofiles.open("forgesight_vault.json", "r") as file:
+        data = await file.read()
+        return json.loads(data) if data else {}
+
+async def save_vault(vault):
+    async with aiofiles.open("forgesight_vault.json", "w") as file:
+        await file.write(json.dumps(vault, indent=4))
 
 
 # Grant gold to a user
