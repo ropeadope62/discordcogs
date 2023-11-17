@@ -15,8 +15,6 @@ To run Forgesight, follow these steps:
 
 ## Usage
 
-Convert DND game session notes into a high fantasy story with GPT-4 using StoryCraft.
-
 ### Getting Started
 
 To get started, use the command:
