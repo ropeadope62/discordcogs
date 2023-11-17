@@ -1,4 +1,4 @@
-<a href="url"><img src="https://iili.io/JnF9oG9.webp" align="center" height="300" width="400" ></a>
+<a href="url"><img src="https://iili.io/JnF9oG9.webp" align="center" height="300" width="350" ></a>
 
 
 Forgesight is a TableFlip Foundry Bot, designed to promote engagement and reward participation in the discord community. The bot rewards server member participation with goals of making the server more fun and interactive. 
