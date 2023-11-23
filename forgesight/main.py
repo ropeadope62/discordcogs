@@ -1,3 +1,4 @@
+import datetime 
 import dotenv
 import asyncio
 import aiofiles
@@ -10,25 +11,11 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import json
 import io
-from discord.ext import commands
 import asyncio
 import shutil
 
-# Global variables for the bot - these can be changed with slash commands
-# TODO: Write these variables to file so they persist between bot restarts
-# TODO: Write a backup task for forgesight_vault.json
+# Global variables for the bot - these can be changed with slash command
 
-MIN_MESSAGE_REQUIRED = True
-MIN_MESSAGE_LENGTH = 20
-REWARDS = True
-MESSAGE_REWARD_TIMEOUT = 10
-SUBSCRIBER_ROLE_ID = 1074071214022201378
-SUBSCRIBER_BONUS = 2
-MEDIA_BONUS = 2
-GOLD_AWARD = 1
-CHANNEL_ID_RESTRICTION = False
-ALLOWED_CHANNEL_IDs = [1171917207375183872, 1172234313400582315]
-OMIT_REWARDS_IDs = [1012659859516297217]
 
 # Set up the bot intents
 intents = discord.Intents.default()
@@ -57,6 +44,18 @@ load_dotenv()
 
 # utility function for getting all of the bot commands
 bot_commands = [command.name for command in bot.commands]
+
+def save_config_vals(variables, file_path):
+    with open(file_path, 'w') as file:
+        json.dump(variables, file)
+        
+config_vals = {'MIN_MESSAGE_REQUIRED': True, 'MIN_MESSAGE_LENGTH': 20, 'REWARDS': True,
+               'MESSAGE_REWARD_TIMEOUT': 10, 'SUBSCRIBER_ROLE_ID': 1074071214022201378,
+               'SUBSCRIBER_BONUS': 2, 'MEDIA_BONUS': 2, 'GOLD_AWARD': 1, 'CHANNEL_ID_RESTRICTION': False,
+                'ALLOWED_CHANNEL_IDs': [1171917207375183872, 1172234313400582315], 'OMIT_REWARDS_IDs': [1012659859516297217]}
+
+save_config_vals(config_vals, 'forgesight_config.json')
+
 
 
 # Utility functions for retrieving and storing user data in the vault
@@ -92,12 +91,12 @@ async def bank(ctx):
     await ctx.send(file=file, embed=embed)
 
 
-async def backup_vault():
+async def backup_vault(source, backup_dir, interval_seconds):
     while True:
-        await asyncio.sleep(3600)  # wait for an hour
-        shutil.copyfile("forgesight_vault.json", "forgesight_vault_backup.json")
-        logger.info("Vault backup created")
-backup_vault()
+        shutil.copy(source, backup_dir)
+        time.sleep(interval_seconds)
+        
+        await backup_vault('forgesight_vault.json', './forgesight_vault_backup.json', 3600)
 
 # Ready the bot, sync the commands
 @bot.event
@@ -184,14 +183,13 @@ async def forgesight_log(Interaction: discord.Interaction, action: str = "get"):
 )
 @is_mod_or_admin()
 async def set_messagelength(Interaction: discord.Interaction, min_message_length: int):
-    global MIN_MESSAGE_LENGTH
-    MIN_MESSAGE_LENGTH = min_message_length
+    config_vals['MIN_MESSAGE_LENGTH'] = min_message_length
     await Interaction.response.send_message(
-        f"Minimum message length for Gold reward has been set to {MIN_MESSAGE_LENGTH}.",
+        f"Minimum message length for Gold reward has been set to {config_vals['MIN_MESSAGE_LENGTH']}.",
         ephemeral=False,
     )
     logger.info(
-        f"Minimum message length set to {MIN_MESSAGE_LENGTH} by {Interaction.user}"
+        f"Minimum message length set to {config_vals['MIN_MESSAGE_LENGTH']} by {Interaction.user}"
     )
 
 
@@ -201,7 +199,6 @@ async def set_messagelength(Interaction: discord.Interaction, min_message_length
 )
 @is_mod_or_admin()
 async def set_subscriberbonus(Interaction: discord.Interaction, subscriber_bonus: int):
-    global SUBSCRIBER_BONUS
     if subscriber_bonus < 0:
         await Interaction.response.send_message(
             f"Invalid subscriber bonus: {subscriber_bonus}. Subscriber bonus must be a positive integer.",
@@ -211,20 +208,19 @@ async def set_subscriberbonus(Interaction: discord.Interaction, subscriber_bonus
             f"Invalid subscriber bonus entered by {Interaction.user} for /forgesight subscriberbonus command."
         )
         return
-    SUBSCRIBER_BONUS = subscriber_bonus
+    config_vals['SUBSCRIBER_BONUS'] = subscriber_bonus
     await Interaction.response.send_message(
-        f"Subscriber bonus for Gold reward has been set to {SUBSCRIBER_BONUS}.",
+        f"Subscriber bonus for Gold reward has been set to {config_vals['SUBSCRIBER_BONUS']}.",
         ephemeral=False,
     )
-    logger.info(f"Subscriber bonus set to {SUBSCRIBER_BONUS} by {Interaction.user}")
+    logger.info(f"Subscriber bonus set to {config_vals['SUBSCRIBER_BONUS']} by {Interaction.user}")
 
 
 @bot.tree.command(
     name="media_bonus", description="Set the media bonus applied to Gold rewards."
 )
 @is_mod_or_admin()
-async def set_subscriberbonus(Interaction: discord.Interaction, media_bonus: int):
-    global MEDIA_BONUS
+async def set_mediabonus(Interaction: discord.Interaction, media_bonus: int):
     if media_bonus < 0:
         await Interaction.response.send_message(
             f"Invalid media bonus: {media_bonus}. Media bonus must be a positive integer.",
@@ -234,12 +230,12 @@ async def set_subscriberbonus(Interaction: discord.Interaction, media_bonus: int
             f"Invalid media bonus entered by {Interaction.user} for /forgesight media_bonus command."
         )
         return
-    MEDIA_BONUS = media_bonus
+    config_vals['MEDIA_BONUS'] = media_bonus
     await Interaction.response.send_message(
-        f"Media bonus for Gold reward has been set to {SUBSCRIBER_BONUS}.",
+        f"Media bonus for Gold reward has been set to {config_vals['SUBSCRIBER_BONUS']}.",
         ephemeral=False,
     )
-    logger.info(f"Media bonus set to {SUBSCRIBER_BONUS} by {Interaction.user}")
+    logger.info(f"Media bonus set to {config_vals['SUBSCRIBER_BONUS']} by {Interaction.user}")
 
 
 @bot.tree.command(
@@ -248,15 +244,14 @@ async def set_subscriberbonus(Interaction: discord.Interaction, media_bonus: int
 )
 @is_mod_or_admin()
 async def toggle_rewards(Interaction: discord.Interaction, toggle: str):
-    global REWARDS
     if toggle == "off":
-        REWARDS = False
+        config_vals['REWARDS'] = False
         await Interaction.response.send_message(
             "Gold rewards have been turned off.", ephemeral=False
         )
         logger.info(f"Gold rewards have been turned off by {Interaction.user}")
     elif toggle == "on":
-        REWARDS = True
+        config_vals['REWARDS'] = True
         await Interaction.response.send_message(
             "Gold rewards have been turned on.", ephemeral=False
         )
@@ -276,7 +271,6 @@ async def toggle_rewards(Interaction: discord.Interaction, toggle: str):
 )
 @is_mod_or_admin()
 async def set_reward_timeout(Interaction: discord.Interaction, timeout: int):
-    global MESSAGE_REWARD_TIMEOUT
     if timeout < 0:
         await Interaction.response.send_message(
             f"Invalid timeout: {timeout}. Timeout must be a positive integer.",
@@ -286,13 +280,13 @@ async def set_reward_timeout(Interaction: discord.Interaction, timeout: int):
             f"Invalid timeout entered by {Interaction.user} for /forgesight reward_timeout command."
         )
         return
-    MESSAGE_REWARD_TIMEOUT = timeout
+    config_vals['MESSAGE_REWARD_TIMEOUT'] = timeout
     await Interaction.response.send_message(
-        f"Message reward timeout set to {MESSAGE_REWARD_TIMEOUT} seconds.",
+        f"Message reward timeout set to {config_vals['MESSAGE_REWARD_TIMEOUT']} seconds.",
         ephemeral=False,
     )
     logger.info(
-        f"Message reward timeout set to {MESSAGE_REWARD_TIMEOUT} by {Interaction.user}"
+        f"Message reward timeout set to {config_vals['MESSAGE_REWARD_TIMEOUT']} by {Interaction.user}"
     )
 
 @bot.tree.command(
@@ -328,9 +322,8 @@ async def toggle_channel_restriction(Interaction: discord.Interaction, toggle: s
 )
 @is_mod_or_admin()
 async def toggle_reward_timeout(Interaction: discord.Interaction, toggle: str):
-    global MESSAGE_REWARD_TIMEOUT
     if toggle == "off":
-        MESSAGE_REWARD_TIMEOUT = None
+        config_vals['MESSAGE_REWARD_TIMEOUT'] = None
         await Interaction.response.send_message(
             "Message reward timeout has been turned off.", ephemeral=False
         )
@@ -343,7 +336,7 @@ async def toggle_reward_timeout(Interaction: discord.Interaction, toggle: str):
             return m.author == Interaction.user and m.channel == Interaction.channel and m.content.isdigit()
         try:
             msg = await bot.wait_for('message', check=check, timeout=30.0)
-            MESSAGE_REWARD_TIMEOUT = int(msg.content)
+            config_vals['MESSAGE_REWARD_TIMEOUT'] = int(msg.content)
             await Interaction.response.send_message(
                 f"Message reward timeout set to {MESSAGE_REWARD_TIMEOUT} seconds.",
                 ephemeral=False,
@@ -479,6 +472,23 @@ async def on_interaction(interaction: discord.Interaction):
     if interaction.type == discord.InteractionType.component:
         print(f"Received button click: {interaction.data}")
 
+def calculate_streak_bonus(user_data, user_id):
+    # Parse the last post date and calculate the difference from today
+    today = datetime.date.today()
+    last_post_date = datetime.date.fromisoformat(user_data['last_post_date']) if user_data['last_post_date'] else None
+
+    if last_post_date and (today - last_post_date).days == 1:
+        # Increment consecutive days, up to a maximum of 5
+        user_data['consecutive_days'] = min(user_data['consecutive_days'] + 1, 5)
+    else:
+        user_data['consecutive_days'] = 1
+
+    # Update the last post date to today
+    user_data['last_post_date'] = today.isoformat()
+
+    # Calculate and return the streak bonus
+    return user_data['consecutive_days']
+
 
 @bot.event
 async def on_message(event):
@@ -489,33 +499,33 @@ async def on_message(event):
         print(f"User is the bot -  {event.author}, skipping rewards")
         logger.info(f"User is the bot -  {event.author}, skipping rewards")
         return
-    if event.author.id in OMIT_REWARDS_IDs:
+    if event.author.id in config_vals['OMIT_REWARDS_IDs']:
         print('User is in OMIT_REWARDS_IDs, skipping reward')
         logger.info(f'User is in OMIT_REWARDS_IDs, skipping reward')
         return
     # Check that the rewards are enabled 
-    if REWARDS == True:
+    if config_vals['REWARDS'] == True:
         vault = load_forgesight_vault()
         # Detarmine if channel id restriction is enabled, if so, check if the message is in an allowed channel
-        if CHANNEL_ID_RESTRICTION and event.channel.id not in ALLOWED_CHANNEL_IDs:
+        if config_vals['CHANNEL_ID_RESTRICTION'] and event.channel.id not in config_vals['ALLOWED_CHANNEL_IDs']:
             print(
                 f"Message not in allowed channel {event.channel.id}"
             )  #! Debug print statement, do not log this event due to spam
             return
-        current_gold_award = GOLD_AWARD
+        current_gold_award = config_vals['GOLD_AWARD']
         # Check if message length check is enabled
-        if MIN_MESSAGE_REQUIRED:
+        if config_vals['MIN_MESSAGE_REQUIRED']:
             # If the message is long enough, award gold
-            if len(event.content) >= MIN_MESSAGE_LENGTH:
+            if len(event.content) >= config_vals['MIN_MESSAGE_LENGTH']:
                 # If the user is a subscriber, apply the subscriber bonus
-                if any(role.id == SUBSCRIBER_ROLE_ID for role in event.author.roles):
-                    current_gold_award *= SUBSCRIBER_BONUS
+                if any(role.id == config_vals['SUBSCRIBER_ROLE_ID'] for role in event.author.roles):
+                    current_gold_award *= config_vals['SUBSCRIBER_BONUS']
                     print(
                         f"User {event.author.mention} has supporter role: Applying supporter bonus, new gold reward is {current_gold_award}"
                     )  #! Debug print statement
                 # If the message has attachments, apply the media bonus
                 if event.attachments:
-                    current_gold_award += MEDIA_BONUS
+                    current_gold_award += config_vals['MEDIA_BONUS']
                     print(
                         f"Message has attachments: Applying media bonus, new gold reward is {current_gold_award}"
                     )  #! Debug print statement
@@ -524,18 +534,20 @@ async def on_message(event):
                     data = await file.read()
                     vault = json.loads(data) if data else {}
                 user_id = str(event.author.id)
-                user_data = vault.get(user_id, {"gold": 0, "last_earned": 0})
+                user_data = vault.get(user_id, {"gold": 0, "last_earned": 0, "consecutive_days": 0, "last_post_date": ""})
                 # If the user has earned gold in the past MESSAGE_REWARD_TIMEOUT seconds, don't award gold
-                if time.time() - user_data["last_earned"] < MESSAGE_REWARD_TIMEOUT:
+                if time.time() - user_data["last_earned"] < config_vals['MESSAGE_REWARD_TIMEOUT']:
                     print(
-                        f"{event.author.mention} has already earned gold in the past {MESSAGE_REWARD_TIMEOUT} seconds."
+                        f"{event.author.mention} has already earned gold in the past {config_vals['MESSAGE_REWARD_TIMEOUT']} seconds."
                     )  #! Debug print statement
                     return
                 # Award the gold and update the vault with new gold and last earned time
+                
                 user_data["gold"] += current_gold_award
-                print(
-                    f"Message was length {len(event.content)}: Awarding {current_gold_award} gold to {user_id} {event.author}"
-                )  #! Debug print statement
+                print('Awarded base gold')
+                streak_bonus = calculate_streak_bonus(user_data, user_id)
+                user_data["gold"] += streak_bonus
+                print(f"Awarded streak bonus of {streak_bonus} gold")
                 user_data["last_earned"] = time.time()
                 print(
                     f'Setting last earned time to {user_data["last_earned"]}'
@@ -630,12 +642,11 @@ async def say(Interaction: discord.Interaction, thing_to_say: str):
 )
 @is_mod_or_admin()
 async def gold_reward(Interaction: discord.Interaction, number_of_gold: int):
-    global GOLD_AWARD
-    GOLD_AWARD = number_of_gold
+    config_vals['GOLD_AWARD'] = number_of_gold
     await Interaction.response.send_message(
-        f"Gold reward per message set to {GOLD_AWARD}", ephemeral=False
+        f"Gold reward per message set to {config_vals['GOLD_AWARD']}", ephemeral=False
     )
-    logger.info(f"Gold reward per message set to {GOLD_AWARD} by {Interaction.user}")
+    logger.info(f"Gold reward per message set to {config_vals['GOLD_AWARD']} by {Interaction.user}")
 
 
 @bot.tree.command(
@@ -650,23 +661,23 @@ async def get_configuration(Interaction: discord.Interaction):
         color=0xCF2702,
     )
     embed.add_field(
-        name="MIN_MESSAGE_REQUIRED", value=str(MIN_MESSAGE_REQUIRED), inline=False
+        name="MIN_MESSAGE_REQUIRED", value=str(config_vals['MIN_MESSAGE_REQUIRED']), inline=False
     )
     embed.add_field(
-        name="MIN_MESSAGE_LENGTH", value=str(MIN_MESSAGE_LENGTH), inline=False
+        name="MIN_MESSAGE_LENGTH", value=config_vals['MIN_MESSAGE_LENGTH'], inline=False
     )
-    embed.add_field(name="REWARDS", value=str(REWARDS), inline=False)
+    embed.add_field(name="REWARDS", value=str(config_vals['REWARDS']), inline=False)
     embed.add_field(
-        name="MESSAGE_REWARD_TIMEOUT", value=str(MESSAGE_REWARD_TIMEOUT), inline=False
+        name="MESSAGE_REWARD_TIMEOUT", value=str(config_vals['MESSAGE_REWARD_TIMEOUT']), inline=False
     )
     embed.add_field(
-        name="SUBSCRIBER_ROLE_ID", value=str(SUBSCRIBER_ROLE_ID), inline=False
+        name="SUBSCRIBER_ROLE_ID", value=str(config_vals['SUBSCRIBER_ROLE_ID']), inline=False
     )
-    embed.add_field(name="SUBSCRIBER_BONUS", value=str(SUBSCRIBER_BONUS), inline=False)
-    embed.add_field(name="MEDIA_BONUS", value=str(MEDIA_BONUS), inline=False)
-    embed.add_field(name="GOLD_AWARD", value=str(GOLD_AWARD), inline=False)
+    embed.add_field(name="SUBSCRIBER_BONUS", value=str(config_vals['SUBSCRIBER_BONUS']), inline=False)
+    embed.add_field(name="MEDIA_BONUS", value=str(config_vals['MEDIA_BONUS']), inline=False)
+    embed.add_field(name="GOLD_AWARD", value=str(config_vals['GOLD_AWARD']), inline=False)
     embed.add_field(
-        name="ALLOWED_CHANNEL_IDs", value=str(ALLOWED_CHANNEL_IDs), inline=False
+        name="ALLOWED_CHANNEL_IDs", value=str(config_vals['ALLOWED_CHANNEL_IDs']), inline=False
     )
     await Interaction.response.send_message(embed=embed)
 
