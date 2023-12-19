@@ -1,7 +1,6 @@
 from redbot.core import commands, Config, bank
 import random
 import asyncio
-import time
 import discord
 
 
@@ -200,7 +199,7 @@ class GameState:
                 return msg.author.id == player_id and msg.channel == ctx.channel
 
             try:
-                msg = await self.bot.wait_for("message", timeout=10.0, check=check_bet)
+                msg = await self.bot.wait_for("message", timeout=20.0, check=check_bet)
                 if msg.content.isdigit(): 
                     bet = int(msg.content)
                     if 0 < bet <= player_balance:
@@ -306,6 +305,7 @@ class GameState:
 
                     elif decision == "stand":
                         player.calculate_score()
+                        await self.card_table_update_embed(embed, game)
                         break 
 
                 except asyncio.TimeoutError:
@@ -321,7 +321,7 @@ class GameState:
         embed.clear_fields()
 
         # Add fields for each player's hand
-        cards_left = game.deck.cards_remaining
+        cards_left = game.deck.num_cards_remaining()
         
         for player_id, player in game.player_objects.items():
             user = self.bot.get_user(player_id)
@@ -332,7 +332,7 @@ class GameState:
                 value=f"{hand_str} ({score_str})",
                 inline=False,
             )
-            embed.add_field(name="Cards Remaining in Shoe:", value=str(cards_left), inline=False)
+            
         # Add a field for the dealer's hand (showing only one card if the round is in progress)
         if game.state == "Taking Bets":
             
@@ -343,11 +343,14 @@ class GameState:
                 inline=False,
             )
         else:
-            _dealer_hand_str = ", ".join(str(card) for card in game.dealer.hand)
+            dealer_hand_str = ", ".join(str(card) for card in game.dealer.hand)
+            dealer_score_str = f"Score: {game.dealer.score}" if game.dealer.score <= 21 else "Busted!"
             embed.add_field(
                 name="Dealer's Hand",
-                value=f"{dealer_hand_str}",
+                value=f"{dealer_hand_str} ({dealer_score_str})",
                 inline=False)
+            
+        embed.add_field(name="Cards Remaining in Shoe:", value=str(cards_left), inline=False)
     
     async def dealer_turn(self, ctx, channel_id, embed):  # noqa: E999
         
@@ -674,3 +677,9 @@ class RealBlackJack(commands.Cog):
             )
 
         await ctx.send("Game over. Thanks for playing!")
+
+    @realblackjack.command(name="testdeck", hidden = True, help = "Test the game deck")
+    async def test_deck(self, deck):
+        deck = Deck()
+        deck.shuffle()
+        return(deck.cards)

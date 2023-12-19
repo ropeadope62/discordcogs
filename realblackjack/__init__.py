@@ -1,3 +1,4 @@
+# discord install function for redbot
 from .realblackjack import RealBlackJack
 
 

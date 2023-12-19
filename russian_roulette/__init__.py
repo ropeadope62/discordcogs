@@ -1,4 +1,5 @@
+import asyncio
 from .russianroulette import RussianRoulette
 
-def setup(bot):
-    bot.add_cog(RussianRoulette(bot))
+async def setup(bot):
+    await bot.add_cog(RussianRoulette(bot))
