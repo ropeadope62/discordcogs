@@ -173,53 +173,56 @@ class GameState:
 
     async def clear_states(self, ctx, channel_id):
         self.deck.shuffle()
+        await ctx.send("The dealer shuffles the deck!")
         for player in self.player_objects.values():
             await player.clear_hand()
         await self.dealer.clear_hand()
-
        
         self.end_game = False
         self.current_bet = 0 
-
-
         await ctx.send("The table has been cleared for the next round.")
+        
+    async def decks(self, ctx, number_of_decks: int):
+        self.deck = Deck(num_decks=number_of_decks)
+        await ctx.send(f"Deck has been set to {number_of_decks} decks.")
 
     async def take_bets(self, ctx, channel_id):
         self.state = "Taking bets"
         for player_id, player in self.player_objects.items():
-            user = self.bot.get_user(player_id)
-            player_balance = await bank.get_balance(
-                user
-            )  
-            await ctx.send(
-                f"{user.mention}, you have {player_balance} chips. How much do you want to bet? Enter '0' to skip."
-            )
-
-            def check_bet(msg):
-                return msg.author.id == player_id and msg.channel == ctx.channel
-
-            try:
-                msg = await self.bot.wait_for("message", timeout=20.0, check=check_bet)
-                if msg.content.isdigit(): 
-                    bet = int(msg.content)
-                    if 0 < bet <= player_balance:
-                        player.bet = bet
-                        await bank.withdraw_credits(user, bet)  # Deduct the bet amount
-                        await ctx.send(
-                            f"{user.mention}, your bet of {bet} chips has been placed."
-                        )
-                    elif bet == 0:
-                        await ctx.send(f"{user.mention}, you chose not to place a bet.")
-                    else:
-                        await ctx.send(
-                            f"{user.mention}, your bet must be more than 0 and no more than your balance."
-                        )
-                else:
-                    await ctx.send(f"{user.mention}, please enter a valid bet amount.")
-            except asyncio.TimeoutError:
+            member = ctx.guild.get_member(player_id)
+            if member:
+                player_balance = await bank.get_balance(member)
                 await ctx.send(
-                    f"{user.mention}, you took too long to bet. Skipping your turn."
+                    f"{member.mention}, you have {player_balance} chips. How much do you want to bet? Enter '0' to skip."
                 )
+
+                def check_bet(msg):
+                    return msg.author.id == player_id and msg.channel == ctx.channel
+
+                try:
+                    msg = await self.bot.wait_for("message", timeout=20.0, check=check_bet)
+                    if msg.content.isdigit(): 
+                        bet = int(msg.content)
+                        if 0 < bet <= player_balance:
+                            player.bet = bet
+                            await bank.withdraw_credits(member, bet)  # Deduct the bet amount
+                            await ctx.send(
+                                f"{member.mention}, your bet of {bet} chips has been placed."
+                            )
+                        elif bet == 0:
+                            await ctx.send(f"{member.mention}, you chose not to place a bet.")
+                        else:
+                            await ctx.send(
+                                f"{member.mention}, your bet must be more than 0 and no more than your balance."
+                            )
+                    else:
+                        await ctx.send(f"{member.mention}, please enter a valid bet amount.")
+                except asyncio.TimeoutError:
+                    await ctx.send(
+                        f"{member.mention}, you took too long to bet. Skipping your turn."
+                    )
+            else:
+                await ctx.send("Player not found in this guild.")
 
     async def add_player(self, player_id, ctx):
         player = Player(self.bot.get_user(player_id).name, ctx)
@@ -451,7 +454,7 @@ class RealBlackJack(commands.Cog):
             "total_chips_lost": 0,
         }
         self.config.register_member(**default_member)
-        self.join_state_timeout = 10
+        self.join_state_timeout = 20
 
     async def get_player_decision(self, ctx, player_id):
         def check(m):
@@ -466,6 +469,9 @@ class RealBlackJack(commands.Cog):
     @commands.group()
     async def realblackjack(self, ctx):
         """Play blackjack"""
+        if ctx.guild is None: 
+            await ctx.send("This command can only be used in a server.")
+            return
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid blackjack command passed...")
 
@@ -477,14 +483,14 @@ class RealBlackJack(commands.Cog):
             return
 
         await ctx.send(
-            f"Game will start in {self.join_state_timeout} seconds. Type `blackjack join` to join!"
+            f"Game will start in {self.join_state_timeout} seconds. Type `bj join` to join!"
         )
         # * Initialize joined_players
         joined_players = []
 
         def check_join(msg):
             return (
-                msg.content.lower() == "blackjack join" and msg.channel == ctx.channel
+                msg.content.lower() == "bj join" or msg.content.lower() == "join" and msg.channel == ctx.channel
             )
 
         while True:
