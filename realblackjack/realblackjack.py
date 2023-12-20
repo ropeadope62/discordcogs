@@ -424,268 +424,87 @@ class GameState:
             # Clear player's hand and states for the next round
             await player.clear_hand()
 
-    async def build_game_state_embed(self, game):
-        # Start creating the embed
-        embed = discord.Embed(title="Slurms' Real Blackjack", color=0x0099FF)
-        embed.set_author(name="Blackjack Dealer", icon_url="")
+        async def build_game_state_embed(self, game):
+            # Start creating the embed
+            embed = discord.Embed(title="Slurms' Real Blackjack", color=0x0099FF)
+            embed.set_author(name="Blackjack Dealer", icon_url="")
 
-        # Update the embed with the current hands and scores
-        await self.update_embed_with_hands(embed, game)
+            # Update the embed with the current hands and scores
+            await self.update_embed_with_hands(embed, game)
+
+            
+            embed.add_field(
+                name="Cards Left in Deck", value=str(len(game.deck.cards)), inline=False
+            )
 
         
-        embed.add_field(
-            name="Cards Left in Deck", value=str(len(game.deck.cards)), inline=False
-        )
+            return embed
 
-    
-        return embed
+        async def double_down(self, ctx, player_id):
+            user = self.bot.get_user(player_id)
+            player = self.games[ctx.channel.id].player_objects[player_id]
 
+            if player.score > 21:
+                await ctx.send(f"{user.mention}, you cannot double down as you are already busted.")
+                return
 
+            if player.bet * 2 > await bank.get_balance(user):
+                await ctx.send(f"{user.mention}, you don't have enough chips to double down.")
+                return
 
-class RealBlackJack(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-        self.games = {}
-        self.config = Config.get_conf(self, identifier=123452212232144515623667890)
-        default_member = {
-            "games_won": 0,
-            "games_lost": 0,
-            "total_chips_won": 0,
-            "total_chips_lost": 0,
-        }
-        self.config.register_member(**default_member)
-        self.join_state_timeout = 20
+            player.bet *= 2
+            await ctx.send(f"{user.mention}, you have doubled down. Your bet is now {player.bet}.")
 
-    async def get_player_decision(self, ctx, player_id):
-        def check(m):
-            return m.author.id == player_id and m.content.lower() in ["hit", "stand"]
+            await self.hit(ctx, player_id)
 
-        try:
-            msg = await ctx.bot.wait_for("message", timeout=15.0, check=check)
-            return msg.content.lower()
-        except asyncio.TimeoutError:
-            return "timeout"
+        async def hit(self, ctx, player_id):
+            user = self.bot.get_user(player_id)
+            player = self.games[ctx.channel.id].player_objects[player_id]
 
-    @commands.group()
-    async def realblackjack(self, ctx):
-        """Play blackjack"""
-        if ctx.guild is None: 
-            await ctx.send("This command can only be used in a server.")
-            return
-        if ctx.invoked_subcommand is None:
-            await ctx.send("Invalid blackjack command passed...")
+            if player.score > 21:
+                await ctx.send(f"{user.mention}, you're busted. You lose your bet of {player.bet}.")
+                await bank.withdraw_credits(user, player.bet)
+                await player.clear_hand()
+                return
 
-    @realblackjack.command()
-    async def start(self, ctx):
-        channel_id = ctx.channel.id
-        if channel_id in self.games:
-            await ctx.send("A game is already started in this channel.")
-            return
+            card = self.games[ctx.channel.id].deck.draw_card()
+            player.hand.append(card)
+            await ctx.send(f"{user.mention}, you drew a {card}.")
+            await self.update_embed_with_hands(ctx, self.games[ctx.channel.id])
 
-        await ctx.send(
-            f"Game will start in {self.join_state_timeout} seconds. Type `bj join` to join!"
-        )
-        # * Initialize joined_players
-        joined_players = []
+        async def stand(self, ctx, player_id):
+            user = self.bot.get_user(player_id)
+            player = self.games[ctx.channel.id].player_objects[player_id]
+            await ctx.send(f"{user.mention}, you chose to stand.")
+            await self.update_embed_with_hands(ctx, self.games[ctx.channel.id])
 
-        def check_join(msg):
-            return (
-                msg.content.lower() == "bj join" or msg.content.lower() == "join" and msg.channel == ctx.channel
-            )
+        async def update_embed_with_hands(self, ctx, game):
+            # Update the embed with the current hands and scores
+            embed = discord.Embed(title="Slurms' Real Blackjack", color=0x0099FF)
+            embed.set_author(name="Blackjack Dealer", icon_url="")
 
-        while True:
-            try:
-                msg = await self.bot.wait_for(
-                    "message", timeout=self.join_state_timeout, check=check_join
-                )  # Timeout adjusted to 30 seconds
-                player_id = msg.author.id
-                if player_id not in joined_players:
-                    joined_players.append(player_id)
-                    await ctx.send(f"{msg.author.mention} has joined the game!")
-            except asyncio.TimeoutError:
-                break
+            for player_id, player in game.player_objects.items():
+                user = self.bot.get_user(player_id)
+                hand_str = ", ".join(str(card) for card in player.hand)
+                embed.add_field(name=f"{user.name}'s Hand", value=hand_str, inline=False)
+                embed.add_field(name=f"{user.name}'s Score", value=player.score, inline=False)
 
-        if not joined_players:
-            await ctx.send("No one joined. Game cancelled.")
-            return
+            await ctx.send(embed=embed)
 
-        # * Create a dictionary of player objects
-        player_dict = {
-            player_id: Player(self.bot.get_user(player_id).name, ctx)
-            for player_id in joined_players
-        }
+        # Rest of the code...
+        async def double_down(self, ctx, player_id):
+            user = self.bot.get_user(player_id)
+            player = self.games[ctx.channel.id].player_objects[player_id]
 
-        #! Debug to make sure players are being added to the dictionary
-        print(f"Created player_dict: {player_dict}")
+            if player.score > 21:
+                await ctx.send(f"{user.mention}, you cannot double down as you are already busted.")
+                return
 
-        # * Initialize GameState with the players who have joined
-        self.games[channel_id] = GameState(self.bot, channel_id, self.games)
-        game = self.games[channel_id]
-        game.set_players(player_dict)  # Set the players in the GameState object
-        embed = discord.Embed(title="Slurms' Real Blackjack", color=0x0099FF)
+            if player.bet * 2 > await bank.get_balance(user):
+                await ctx.send(f"{user.mention}, you don't have enough chips to double down.")
+                return
 
-        for player in player_dict.values():
-            await player.async_init(ctx)
+            player.bet *= 2
+            await ctx.send(f"{user.mention}, you have doubled down. Your bet is now {player.bet}.")
 
-        await ctx.send(f"Game starting with {len(joined_players)} players!")
-        await self.play_game(ctx, channel_id, embed)
-
-    @realblackjack.command()
-    async def end(self, ctx):
-        channel_id = ctx.channel.id
-        game = self.games[channel_id]
-        game.state = "End Game"
-        if channel_id in self.games:
-            del self.games[channel_id]
-            await ctx.send("Game ended.")
-        else:
-            await ctx.send("No game in progress to end.")
-
-    @realblackjack.command(name="leave", help="Leave an active game.")
-    async def leave_game(self, ctx):
-        """Allows a player to leave the game."""
-        channel_id = ctx.channel.id
-        player_id = ctx.author.id
-
-        # Check if there is a game in this channel
-        if channel_id not in self.games:
-            await ctx.send("There is no active game in this channel.")
-            return
-
-        game = self.games[channel_id]
-
-        # Check if the player is in the game
-        if player_id not in game.player_objects:
-            await ctx.send("You are not in the game.")
-            return
-
-        # Handle the player's departure
-        # This could include refunding their bet, removing their hand, etc.
-        player = game.player_objects[player_id]
-        await self.handle_player_departure(game, player)
-
-        # Remove the player from the game
-        del game.player_objects[player_id]
-
-        # Send a message to the channel
-        await ctx.send(f"{ctx.author.mention} has left the game.")
-
-    async def handle_player_departure(self, game, player):
-        """
-        Handles any additional logic when a player leaves the game.
-        """
-        # Refund the player's bet if necessary
-        if game.current_bet and game.state == "betting":
-            await bank.deposit_credits(player.user, game.current_bet)
-
-        # Clear the player's hand and any other game-specific actions
-        await player.clear_hand()
-
-    @realblackjack.command()
-    async def gamestate(self, ctx):
-        channel_id = ctx.channel.id
-        if channel_id in self.games:
-            game = self.games[channel_id]
-            await ctx.send(f"Game state: {game.state}")
-
-    @realblackjack.command()
-    async def join_timeout(self, ctx, timeout: int):
-        if timeout < 10:
-            await ctx.send("Timeout must be at least 10 seconds.")
-            return
-        if timeout > 30:
-            await ctx.send("Timeout cannot be more than 30 seconds.")
-            return
-        self.join_state_timeout = timeout
-        await ctx.send(f"Join timeout set to {timeout} seconds.")
-
-    @realblackjack.command()
-    async def bet(self, ctx, amount: int):
-        print(f"Bet command received for channel ID: {ctx.channel.id}")
-        channel_id = ctx.channel.id
-        if channel_id not in self.games:
-            await ctx.send("No game in progress.")
-            return
-
-        game = self.games[channel_id]
-        player = game.player_objects.get(ctx.author.id)
-        if player:
-            success = player.place_bet(amount, await bank.get_balance(ctx.author))
-            if success:
-                await ctx.send(f"{ctx.author.mention} placed a bet of {amount}.")
-            else:
-                await ctx.send("Invalid bet.")
-
-    @realblackjack.command(name="cardsleft")
-    async def cards_remaining(self, ctx):
-        """Tells how many cards are left in the shoe."""
-        channel_id = ctx.channel.id
-        game = self.games.get(channel_id)
-        if ctx.channel.id in game:
-            remaining_cards = game.deck.num_cards_remaining()
-            await ctx.send(remaining_cards)
-        else:
-            await ctx.send("There's no active game in this channel.")
-
-    @realblackjack.command()
-    async def endgame(self, ctx):
-        print(f"Endgame command received for channel ID: {ctx.channel.id}")
-        channel_id = ctx.channel.id
-        if channel_id in self.games:
-            self.end_game = True
-            await ctx.send("Game will end after the current round.")
-
-    async def place_bet(self, ctx, player_id, amount):
-        user = self.bot.get_user(player_id)
-        if user is None:
-            return False
-
-        # Retrieve the balance of the user
-        balance = await bank.get_balance(user)
-
-        player = self.player_objects.get(player_id)
-        if player is None:
-            return False
-
-        success = player.place_bet(amount, balance)
-        if not success:
-            await ctx.send(
-                f"You don't have enough chips to place that bet. Your balance is {balance}."
-            )
-        return success
-
-    async def play_game(self, ctx, channel_id, embed):
-        await ctx.send("Welcome to Real Blackjack! Let's play!")
-        game = self.games[channel_id]
-        game.end_game = False
-
-        while not game.end_game:
-            await game.take_bets(ctx, channel_id)  # Take bets from players
-
-            # Check if bets were placed. If not, you may want to skip the round or handle it accordingly.
-
-            await game.setup_game(ctx, channel_id, embed)  # Dealing initial cards
-
-            # Invoke player_turns here
-            await game.player_turns(ctx, channel_id, embed)
-
-            # Only proceed to the dealer's turn if there's at least one player who hasn't busted
-            if any(player.score <= 21 for player in game.player_objects.values()):
-                await game.dealer_turn(ctx, channel_id, embed)  # Dealer's turn
-
-            await game.payout(ctx, channel_id)  # Payouts and ending the round
-            await game.clear_states(ctx, channel_id)
-
-            # Ask or check if players want to continue or end the game here
-
-            await ctx.send(
-                "The Dealer clears the table, another round will begin in 5 seconds!"
-            )
-
-        await ctx.send("Game over. Thanks for playing!")
-
-    @realblackjack.command(name="testdeck", hidden = True, help = "Test the game deck")
-    async def test_deck(self, deck):
-        deck = Deck()
-        deck.shuffle()
-        return(deck.cards)
+            await self.hit(ctx, player_id)
