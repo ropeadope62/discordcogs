@@ -110,7 +110,7 @@ class StoryCraft_AI:
             },
             {
                 "role": "user",
-                "content": "Keep the story short, and do not add detail which was not in the session notes.",
+                "content": "Make the story elaborate, but do not add major details which were not in the session notes.",
             },
         ]
 

@@ -6,8 +6,11 @@ import os
 import glob
 import discord
 
-from redbot.core import commands, checks, app_commands
+from redbot.core import commands, checks, app_commands, Config
 from redbot.core.utils.chat_formatting import pagify
+from redbot.core.utils import menus
+from redbot.core.utils.menus import DEFAULT_CONTROLS
+from interactions.ext.paginators import Paginator
 from .story_ai.story_ai import StoryCraft_AI
 from .story_maps.story_maps import StoryMaps
 
@@ -66,6 +69,9 @@ class StoryCraft(commands.Cog):
         self.announce_channel = self.bot.get_channel(self.announce_channel_id)
         self.party_location = None
         self.story_entries = 0
+        self.config = Config.get_conf(self, identifier=7778465121547)
+        default_guild = {"stories": {}}
+        self.config.register_guild(**default_guild)
 
     async def read_json_file(self, file_name):
         loop = asyncio.get_event_loop()
@@ -134,65 +140,26 @@ class StoryCraft(commands.Cog):
             chunks.append(last_story[i : i + chunk_size])
         return chunks
 
-    async def send_paginated_embed(
-        self, ctx, target_channel, content_list, summary, *, announcement_title
-    ):
+    async def send_paginated_embed(self, ctx, target_channel, content_list, summary, *, announcement_title):
         """For sending paginated embeds to be used with the story announce command."""
-        # await ctx.send(f"Announce Channel: {self.announce_channel}")  # Debug line
-        # await ctx.send(
-        #    f"Debug: Entered send_paginated_embed. Target: {self.announce_channel}, Content Length: {len(content_list)}"
-        # )
-        target_channel = target_channel
-        page = 0
-        embed = discord.Embed(
-            title=f"{announcement_title} - {datetime.now().strftime('%Y-%m-%d')}\n",
-            description=f"*{summary}*",
-            color=0x8E7CC3,
-        )
-        embed.add_field(name="The full story...", value=content_list[page][:1024])
-        embed.set_author(name="StoryCraft")
-        embed.set_thumbnail(url="https://i.imgur.com/3FaAUZI.png")
-        embed.set_footer(
-            text=f"{announcement_title} - {datetime.now().strftime('%Y-%m-%d')}  Page {page+1}"
-        )
+        embeds = []
+        for page, content in enumerate(content_list, start=1):
+            embed = Embed(
+                title=f"{announcement_title} - {datetime.now().strftime('%Y-%m-%d')}\n",
+                description=f"*{summary}*\n\n{content[:1024]}",
+                color=0x8E7CC3
+            )
+            embed.set_author(name="StoryCraft")
+            embed.set_thumbnail(url="https://i.imgur.com/3FaAUZI.png")
+            embed.set_footer(text=f"{announcement_title} - Page {page}")
+            embeds.append(embed)
 
-        message = await target_channel.send(embed=embed)
+        await menus.menu(ctx, embeds, DEFAULT_CONTROLS, message=None, page=0, timeout=3600)
 
-        await message.add_reaction("◀️")
-        await message.add_reaction("▶️")
-
-        def check(reaction, user):
-            """Checks if the reaction is what we want and if the user is the author of the command."""
-            return user == ctx.author and str(reaction.emoji) in {"◀️", "▶️"}
-
-        while True:
-            try:
-                reaction, user = await ctx.bot.wait_for("reaction_add", check=check)
-
-                if str(reaction.emoji) == "▶️" and page < len(content_list) - 1:
-                    page += 1
-                    new_field_value = content_list[page][
-                        :1024
-                    ]  # Update the value of the field
-                    embed.set_field_at(
-                        0, name="The full story...", value=new_field_value
-                    )  # Update the first field
-                    await message.edit(embed=embed)
-
-                elif str(reaction.emoji) == "◀️" and page > 0:
-                    page -= 1
-                    new_field_value = content_list[page][
-                        :1024
-                    ]  # Update the value of the field
-                    embed.set_field_at(
-                        0, name="The full story...", value=new_field_value
-                    )  # Update the first field
-                    await message.edit(embed=embed)
-
-                await message.remove_reaction(reaction, user)
-
-            except asyncio.TimeoutError:
-                break
+        async def interaction_paginator(self, ctx, last_story):
+            bot = self.bot 
+            paginator = Paginator.create_from_string(bot, last_story, page_size=1000)
+            await paginator.send(ctx)            
 
     @commands.group()
     @checks.admin_or_permissions(manage_messages=True)
@@ -214,7 +181,6 @@ class StoryCraft(commands.Cog):
     async def stop(self, ctx):
         """Stop collecting messages, join them into one string and save to a txt file.\n
         Usage: >story stop"""
-        self.collecting = False
         collected_text = " ".join(self.temp_messages)
         file_name = f"story_{datetime.now().strftime('%Y%m%d%H%M%S')}.txt"
         with open(file_name, "w") as file:
@@ -222,6 +188,7 @@ class StoryCraft(commands.Cog):
         await ctx.send(f"Stopped collecting messages. Story saved to {file_name}.")
         self.temp_messages = []
         view = ConfirmationView()
+        self.collecting = False
         await ctx.send("Do you want to go ahead and generate a story?", view=view)
         await view.wait()
 
@@ -259,7 +226,7 @@ class StoryCraft(commands.Cog):
             await self.write_json_file("story_history.json", {"story": self.last_story})
 
         await ctx.send(
-            "\nAre you pleased with this story? Use >storycraft save to save it or >storycraft edit <changes> to make changes."
+            "\n\nAre you pleased with this story? Use >storycraft save to save it or >storycraft edit <changes> to make changes."
         )
 
     @storycraft.command()
@@ -315,6 +282,34 @@ class StoryCraft(commands.Cog):
         )
 
         await ctx.send("Announcement posted to Story Craft channel")
+        
+        guild = ctx.guild
+        story_data = {
+            "summary": summary,
+            "content": last_story
+        }
+        async with self.config.guild(guild).stories() as stories:
+            stories[announcement_title] = story_data
+
+    @storycraft.command()
+    async def getstory(self, ctx, *, title):
+        """Retrieve a story by its title."""
+        guild = ctx.guild
+        target_channel = self.bot.get_channel(1154282874401456149)
+        stories = await self.config.guild(guild).stories()
+        story_data = stories.get(title)
+        if story_data:
+            summary = story_data["summary"]
+            content = story_data["content"]
+            story_chunks = self.split_chunks_for_embed(content)
+            
+        await self.send_paginated_embed(
+            ctx,
+            target_channel,
+            story_chunks,
+            summary,
+            announcement_title=summary,
+        )
 
     @storycraft.command()
     async def announce_test(self, ctx, *, announcement_title):
@@ -324,30 +319,7 @@ class StoryCraft(commands.Cog):
         last_story = self.last_story
         target_channel = self.bot.get_channel(1157129358406856704)
         summary = await self.get_summary(ctx)
-        if target_channel is None:
-            await ctx.send("Channel not found")
-            return
-
-        # split the story into chunks that fit within Discord's 1024-character limit for embed fields
-
         story_chunks = self.split_chunks_for_embed(last_story)
-
-        # I am testing the pagify feature of Redbot over my own embed paginated embed function.
-
-        pages = list(
-            pagify(
-                last_story,
-                delims=(
-                    "\n",
-                ),  # You can specify delimiters where page breaks will occur.
-                priority=False,  # Set to True to choose the page break delimiter based on the order of delims.
-                escape_mass_mentions=True,  # If True, mass mentions (here or everyone) will be silenced.
-                shorten_by=8,  # How much to shorten each page by. Defaults to 8.
-                page_length=2000,  # The maximum length of each page. Defaults to 2000.
-            )
-        )
-        for page in pages:
-            await ctx.send(page)
 
         await self.send_paginated_embed(
             ctx,
@@ -357,7 +329,7 @@ class StoryCraft(commands.Cog):
             announcement_title=announcement_title,
         )
 
-        await ctx.send("Announcement posted to StoryCraft")
+        await ctx.send("Announcement posted to Story Craft channel")
 
     @storycraft.command()
     async def help(self, ctx):
@@ -460,7 +432,7 @@ class StoryCraft(commands.Cog):
         if message.author.bot:
             return
 
-        if self.collecting:
+        if self.collecting and not message.content.startswith(">storycraft"):
             self.temp_messages.append(message.content)
 
 
