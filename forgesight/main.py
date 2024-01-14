@@ -6,13 +6,20 @@ import logging
 import os
 import discord
 import time
+import aiosqlite
 from discord import Embed, File
 from discord.ext import commands
 from dotenv import load_dotenv
-import json
 import io
-import asyncio
 import shutil
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
+from datetime import datetime
+from database import Forgesight_DB_Manager
+import sqlite3
+import json
+import datetime
+import aiosqlite
 
 # Global variables for the bot - these can be changed with slash command
 
@@ -24,6 +31,7 @@ intents.messages = True
 intents.guilds = True
 intents.reactions = True
 intents.members = True
+
 
 # Define the bot
 bot = commands.Bot(command_prefix="/", intents=intents)
@@ -38,42 +46,25 @@ handler.setFormatter(
 )
 logger.addHandler(handler)
 
-# Load the .env file
+db_logger = logging.getLogger("forgesight_db_log")
+db_logger.setLevel(logging.DEBUG)
+db_handler = logging.FileHandler("forgesight_db.log", encoding="utf-8", mode="a")
+print(f"Database Log file created at: {db_handler.baseFilename}")
+db_handler.setFormatter(
+    logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+)
+
 load_dotenv()
 
+db_manager = Forgesight_DB_Manager('forgesight.db', logger)
 
-# utility function for getting all of the bot commands
 bot_commands = [command.name for command in bot.commands]
 
-def save_config_vals(variables, file_path):
-    with open(file_path, 'w') as file:
-        json.dump(variables, file)
-        
-config_vals = {'MIN_MESSAGE_REQUIRED': True, 'MIN_MESSAGE_LENGTH': 20, 'REWARDS': True,
-               'MESSAGE_REWARD_TIMEOUT': 10, 'SUBSCRIBER_ROLE_ID': 1074071214022201378,
-               'SUBSCRIBER_BONUS': 2, 'MEDIA_BONUS': 2, 'GOLD_AWARD': 1, 'CHANNEL_ID_RESTRICTION': False,
-                'ALLOWED_CHANNEL_IDs': [1171917207375183872, 1172234313400582315], 'OMIT_REWARDS_IDs': [1012659859516297217]}
+def log_and_execute(cursor, query):
+    logger.info(f"Executing query: {query}")
+    cursor.execute(query)
+    
 
-save_config_vals(config_vals, 'forgesight_config.json')
-
-
-
-# Utility functions for retrieving and storing user data in the vault
-def load_forgesight_vault():
-    try:
-        with open("forgesight_vault.json", "r") as file:
-            vault = json.load(file)
-    except FileNotFoundError:
-        vault = {}
-    return vault
-
-
-def save_forgesight_vault(vault):
-    with open("forgesight_vault.json", "w") as file:
-        json.dump(vault, file, indent=4)
-
-
-# Utility function for checking if a user is a mod or admin
 def is_mod_or_admin():
     async def predicate(ctx):
         mod_role = discord.utils.get(ctx.guild.roles, name="Moderation Team")
@@ -83,34 +74,145 @@ def is_mod_or_admin():
 
     return commands.check(predicate)
 
-@bot.command()
-async def bank(ctx):
-    embed = discord.Embed(title="TableFlip Foundry Bank", description="The bank is an important location in the Tableflip Foundry community, where players store their server Gold and items. Gold is earned by actively participating in any discussion happening on ", color=discord.Color.blue())
-    file = discord.File("./images/bank.png", filename="bank.png")
-    embed.set_image(url="attachment://bank.png")
-    await ctx.send(file=file, embed=embed)
+async def calculate_total_gold():
+    total_gold = 0
+    async with aiosqlite.connect('forgesight.db') as _:
+        try:
+            cursor = await db_manager.execute()
+            query = 'SELECT SUM(gold) FROM user_data'
+            await db_manager.execute(cursor, query)
+            print('SQLite: Calculating total gold')  # Debug print statement
+            result = await cursor.fetchone()
+            total_gold = result[0] if result[0] is not None else 0
+        except Exception as e:
+            logger.error(f"Error calculating total gold: {e}")
+            print('SQLite: Error calculating total gold')  
+
+    return total_gold
+
+async def record_total_gold():
+    all_data = await db_manager.load_all_vault_data()  
+    if not all_data:
+        logger.info("No vault data found.")
+        return
+
+    total_gold = sum(vault_data['gold'] for vault_data in all_data)
+    logger.info(f"Total gold: {total_gold}")
+
+    current_time = datetime.datetime.now()
+    previous_time = current_time - datetime.timedelta(hours=1)
+    gold_earned_per_hour = total_gold - sum(user_data['gold'] for user_data in vault_data if user_data['timestamp'] < previous_time)
+
+    users_earned_gold = sum(user_data['gold'] > 0 for user_data in vault_data)
+
+    await db_manager.execute('INSERT INTO gold_stats (timestamp, total_gold, gold_earned_per_hour, users_earned_gold) VALUES (?, ?, ?, ?)', (current_time, total_gold, gold_earned_per_hour, users_earned_gold))
+    await db_manager.commit()
+    
+    async def calculate_total_gold():
+        async with aiosqlite.connect('forgesight.db') as db:
+            try:
+                cursor = await db.execute('SELECT SUM(gold) FROM user_data')
+                total_gold = await cursor.fetchone()
+            except Exception as e:
+                logger.error(f"Error calculating total gold: {e}")
+            return total_gold
 
 
-async def backup_vault(source, backup_dir, interval_seconds):
+async def record_last_post_date(user_id):
+    await db_manager.execute('UPDATE user_data SET last_post_date = ? WHERE user_id = ?', (datetime.date.today().isoformat(), user_id))
+    await db_manager.commit()
+
+#! Gold recording as a whole needs to be reworked
+async def record_gold_task(): 
     while True:
-        shutil.copy(source, backup_dir)
-        time.sleep(interval_seconds)
-        
-        await backup_vault('forgesight_vault.json', './forgesight_vault_backup.json', 3600)
+        logger.info("Starting gold recording task")
+        now = datetime.datetime.now()
+        next_run = (now + datetime.timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+        logger.info(f"Next run scheduled for {next_run}")
+        wait_time = (next_run - now).total_seconds()
+        await asyncio.sleep(wait_time)
+        await calculate_total_gold()
 
-# Ready the bot, sync the commands
-@bot.event
-async def on_ready():
-    print(f"{bot} has connected to Discord.")
-    logger.info(f"{bot} has connected to Discord.")
+
+#! This is in progress, needs to be finished
+async def modify_image(member, gold_balance):
+    image = Image.open('./images/ledger-template.png')
+    draw = ImageDraw.Draw(image)
+    # Choose a font (replace 'font = ImageFont.load_default()' with the font path)
+    font_path = './fonts/firstreign.ttf'
+    font = ImageFont.truetype(font_path, size=12)
+    text = f"{member} \n {gold_balance} Gold"
+    position = (50,50)
+    text_image = Image.new('RGBA', image.size, (255, 255, 255, 0))
+    text_draw = ImageDraw.Draw(text_image)
+    text_draw.text((0, 0), text, font=font, fill=(0, 0, 0))
+    angle = 45
+    rotated_text_image = text_image.rotate(angle, expand=1)
+    image.paste(rotated_text_image, position, rotated_text_image)
+    image_output = BytesIO()
+    image.save(image_output, format='PNG')
+    image_output.seek(0)
+
+    return image_output
+
+
+@bot.tree.command(name="show_config", description="Show the current Forgesight configuration.\nUsage: /show_config")
+async def show_config(Interaction: discord.Interaction):
+    guild_id = Interaction.guild_id
+    if guild_id is None:
+        await Interaction.response.send_message("This command can only be used in a server.", ephemeral=True)
+        return
+
     try:
-        synced = await bot.tree.sync()
-        print(f"Synced {synced} commands")
+        config = await db_manager.load_config(guild_id)
+        if not config:
+            logger.warning(f"No configuration found for guild {guild_id}")
+            await Interaction.response.send_message("No configuration found for this server.", ephemeral=True)
+            return
+
+        embed = discord.Embed(title="Forgesight Configuration", description="Current Configuration Values", color=0xCF2702)
+        for key, value in config.items():
+            embed.add_field(name=key, value=value or 'Not set', inline=False)
+        await Interaction.response.send_message(embed=embed, ephemeral=True)
     except Exception as e:
-        print(e)
+        logger.error(f"Error retrieving configuration for guild {guild_id}: {e}")
+        await Interaction.response.send_message(
+            f"An error occurred while retrieving the configuration: {str(e)}", ephemeral=True
+        )
+
+@bot.tree.command(name="sync", description="Sync the bot tree commands. \n Usage: /sync")
+async def sync(Interaction: discord.Interaction):
+    await Interaction.response.defer()
+    logger.info("Syncing bot tree commands")
+    print("Syncing bot tree commands")
+    synced = await bot.tree.sync()
+    await Interaction.followup.send(f"{len(synced)} Bot tree commands synchronized.")
+    print(f'{len(synced)} Bot tree commands synchronized.')
 
 
-# slash command base / group for forgesight
+@bot.tree.command(name="balance", description="Check your gold balance. \n Usage: /balance")
+async def balance(Interaction: discord.Interaction):
+    member = Interaction.user  # Set the member to the user who triggered the command
+    user_data = await db_manager.load_vault_data(member.id)  # Fetch user data from the database
+
+    if user_data:
+        gold_balance = user_data[1]  # Adjust the index based on your table structure
+        image = await modify_image(member, gold_balance)
+        embed = discord.Embed(title="Gold Balance", description=f"Gold balance for {member}: {gold_balance}", color=discord.Color.gold())
+        embed.set_image(url="attachment://balance.png")
+        await Interaction.response.send_message(file=discord.File(image, filename='balance.png'), embed=embed)
+    else:
+        await Interaction.response.send_message("No data found for the user.", ephemeral=True)
+        
+@bot.tree.command(name="backup", description="Manually Backup the Forgesight database. \n Usage: /backup <filename>")
+async def backup_db(Interaction: discord.Interaction, filename: str):
+    try:
+        shutil.copy('forgesight.db', f'./{filename}.db')
+        await Interaction.response.send_message(f"Database backup created at {filename}.db", ephemeral=True)
+        logger.info(f"Database backup created at {filename}.db")
+    except Exception as e:
+        await Interaction.response.send_message(f"Error creating database backup: {e}", ephemeral=True)
+        logger.error(f"Error creating database backup: {e}")
 
 
 @bot.tree.command(
@@ -120,6 +222,7 @@ async def forgesight(Interaction: discord.Interaction):
     embed = discord.Embed(title="Forgesight", description="Forgesight is a TableFlip Foundry Bot, designed to promote engagement and reward participation in our community by our amazing members. Its like having a digital facilitator that rewards your participation and makes our server more fun and interactive!", color=discord.Color.blue())
     embed.add_field(name="Key Features:", value="")
     embed.add_field(name="Gold Rewards - ", value="Earn gold for active participation in discussions. The more you contribute, the more you earn!", inline=False)
+    embed.add_field(name="Streak Bonuses - ", value="Earn bonus gold if you interact with others on a regular basis. The longer your streak the larger the bonus!", inline=False)
     embed.add_field(name="Subscriber Perks - ", value="Special bonuses for subscribers, making your contributions even more rewarding.", inline=False)
     embed.add_field(name="Guild Bank - ", value="Store your gold in the guild bank, and use it to purchase items from the shop!", inline=False)
     embed.add_field(name="Leaderboard - ", value="See how you stack up against others in our community with the gold leaderboard!", inline=False)
@@ -130,6 +233,18 @@ async def forgesight(Interaction: discord.Interaction):
 
 # Define the 'log' subcommand within the 'forgesight' group
 
+@bot.tree.command(
+    name="bank", 
+    description="Show the current gold balance and stats of the Forgesight Bank.")
+async def get_bank(Interaction: discord.Interaction):
+    embed = discord.Embed(title="TableFlip Foundry Bank", description="The bank is an important location in the Tableflip Foundry community, where players store their server Gold and items. Gold is earned by actively participating in any of our discussion channels. \n ", color=discord.Color.blue())
+    embed.add_field(name="Gold Balance", value=f"The current gold balance of the bank is {await calculate_total_gold()}.", inline=False)
+    embed.add_field(name="Reward Rate", value="7 GPH (Gold Per Hour)", inline=False)
+    embed.add_field(name="Peak Reward Rate", value="25 GPH", inline=False)
+    embed.add_field(name="Average Reward Rate", value="10 GPH", inline=False)
+    file = discord.File("./images/bank.png", filename="bank.png")
+    embed.set_image(url="attachment://bank.png")
+    await Interaction.response.send_message(file=file, embed=embed, ephemeral=False)
 
 @bot.tree.command(
     name="log",
@@ -178,19 +293,35 @@ async def forgesight_log(Interaction: discord.Interaction, action: str = "get"):
 
 
 @bot.tree.command(
-    name="message_length",
-    description="Set the message size requirements for earning gold",
+    name="set_min_message_length",
+    description="Set the minimum message length requirement for earning gold"
 )
 @is_mod_or_admin()
-async def set_messagelength(Interaction: discord.Interaction, min_message_length: int):
-    config_vals['MIN_MESSAGE_LENGTH'] = min_message_length
-    await Interaction.response.send_message(
-        f"Minimum message length for Gold reward has been set to {config_vals['MIN_MESSAGE_LENGTH']}.",
-        ephemeral=False,
-    )
-    logger.info(
-        f"Minimum message length set to {config_vals['MIN_MESSAGE_LENGTH']} by {Interaction.user}"
-    )
+async def set_min_message_length(Interaction: discord.Interaction, new_length: int):
+    if new_length < 0:
+        await Interaction.response.send_message("Length must be a positive number.", ephemeral=True)
+        return
+
+    guild_id = Interaction.guild_id
+    if guild_id is None:
+        await Interaction.response.send_message("This command can only be used in a server.", ephemeral=True)
+        return
+
+    try:
+        async with db_manager as db:
+            await db.execute("UPDATE config SET min_message_length = ? WHERE guild_id = ?", (new_length, str(guild_id)))
+            await db.commit()
+
+        await Interaction.response.send_message(
+            f"Minimum message length set to {new_length}.",
+            ephemeral=False,
+        )
+        logger.info(f"Minimum message length set to {new_length} for guild {guild_id}")
+    except Exception as e:
+        await Interaction.response.send_message(
+            f"An error occurred while updating the configuration: {str(e)}", ephemeral=True
+        )
+        logger.error(f"Error updating configuration: {e}")
 
 
 @bot.tree.command(
@@ -199,21 +330,31 @@ async def set_messagelength(Interaction: discord.Interaction, min_message_length
 )
 @is_mod_or_admin()
 async def set_subscriberbonus(Interaction: discord.Interaction, subscriber_bonus: int):
+    
     if subscriber_bonus < 0:
-        await Interaction.response.send_message(
-            f"Invalid subscriber bonus: {subscriber_bonus}. Subscriber bonus must be a positive integer.",
-            ephemeral=True,
-        )
-        logger.warning(
-            f"Invalid subscriber bonus entered by {Interaction.user} for /forgesight subscriberbonus command."
-        )
+            await Interaction.response.send_message("Length must be a positive number.", ephemeral=True)
+            return
+
+    guild_id = Interaction.guild_id
+    if guild_id is None:
+        await Interaction.response.send_message("This command can only be used in a server.", ephemeral=True)
         return
-    config_vals['SUBSCRIBER_BONUS'] = subscriber_bonus
-    await Interaction.response.send_message(
-        f"Subscriber bonus for Gold reward has been set to {config_vals['SUBSCRIBER_BONUS']}.",
-        ephemeral=False,
-    )
-    logger.info(f"Subscriber bonus set to {config_vals['SUBSCRIBER_BONUS']} by {Interaction.user}")
+
+    try:
+        async with db_manager as db:
+            await db.execute("UPDATE config SET subscriber_bonus = ? WHERE guild_id = ?", (subscriber_bonus, str(guild_id)))
+            await db.commit()
+
+        await Interaction.response.send_message(
+            f"Subscriber bonus set to {subscriber_bonus}.",
+            ephemeral=False,
+        )
+        logger.info(f"Subscriber bonus was set to {subscriber_bonus} for guild {guild_id}")
+    except Exception as e:
+        await Interaction.response.send_message(
+            f"An error occurred while updating the configuration: {str(e)}", ephemeral=True
+        )
+        logger.error(f"Error updating configuration: {e}")
 
 
 @bot.tree.command(
@@ -221,48 +362,68 @@ async def set_subscriberbonus(Interaction: discord.Interaction, subscriber_bonus
 )
 @is_mod_or_admin()
 async def set_mediabonus(Interaction: discord.Interaction, media_bonus: int):
+    
     if media_bonus < 0:
-        await Interaction.response.send_message(
-            f"Invalid media bonus: {media_bonus}. Media bonus must be a positive integer.",
-            ephemeral=True,
-        )
-        logger.warning(
-            f"Invalid media bonus entered by {Interaction.user} for /forgesight media_bonus command."
-        )
-        return
-    config_vals['MEDIA_BONUS'] = media_bonus
-    await Interaction.response.send_message(
-        f"Media bonus for Gold reward has been set to {config_vals['SUBSCRIBER_BONUS']}.",
-        ephemeral=False,
-    )
-    logger.info(f"Media bonus set to {config_vals['SUBSCRIBER_BONUS']} by {Interaction.user}")
+            await Interaction.response.send_message("Bonus must be a positive number.", ephemeral=True)
+            return
 
+    guild_id = Interaction.guild_id
+    if guild_id is None:
+        await Interaction.response.send_message("This command can only be used in a server.", ephemeral=True)
+        return
+
+    try:
+        async with db_manager as db:
+            await db.execute("UPDATE config SET media_bonus = ? WHERE guild_id = ?", (media_bonus, str(guild_id)))
+            await db.commit()
+
+        await Interaction.response.send_message(
+            f"Media bonus set to {media_bonus}.",
+            ephemeral=False,
+        )
+        logger.info(f"Subscriber bonus was set to {media_bonus} for guild {guild_id}")
+    except Exception as e:
+        await Interaction.response.send_message(
+            f"An error occurred while updating the configuration: {str(e)}", ephemeral=True
+        )
+        logger.error(f"Error updating configuration: {e}")
+
+#! get_mediabonus is for debug/testing purposes only, can be removed later
 
 @bot.tree.command(
-    name="toggle_rewards",
-    description="Toggle Gold rewards on or off. \n Usage: /toggle_rewards <on/off>",
+    name="get_mediabonus",
+    description="Get the current media bonus applied to Gold rewards."
 )
 @is_mod_or_admin()
+async def get_mediabonus(Interaction: discord.Interaction):
+    guild_id = Interaction.guild_id
+    config_vals = await db_manager.load_config(guild_id)
+    media_bonus = config_vals.get('media_bonus', 0)
+    await Interaction.response.send_message(
+        f"The current media bonus for Gold rewards is {media_bonus}.", ephemeral=False
+    )
+
+
+@bot.tree.command(name="toggle_rewards", description="Toggle Gold rewards on or off. \n Usage: /toggle_rewards <on/off>")
+@is_mod_or_admin()
 async def toggle_rewards(Interaction: discord.Interaction, toggle: str):
-    if toggle == "off":
-        config_vals['REWARDS'] = False
+    guild_id = Interaction.guild_id
+    if guild_id is None: 
+        await Interaction.response.send_message("This command can only be used in a server.", ephemeral=True)
+        return
+    try: 
+        async with db_manager as db:
+            await db.execute("UPDATE config SET rewards_enabled = ? WHERE guild_id = ?", (1 if toggle == "on" else 0, str(guild_id)))
+            await db.commit()
         await Interaction.response.send_message(
-            "Gold rewards have been turned off.", ephemeral=False
+            "Gold rewards have been turned on." if toggle == "on" else "Gold rewards have been turned off.", ephemeral=False
         )
-        logger.info(f"Gold rewards have been turned off by {Interaction.user}")
-    elif toggle == "on":
-        config_vals['REWARDS'] = True
+        logger.info(f"Gold rewards have been turned {'on' if toggle == 'on' else 'off'} by {Interaction.user}")
+    except Exception as e:
         await Interaction.response.send_message(
-            "Gold rewards have been turned on.", ephemeral=False
+            f"An error occurred while updating the configuration: {str(e)}", ephemeral=True
         )
-        logger.info(f"Gold rewards have been turned on by {Interaction.user}")
-    else:
-        await Interaction.response.send_message(
-            "Invalid option. Use 'on' or 'off'.", ephemeral=True
-        )
-        logger.warning(
-            f"Invalid option entered by {Interaction.user} for /forgesight rewards command."
-        )
+        logger.error(f"Error updating configuration: {e}")
 
 
 @bot.tree.command(
@@ -271,96 +432,112 @@ async def toggle_rewards(Interaction: discord.Interaction, toggle: str):
 )
 @is_mod_or_admin()
 async def set_reward_timeout(Interaction: discord.Interaction, timeout: int):
+    guild_id = Interaction.guild_id
+    if guild_id is None:
+        await Interaction.response.send_message("This command can only be used in a server.", ephemeral=True)
+        return
+
     if timeout < 0:
         await Interaction.response.send_message(
             f"Invalid timeout: {timeout}. Timeout must be a positive integer.",
             ephemeral=True,
         )
         logger.warning(
-            f"Invalid timeout entered by {Interaction.user} for /forgesight reward_timeout command."
+            f"Invalid timeout entered by {Interaction.user} for /reward_timeout command."
         )
         return
-    config_vals['MESSAGE_REWARD_TIMEOUT'] = timeout
-    await Interaction.response.send_message(
-        f"Message reward timeout set to {config_vals['MESSAGE_REWARD_TIMEOUT']} seconds.",
-        ephemeral=False,
-    )
-    logger.info(
-        f"Message reward timeout set to {config_vals['MESSAGE_REWARD_TIMEOUT']} by {Interaction.user}"
-    )
+    try: 
+        async with db_manager as db: 
+            await db.execute("UPDATE config SET reward_timeout = ? WHERE guild_id = ?", (timeout, str(guild_id)))
+            await db.commit()
+        await Interaction.response.send_message(f"Reward timeout set to {timeout} seconds.", ephemeral=False)
+        logger.info(f"Message reward timeout set to {timeout} seconds by {Interaction.user}")
+    except Exception as e:
+        await Interaction.response.send_message(
+            f"An error occurred while updating the configuration: {str(e)}", ephemeral=True
+        )
+        logger.error(f"Error updating configuration: {e}")
+        
 
 @bot.tree.command(
     name="channel_restriction",
     description="Toggle channel restriction on or off. \n Usage: /toggle_channel_restriction <on/off>",
 )
 @is_mod_or_admin()
-async def toggle_channel_restriction(Interaction: discord.Interaction, toggle: str):
-    global CHANNEL_ID_RESTRICTION
-    if toggle == "off":
-        CHANNEL_ID_RESTRICTION = None
-        await Interaction.response.send_message(
-            "Channel restriction has been turned off.", ephemeral=False
-        )
-        logger.info(f"Channel restriction has been turned off by {Interaction.user}")
-    elif toggle == "on":
-        CHANNEL_ID_RESTRICTION = Interaction.channel.id
-        await Interaction.response.send_message(
-            f"Channel restriction has been turned on for channel {Interaction.channel.mention}.", ephemeral=False
-        )
-        logger.info(f"Channel restriction has been turned on for channel {Interaction.channel.mention} by {Interaction.user}")
-    else:
-        await Interaction.response.send_message(
-            "Invalid option. Use 'on' or 'off'.", ephemeral=True
-        )
-        logger.warning(
-            f"Invalid option entered by {Interaction.user} for /forgesight toggle_channel_restriction command."
-        )
-
+async def toggle_channel_id_restriction(Interaction: discord.Interaction, toggle: str):
+    guild_id = Interaction.guild_id
+    if guild_id is None: 
+        await Interaction.response.send_message("This command can only be used in a server.", ephemeral=True)
+        return
+    try: 
+        async with db_manager as db:
+            await db.execute("UPDATE config SET channel_id_restriction = ? WHERE guild_id = ?", (1 if toggle == "on" else 0, str(guild_id)))
+            await db.commit()
+            await Interaction.response.send_message(
+                    "Channel Restrictions have been enabled." if toggle == "on" else "Channel Restrictions have been disabled.", ephemeral=False
+                )
+            logger.info(f"Gold rewards have been turned {'on' if toggle == 'on' else 'off'} by {Interaction.user}")
+    except Exception as e:
+        await Interaction.response.send_message(f"An error occurred while updating the configuration: {str(e)}", ephemeral=True)
+        
+    
 @bot.tree.command(
-    name="toggle_reward_timeout",
+    name="toggle_min_message_requirement",
     description="Toggle the message reward timeout on or off. \n Usage: /toggle_reward_timeout <on/off>",
 )
 @is_mod_or_admin()
-async def toggle_reward_timeout(Interaction: discord.Interaction, toggle: str):
-    if toggle == "off":
-        config_vals['MESSAGE_REWARD_TIMEOUT'] = None
-        await Interaction.response.send_message(
-            "Message reward timeout has been turned off.", ephemeral=False
-        )
-        logger.info(f"Message reward timeout has been turned off by {Interaction.user}")
-    elif toggle == "on":
-        await Interaction.response.send_message(
-            "Enter the timeout in seconds:", ephemeral=True
-        )
-        def check(m):
-            return m.author == Interaction.user and m.channel == Interaction.channel and m.content.isdigit()
-        try:
-            msg = await bot.wait_for('message', check=check, timeout=30.0)
-            config_vals['MESSAGE_REWARD_TIMEOUT'] = int(msg.content)
+async def toggle_min_message_requirement(Interaction: discord.Interaction, toggle: str):
+    guild_id = Interaction.guild_id
+    if guild_id is None: 
+        await Interaction.response.send_message("This command can only be used in a server.", ephemeral=True)
+        return
+    try: 
+        async with db_manager as db:
+            await db.execute("UPDATE config SET  min_message_requirement = ? WHERE guild_id = ?", (1 if toggle == "on" else 0, str(guild_id)))
+            await db.commit()
             await Interaction.response.send_message(
-                f"Message reward timeout set to {MESSAGE_REWARD_TIMEOUT} seconds.",
-                ephemeral=False,
-            )
-            logger.info(
-                f"Message reward timeout set to {MESSAGE_REWARD_TIMEOUT} by {Interaction.user}"
-            )
-        except asyncio.TimeoutError:
-            await Interaction.response.send_message(
-                "Timeout. Please try again.", ephemeral=True
-            )
+                    "Message Length Requirements have been enabled." if toggle == "on" else "Message Length Requirements have been disabled.", ephemeral=False
+                )
+            logger.info(f"Message Length Requirements have been turned {'on' if toggle == 'on' else 'off'} by {Interaction.user}")
+    except Exception as e:
+        await Interaction.response.send_message(f"An error occurred while updating the configuration: {str(e)}", ephemeral=True)
+
+@bot.tree.command(
+    name = "set_streak_bonus", 
+    description = "Set the streak bonus applied to Gold rewards."
+)
+@is_mod_or_admin() 
+async def set_streak_bonus (Interaction: discord.Interaction, streak_bonus: int):
+    guild_id = Interaction.guild_id
+    if guild_id is None: 
+        await Interaction.response.send_msaage("This command can only be used in a server.", ephemeral=True)
+        return
+    try: 
+        async with db_manager as db: 
+            await db.execute('UPDATE config SET streak_bonus = ? WHERE guild_id = ?', (streak_bonus, str(guild_id)))
+            await db.commit()
+            await Interaction.response.send_message(f"Streak bonus set to {streak_bonus}.", ephemeral=False)
+            logger.info(f"Streak bonus was set to {streak_bonus} for guild {guild_id}")
+    except Exception as e:
+        await Interaction.response.send_message(f"An error occurred while updating the configuration: {str(e)}", ephemeral=True)
+        logger.error(f"Error updating configuration: {e}")
+    
+@bot.tree.command(
+    name = "get_user_data", 
+    description="Get the Forgesight user data for a specific user. \n Usage: /get_user_data <user_id>"
+)
+@is_mod_or_admin()
+async def get_user_data(Interaction: discord.Interaction, member: discord.Member):
+    user_id = str(member.id)
+    user_data = await db_manager.load_vault_data(user_id)
+    if user_data:
+        embed = discord.Embed(title="Forgesight User Data", description="Current User Data", color=0xCF2702)
+        for key, value in user_data.items():
+            embed.add_field(name=key, value=value or 'Not set', inline=False)
+        await Interaction.response.send_message(embed=embed, ephemeral=True)
     else:
-        await Interaction.response.send_message(
-            "Invalid option. Use 'on' or 'off'.", ephemeral=True
-        )
-        logger.warning(
-            f"Invalid option entered by {Interaction.user} for /forgesight toggle_reward_timeout command."
-        )
-
-
-
-# Bring up the command list
-
-
+        await Interaction.response.send_message("No data found for the user.", ephemeral=True)
+        
 @bot.tree.command(
     name="commands",
     description="Show a list of all Forgesight commands\n Usage: /commands",
@@ -371,8 +548,6 @@ async def commands_list(Interaction: discord.Interaction):
         description="Here's a list of available commands:",
         color=0xCF2702,  # Cardinal Red
     )
-
-    # Add a field to embed. embed. add_field name value help inline False
     for command in bot.tree.get_commands():
         embed.add_field(name=command.name, value=command.description, inline=False)
 
@@ -389,241 +564,150 @@ async def commands_list(Interaction: discord.Interaction):
 )
 async def get_leaderboard(interaction: discord.Interaction):
     try:
-        with open("forgesight_vault.json", "r") as file:
-            data = json.load(file)
-        leaderboard_data = sorted(
-            data.items(), key=lambda x: x[1]["gold"], reverse=True
-        )[:10]  # limit to first 10 items
+        # Connect to the database
+        with sqlite3.connect("forgesight.db") as conn:
+            cursor = conn.cursor()
+            try:
+                # Execute the query to get the top 10 users by gold
+                cursor.execute("SELECT user_id, gold FROM user_data ORDER BY gold DESC LIMIT 10")
+                leaderboard_data = cursor.fetchall()
+            except Exception as e:
+                logger.error(f"Error retrieving leaderboard data: {e}")
+                await interaction.response.send_message(
+                    f"An error occurred while retrieving the leaderboard: {str(e)}", ephemeral=True
+                )
+                return
+
         embed = Embed(
             title="Forgesight Vault - Ranking",
             description="Top users by gold",
             color=0xCF2702,
         )
-        for user_id, user_data in leaderboard_data:
+        for user_id, gold in leaderboard_data:
             user = await bot.fetch_user(int(user_id))
-            gold = user_data["gold"]
             embed.add_field(name=user.display_name, value=f"{gold} Gold", inline=False)
+
         await interaction.response.send_message(embed=embed)
-        print(
-            f"{interaction.user} retrieved the Gold leaderboard."
-        )  #! Debug print statement
+        print(f"{interaction.user} retrieved the Gold leaderboard.")  # Debug print statement
         logger.info(f"{interaction.user} retrieved the Gold leaderboard.")
-    except FileNotFoundError:
+
+    except sqlite3.Error as e:
         await interaction.response.send_message(
-            "The leaderboard data file could not be found.", ephemeral=True
+            f"An error occurred while retrieving the leaderboard: {str(e)}", ephemeral=True
         )
-        logger.info(
-            "File Not Found Error:The leaderboard data file could not be found."
-        )
-    except discord.NotFound:
-        # Handle the specific NotFound error
-        print("Interaction expired or not found")
-    except Exception as e:
-        await interaction.response.send_message(
-            f"An error occurred: {str(e)}", ephemeral=True
-        )
-        logger.info(f"An error occurred: {str(e)}")
+        logger.error(f"An error occurred while retrieving the leaderboard: {str(e)}")
 
-
-@bot.tree.command(
-    name="gold_balance",
-    description="Check a user's gold balance. \n Usage: /gold_balance <@user>",
-)
-async def check_gold(interaction: discord.Interaction, member: discord.Member):
-    try:
-        # Load the gold data from the vault
-        with open("forgesight_vault.json", "r") as file:
-            data = json.load(file)
-
-        # Retrieve the gold balance for the user argued
-        gold_balance = data.get(str(member.id), 0)["gold"]
-
-        # Embed for gold balance
-        embed = discord.Embed(
-            title="Gold Balance",
-            description=f"{member.display_name}'s gold balance",
-            color=0xCF2702,
-        )
-        embed.add_field(name="Gold", value=str(gold_balance))
-
-        await interaction.response.send_message(embed=embed)
-        print(
-            f"{interaction.user} retrieved {member.display_name}'s gold balance."
-        )  #! Debug print statement
-        logger.info(
-            f"{interaction.user} retrieved {member.display_name}'s gold balance."
-        )
-
-    except FileNotFoundError:
-        await interaction.response.send_message(
-            "The gold data file could not be found.", ephemeral=True
-        )
-    except Exception as e:
-        await interaction.response.send_message(
-            f"An error occurred: {str(e)}", ephemeral=True
-        )
-
-
-# ready the bot and sync the commands with slash commands
-
-
-@bot.event
-async def on_interaction(interaction: discord.Interaction):
-    if interaction.type == discord.InteractionType.component:
-        print(f"Received button click: {interaction.data}")
-
-def calculate_streak_bonus(user_data, user_id):
-    # Parse the last post date and calculate the difference from today
-    today = datetime.date.today()
-    last_post_date = datetime.date.fromisoformat(user_data['last_post_date']) if user_data['last_post_date'] else None
-
-    if last_post_date and (today - last_post_date).days == 1:
-        # Increment consecutive days, up to a maximum of 5
-        user_data['consecutive_days'] = min(user_data['consecutive_days'] + 1, 5)
+# Needs revising
+@bot.tree.command(name="goldbalance", description="Show your gold balance.")
+async def gold_balance_command(Interaction: discord.Interaction, member: discord.Member):
+    await Interaction.response.defer()
+    user_id = str(member.id)
+    user_data = await db_manager.load_vault_data(user_id)
+    if user_data:
+        gold_balance = user_data[1]  # Assuming 'gold' is the second column in user_data
+        await Interaction.followup.send(f"{member.display_name} has {gold_balance} gold.")
     else:
-        user_data['consecutive_days'] = 1
-
-    # Update the last post date to today
-    user_data['last_post_date'] = today.isoformat()
-
-    # Calculate and return the streak bonus
-    return user_data['consecutive_days']
+        await Interaction.followup.send(f"No data found for {member.display_name}.")
 
 
+def calculate_streak_bonus(user_data):
+    print(f'calculating streak bonus for {user_data[2]}')
+
+#monitor messages for gold rewards
 @bot.event
 async def on_message(event):
-    # We don't want the bot to reply to itself
-    if event.author == bot:
+    if not event.guild:  # Ignore DMs or check for guild existence
         return
-    if event.author.id == bot.user.id:
-        print(f"User is the bot -  {event.author}, skipping rewards")
-        logger.info(f"User is the bot -  {event.author}, skipping rewards")
-        return
-    if event.author.id in config_vals['OMIT_REWARDS_IDs']:
-        print('User is in OMIT_REWARDS_IDs, skipping reward')
-        logger.info(f'User is in OMIT_REWARDS_IDs, skipping reward')
-        return
-    # Check that the rewards are enabled 
-    if config_vals['REWARDS'] == True:
-        vault = load_forgesight_vault()
-        # Detarmine if channel id restriction is enabled, if so, check if the message is in an allowed channel
-        if config_vals['CHANNEL_ID_RESTRICTION'] and event.channel.id not in config_vals['ALLOWED_CHANNEL_IDs']:
-            print(
-                f"Message not in allowed channel {event.channel.id}"
-            )  #! Debug print statement, do not log this event due to spam
+
+    guild_id = event.guild.id
+    user_id = str(event.author.id)
+    user_name = str(event.author.display_name)
+
+    try:
+        config_vals = await db_manager.load_config(guild_id)
+        if not config_vals:
+            logger.warning(f"No configuration found for guild {guild_id}")
             return
-        current_gold_award = config_vals['GOLD_AWARD']
-        # Check if message length check is enabled
-        if config_vals['MIN_MESSAGE_REQUIRED']:
-            # If the message is long enough, award gold
-            if len(event.content) >= config_vals['MIN_MESSAGE_LENGTH']:
-                # If the user is a subscriber, apply the subscriber bonus
-                if any(role.id == config_vals['SUBSCRIBER_ROLE_ID'] for role in event.author.roles):
-                    current_gold_award *= config_vals['SUBSCRIBER_BONUS']
-                    print(
-                        f"User {event.author.mention} has supporter role: Applying supporter bonus, new gold reward is {current_gold_award}"
-                    )  #! Debug print statement
-                # If the message has attachments, apply the media bonus
-                if event.attachments:
-                    current_gold_award += config_vals['MEDIA_BONUS']
-                    print(
-                        f"Message has attachments: Applying media bonus, new gold reward is {current_gold_award}"
-                    )  #! Debug print statement
-                # Open the vault and retrieve the user's data
-                async with aiofiles.open("forgesight_vault.json", "r") as file:
-                    data = await file.read()
-                    vault = json.loads(data) if data else {}
-                user_id = str(event.author.id)
-                user_data = vault.get(user_id, {"gold": 0, "last_earned": 0, "consecutive_days": 0, "last_post_date": ""})
-                # If the user has earned gold in the past MESSAGE_REWARD_TIMEOUT seconds, don't award gold
-                if time.time() - user_data["last_earned"] < config_vals['MESSAGE_REWARD_TIMEOUT']:
-                    print(
-                        f"{event.author.mention} has already earned gold in the past {config_vals['MESSAGE_REWARD_TIMEOUT']} seconds."
-                    )  #! Debug print statement
-                    return
-                # Award the gold and update the vault with new gold and last earned time
-                
-                user_data["gold"] += current_gold_award
-                print('Awarded base gold')
-                streak_bonus = calculate_streak_bonus(user_data, user_id)
-                user_data["gold"] += streak_bonus
-                print(f"Awarded streak bonus of {streak_bonus} gold")
-                user_data["last_earned"] = time.time()
-                print(
-                    f'Setting last earned time to {user_data["last_earned"]}'
-                )  #! Debug print statement
-                vault[user_id] = user_data
-                logger.info(
-                    f'Awarding {current_gold_award} gold to {user_id} {event.author} and updating last earned time to {user_data["last_earned"]}'
-                )
-                print(f"Vault updated for {user_data} {event.author}")  #! Debug print statement
-                # Save the modified vault
-                async with aiofiles.open("forgesight_vault.json", "w") as file:
-                    await file.write(json.dumps(vault, indent=4))
-        else:
-            print("Message was not long enough for rewards")
+
+        user_data = await db_manager.load_vault_data(user_id, user_name)
+        if not user_data:
+            logger.warning(f"No user data found for user {user_id}")
+            return
+
+        # Check channel restrictions
+        if config_vals['channel_id_restriction'] == 1 and event.channel.id not in config_vals['allowed_channels']:
+            logger.debug(f"Message in channel {event.channel.id} is not allowed for rewards.")
+            return
+
+        # Check message length requirement
+        if config_vals['min_message_requirement'] == 1 and len(event.content) < config_vals['min_message_length']:
+            logger.debug("Message was not long enough for rewards")
+            return
+
+        # Check reward timeout
+        last_earned_timestamp = float(user_data.get('last_earned', 0))
+        if time.time() - last_earned_timestamp < config_vals['reward_timeout']:
+            logger.info(f"{event.author} has already earned gold recently.")
+            return
+
+        # Calculate gold award
+        current_gold_award = config_vals['base_gold']
+        if any(role.id == config_vals.get('subscriber_role_id') for role in event.author.roles):
+            current_gold_award += int(config_vals.get('subscriber_bonus', 0))
+
+        if event.attachments:
+            current_gold_award += int(config_vals.get('media_bonus', 0))
+            user_data['media_bonuses'] = int(user_data.get('media_bonuses', 0)) + 1
+
+        # Update user data
+        user_data['gold'] = int(user_data.get('gold', 0)) + current_gold_award
+        user_data['last_earned'] = time.time()
+        user_data['total_message_count'] = int(user_data.get('total_message_count', 0)) + 1
+        user_data['msg_avg_length'] = int(user_data.get('msg_avg_length', 0)) + len(event.content)
+        user_data['last_post_date'] = datetime.date.today().isoformat()
+
+        # Save the updated user data
+        await db_manager.save_vault_data(**user_data)
+        logger.info('Forgesight Reward Recorded: ' + str(user_data))
+
+    except Exception as e:
+        logger.error(f"Error in on_message: {e}")
+        
+# Grant gold to a user        
+@bot.tree.command(name="grant_gold", description="Grant gold to a user\n Usage: /grant_gold <@user> <amount of gold>")
+@is_mod_or_admin()
+async def grant_gold(Interaction: discord.Interaction, user: discord.Member, amount: int):
+    await Interaction.response.defer()
+    user_id = str(user.id)
+    user_name = user.display_name
+    user_data = await db_manager.load_vault_data(user_id, user_name)
+    
+    if user_data:
+        new_gold = user_data['gold'] + amount 
+        logger.info(f"Granted {amount} gold to {user}. New gold: {new_gold}")
+
+        user_data['gold'] = new_gold
+
+        await db_manager.save_vault_data(**user_data) 
+        await Interaction.followup.send(f"{amount} gold granted to {user.mention}.", ephemeral=False)
     else:
-        print(f"Gold rewards are disabled. Message not awarded in {event.channel.id}")
+        await db_manager.create_new_user(user_id, user_name, gold=amount)
+        await Interaction.followup.send(f"No data found for {user.mention}. User entry was created for {user.mention} and {amount} has been added to their account.", ephemeral=True)
 
-
-# Grant gold to a user
-@bot.tree.command(
-    name="grant_gold",
-    description="Grant gold to a user\n Usage: /grant_gold <@user> <amount of gold>",
-)
+@bot.tree.command(name="deduct_gold", description="Deduct gold to a user\n Usage: /deduct_gold <@user> <amount of gold>")
 @is_mod_or_admin()
-async def grant_gold(
-    Interaction: discord.Interaction, user: discord.Member, amount: int
-):
-    # Open the vault and retrieve the user's data
-    async with aiofiles.open("forgesight_vault.json", "r") as file:
-        data = await file.read()
-        vault = json.loads(data) if data else {}
+async def deduct_gold(Interaction: discord.Interaction, user: discord.Member, amount: int):
+    await Interaction.response.defer()
     user_id = str(user.id)
-    user_data = vault.get(user_id, {"gold": 0, "last_earned": 0})
-    # Add the gold to the user's balance
-    user_data["gold"] += amount
-    vault[user_id] = user_data
-    # Save the modified vault
-    async with aiofiles.open("forgesight_vault.json", "w") as file:
-        await file.write(json.dumps(vault, indent=4))
-    await Interaction.response.send_message(
-        f"{amount} gold granted to {user.mention}.", ephemeral=False
-    )
-    logger.info(f"{amount} gold granted to {user} by {Interaction.user}")
+    user_data = await db_manager.load_vault_data(user_id)
 
-
-@bot.tree.command(
-    name="deduct_gold",
-    description="Deduct gold from a user\n Usage: /deduct_gold <@user> <amount of gold>",
-)
-@is_mod_or_admin()
-async def deduct_gold(
-    Interaction: discord.Interaction, user: discord.Member, amount: int
-):
-    # Open the vault and retrieve the user's data
-    async with aiofiles.open("forgesight_vault.json", "r") as file:
-        data = await file.read()
-        vault = json.loads(data) if data else {}
-    user_id = str(user.id)
-    user_data = vault.get(user_id, {"gold": 0, "last_earned": 0})
-    # Check if the user has enough gold to deduct
-    if user_data["gold"] < amount:
-        await Interaction.response.send_message(
-            f"{user.mention} does not have enough gold to deduct {amount} gold.",
-            ephemeral=False,
-        )
-        return
-    # Deduct the gold from the user's balance
-    user_data["gold"] -= amount
-    vault[user_id] = user_data
-    # Save the modified vault
-    async with aiofiles.open("forgesight_vault.json", "w") as file:
-        await file.write(json.dumps(vault, indent=4))
-    await Interaction.response.send_message(
-        f"{amount} gold deducted from {user.mention}.", ephemeral=False
-    )
-    logger.info(f"{amount} gold deducted from {user} by {Interaction.user}")
+    if user_data:
+        new_gold = user_data[1] - amount
+        logger.info(f"Deducted {amount} gold from {user}. New gold: {new_gold}")
+        await db_manager.save_vault_data(user_id, new_gold, user_data[2], user_data[3], user_data[4])  # Update the user's gold
+        await Interaction.followup.send(f"{amount} gold deducted {user.mention}.", ephemeral=False)
+    else:
+        await Interaction.followup.send(f"No data found for {user.mention}.", ephemeral=True)
 
 
 # Make the bot send a message in the current channel - more of a test command than anything else
@@ -642,55 +726,38 @@ async def say(Interaction: discord.Interaction, thing_to_say: str):
 )
 @is_mod_or_admin()
 async def gold_reward(Interaction: discord.Interaction, number_of_gold: int):
-    config_vals['GOLD_AWARD'] = number_of_gold
+    await db_manager.update_config_value("base_gold", number_of_gold)
     await Interaction.response.send_message(
-        f"Gold reward per message set to {config_vals['GOLD_AWARD']}", ephemeral=False
+        f"Gold reward per message set to {number_of_gold}", ephemeral=False
     )
-    logger.info(f"Gold reward per message set to {config_vals['GOLD_AWARD']} by {Interaction.user}")
+    logger.info(f"Gold reward per message set to {number_of_gold} by {Interaction.user}")
 
 
-@bot.tree.command(
-    name="configuration",
-    description="Displays the current Forgesight configuration. \n Usage: /configuration",
-)
-@is_mod_or_admin()
-async def get_configuration(Interaction: discord.Interaction):
-    embed = discord.Embed(
-        title="Forgesight Configuration",
-        description="Current Configuration Values",
-        color=0xCF2702,
-    )
-    embed.add_field(
-        name="MIN_MESSAGE_REQUIRED", value=str(config_vals['MIN_MESSAGE_REQUIRED']), inline=False
-    )
-    embed.add_field(
-        name="MIN_MESSAGE_LENGTH", value=config_vals['MIN_MESSAGE_LENGTH'], inline=False
-    )
-    embed.add_field(name="REWARDS", value=str(config_vals['REWARDS']), inline=False)
-    embed.add_field(
-        name="MESSAGE_REWARD_TIMEOUT", value=str(config_vals['MESSAGE_REWARD_TIMEOUT']), inline=False
-    )
-    embed.add_field(
-        name="SUBSCRIBER_ROLE_ID", value=str(config_vals['SUBSCRIBER_ROLE_ID']), inline=False
-    )
-    embed.add_field(name="SUBSCRIBER_BONUS", value=str(config_vals['SUBSCRIBER_BONUS']), inline=False)
-    embed.add_field(name="MEDIA_BONUS", value=str(config_vals['MEDIA_BONUS']), inline=False)
-    embed.add_field(name="GOLD_AWARD", value=str(config_vals['GOLD_AWARD']), inline=False)
-    embed.add_field(
-        name="ALLOWED_CHANNEL_IDs", value=str(config_vals['ALLOWED_CHANNEL_IDs']), inline=False
-    )
-    await Interaction.response.send_message(embed=embed)
-
-
-# Log Forgesight errors
 @bot.event
-async def on_error(event, *args, **kwargs):
-    with open("forgesight_err.log", "a") as f:
-        if event == "on_message":
-            f.write(f"Unhandled message: {args[0]}\n")
-        else:
-            raise
+async def on_error(event_name, *args, **kwargs):
+    with open('error_log.txt', 'a', encoding='utf-8') as f:
+        f.write(f"Unhandled message: {args[0]}\n")
 
+# Do some stuff when the bot logs in
+@bot.event
+async def on_ready():
+    db_manager = Forgesight_DB_Manager('forgesight.db', logger)
+    await db_manager.initialize_db()
+    print('Database initialized')
+    logger.info(f"{bot} has connected to Discord.")
+    print(f"Logged in as {bot.user.name}")
+    print(f"Discord.py API version: {discord.__version__}")
+    print(f"Bot ID: {bot.user.id}")
+    print(f"Bot has loaded extensions: {bot.extensions}")
+    print("------")
+    logger.info(f"Logged in as {bot.user.name} Discord.py API version: {discord.__version__} Bot ID: {bot.user.id}")
+    print(f"{bot} has connected to Discord.")
+    logger.info(f"{bot} has connected to Discord.")
+    try:
+        synced = await bot.tree.sync()
+        print(f"Synced {synced} commands")
+    except Exception as e:
+        print(e)
 
 # Run the bot with the discord token
 if __name__ == "__main__":
