@@ -266,9 +266,11 @@ class Hunting(commands.Cog):
     async def next(self, ctx):
         """When will the next occurrence happen?"""
         try:
+            await ctx.send(self.next_bang[ctx.guild.id])
             self.next_bang[ctx.guild.id]
             time = abs(datetime.datetime.now() - self.next_bang[ctx.guild.id])
             total_seconds = int(time.total_seconds())
+            await ctx.send(time) 
             hours, remainder = divmod(total_seconds, 60 * 60)
             minutes, seconds = divmod(remainder, 60)
             message = f"The next occurrence will be in {hours} hours and {minutes} minutes."
