@@ -267,7 +267,7 @@ class Hunting(commands.Cog):
         """When will the next occurrence happen?"""
         try:
             self.next_bang[ctx.guild.id]
-            time = abs(datetime.datetime.utcnow() - self.next_bang[ctx.guild.id])
+            time = abs(datetime.datetime.now() - self.next_bang[ctx.guild.id])
             total_seconds = int(time.total_seconds())
             hours, remainder = divmod(total_seconds, 60 * 60)
             minutes, seconds = divmod(remainder, 60)
