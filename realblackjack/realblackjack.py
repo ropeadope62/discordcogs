@@ -5,7 +5,7 @@ import discord
 
 
 class Deck:
-    def __init__(self, num_decks=1):
+    def __init__(self, num_decks=2):
         self.cards = []
         self.num_decks = num_decks
         self.suits = [":clubs:", ":diamonds:", ":hearts:", ":spades:"]
@@ -169,11 +169,9 @@ class GameState:
         self.player_objects = {}  # player_id: Player object
         self.dealer = Dealer()
         self.end_game = False
-        self.state = "Waiting for bets"
+        self.state = "Stopped"
 
     async def clear_states(self, ctx, channel_id):
-        self.deck.shuffle()
-        await ctx.send("The dealer shuffles the deck!")
         for player in self.player_objects.values():
             await player.clear_hand()
         await self.dealer.clear_hand()
@@ -181,10 +179,6 @@ class GameState:
         self.end_game = False
         self.current_bet = 0 
         await ctx.send("The table has been cleared for the next round.")
-        
-    async def decks(self, ctx, number_of_decks: int):
-        self.deck = Deck(num_decks=number_of_decks)
-        await ctx.send(f"Deck has been set to {number_of_decks} decks.")
 
     async def take_bets(self, ctx, channel_id):
         self.state = "Taking bets"
@@ -238,6 +232,7 @@ class GameState:
             return
         if game.state == "End Game":
             print("Game is ending, skipping setup...")
+            game.state = "Stopped"
             return
         
         # Shuffle the deck
@@ -273,9 +268,9 @@ class GameState:
             await player.clear_hand()
 
     async def player_turns(self, ctx, channel_id, embed):
-        self.state = "Player turns"
+        
         game = self.games[channel_id]
-
+        game.state = "Player Turns"
         for player_id, player in game.player_objects.items():
             user = self.bot.get_user(player_id)
 
@@ -434,7 +429,7 @@ class GameState:
 
         
         embed.add_field(
-            name="Cards Left in Deck", value=str(len(game.deck.cards)), inline=False
+            name="Cards Left in Shoe", value=str(len(game.deck.cards)), inline=False
         )
 
     
@@ -474,6 +469,18 @@ class RealBlackJack(commands.Cog):
             return
         if ctx.invoked_subcommand is None:
             await ctx.send("Invalid blackjack command passed...")
+            
+    @realblackjack.command()
+    async def decks(self, ctx, number_of_decks: int):
+        channel_id = ctx.channel.id
+        game = self.games[channel_id]
+        
+        if self.games[channel_id].state != ["Waiting for bets"]:
+            await ctx.send("A game is currently in progress. Cannot change the number of decks.")
+            return
+
+        self.deck = Deck(num_decks=number_of_decks)
+        await ctx.send(f"Deck has been set to {number_of_decks} decks.")
 
     @realblackjack.command()
     async def start(self, ctx):
