@@ -394,32 +394,32 @@ class GameState:
         dealer = game.dealer
 
         for player_id, player in game.player_objects.items():
-            user = self.bot.get_user(player_id)
+            member = ctx.guild.get_member(player_id)
 
             # * Player is busted
             if player.score > 21:
                 await ctx.send(
-                    f"{user.mention}, you're busted. You lose your bet of {player.bet}."
+                    f"{member.mention}, you're busted. You lose your bet of {player.bet}."
                 )
-                await bank.withdraw_credits(user, player.bet)
+                await bank.withdraw_credits(member, player.bet)
 
             # * Dealer is busted or player has higher score than dealer
             elif dealer.score > 21 or player.score > dealer.score:
                 win_amount = player.bet * self.payouts["Win"]
-                await ctx.send(f"{user.mention}, you win! You get {win_amount} chips.")
-                await bank.deposit_credits(user, win_amount)
+                await ctx.send(f"{member.mention}, you win! You get {win_amount} chips.")
+                await bank.deposit_credits(member, win_amount)
 
             # * It's a tie
             elif player.score == dealer.score:
-                await ctx.send(f"{user.mention}, it's a tie! You get your bet back.")
+                await ctx.send(f"{member.mention}, it's a tie! You get your bet back.")
                 # * No change in chips
 
             # * Dealer wins
             else:
                 await ctx.send(
-                    f"{user.mention}, dealer wins. You lose your bet of {player.bet}."
+                    f"{member.mention}, dealer wins. You lose your bet of {player.bet}."
                 )
-                await bank.withdraw_credits(user, player.bet)
+                await bank.withdraw_credits(member, player.bet)
 
             # Clear player's hand and states for the next round
             await player.clear_hand()
