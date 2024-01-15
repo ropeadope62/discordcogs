@@ -410,8 +410,8 @@ class Hunting(commands.Cog):
     async def _latest_message_check(self, channel):
         hunt_int_max = await self.config.guild(channel.guild).hunt_interval_maximum()
         async for message in channel.history(limit=5):
-            utc_now = datetime.utcnow().replace(tzinfo=pytz.utc)
-            delta = utc_now - message.created_at
+            now = datetime.now()
+            delta = now - message.created_at
             if delta.total_seconds() < hunt_int_max * 2 and message.author.id != self.bot.user.id:
                 if channel.id in self.paused_games:
                     self.paused_games.remove(channel.id)
@@ -536,9 +536,9 @@ class Hunting(commands.Cog):
 
         guild_data = await self.config.guild(message.guild).all()
         wait_time = random.randrange(guild_data["hunt_interval_minimum"], guild_data["hunt_interval_maximum"])
-        self.next_bang[message.guild.id] = datetime.datetime.fromtimestamp(
-            int(time.mktime(datetime.datetime.utcnow().timetuple())) + wait_time
-        )
+        next_bang_time = datetime.now() + datetime.timedelta(seconds=wait_time)
+        self.next_bang[message.guild.id] = next_bang_time
+
         await asyncio.sleep(wait_time)
         task = self.bot.loop.create_task(self._wait_for_bang(message.guild, message.channel))
         self.game_tasks.append(task)
