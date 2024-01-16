@@ -595,7 +595,7 @@ class Race(commands.Cog):
     async def run_game(self, ctx):
         players = await self._game_setup(ctx)
         setup = "\u200b\n" + "\n".join(
-            f"🏁 **{animal.current}** :BlueFlag:[{jockey.display_name}]" for animal, jockey in players
+            f"🏁 **{animal.current}** 🚩[{jockey.display_name}]" for animal, jockey in players
         )
         track = await ctx.send(setup)
         while not all(animal.position == 0 for animal, jockey in players):
@@ -604,10 +604,10 @@ class Race(commands.Cog):
             fields = []
             for animal, jockey in players:
                 if animal.position == 0:
-                    fields.append(f"🏁 **{animal.current}** :BlueFlag:  [{jockey.display_name}]")
+                    fields.append(f"🏁 **{animal.current}** 🚩  [{jockey.display_name}]")
                     continue
                 animal.move()
-                fields.append(f"🏁 **{animal.current}** :BlueFlag:  [{jockey.display_name}]")
+                fields.append(f"🏁 **{animal.current}** 🚩  [{jockey.display_name}]")
                 if animal.position == 0 and len(self.winners[ctx.guild.id]) < 3:
                     self.winners[ctx.guild.id].append((jockey, animal))
             t = "\u200b\n" + "\n".join(fields)
