@@ -98,8 +98,8 @@ class Race(commands.Cog):
         current = await self.config.guild(ctx.guild).Games_Played()
         await self.config.guild(ctx.guild).Games_Played.set(current + 1)
         await ctx.send(
-            f"🚩 A race has begun! Type {ctx.prefix}race enter "
-            f"to join the race! 🚩\nThe race will begin in "
+            f"🚩🚩🚩 A race has begun! Type {ctx.prefix}race enter "
+            f"to join the race! 🚩🚩🚩\nThe race will begin in "
             f"{wait} seconds!\n\n**{ctx.author.mention}** entered the race!"
         )
         await asyncio.sleep(wait)
@@ -402,6 +402,8 @@ class Race(commands.Cog):
         else:
             plural = "s" if players != 1 else ""
             await ctx.send(f"Races will only payout if there are {players} human player{plural} besides the person that starts the game.")
+            
+        
 
     async def stats_update(self, ctx):
         names = [player for player, emoji in self.winners[ctx.guild.id]]
@@ -593,7 +595,7 @@ class Race(commands.Cog):
     async def run_game(self, ctx):
         players = await self._game_setup(ctx)
         setup = "\u200b\n" + "\n".join(
-            f":carrot: **{animal.current}** 🏁[{jockey.display_name}]" for animal, jockey in players
+            f"🏁 **{animal.current}** :BlueFlag:[{jockey.display_name}]" for animal, jockey in players
         )
         track = await ctx.send(setup)
         while not all(animal.position == 0 for animal, jockey in players):
@@ -602,10 +604,10 @@ class Race(commands.Cog):
             fields = []
             for animal, jockey in players:
                 if animal.position == 0:
-                    fields.append(f":carrot: **{animal.current}** 🏁  [{jockey.display_name}]")
+                    fields.append(f"🏁 **{animal.current}** :BlueFlag:  [{jockey.display_name}]")
                     continue
                 animal.move()
-                fields.append(f":carrot: **{animal.current}** 🏁  [{jockey.display_name}]")
+                fields.append(f"🏁 **{animal.current}** :BlueFlag:  [{jockey.display_name}]")
                 if animal.position == 0 and len(self.winners[ctx.guild.id]) < 3:
                     self.winners[ctx.guild.id].append((jockey, animal))
             t = "\u200b\n" + "\n".join(fields)
