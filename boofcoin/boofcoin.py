@@ -6,20 +6,16 @@ from redbot.core import Config, bank, commands
 from redbot.core.utils.chat_formatting import box, humanize_number
 from tabulate import tabulate
 
-# https://github.com/Flame442/FlameCogs/blob/master/stocks/stocks.py
-# A lot of the logic in this is based on Flames stocks, obtained with permission.
-
 
 async def tokencheck(ctx):
     token = await ctx.bot.get_shared_api_tokens("coinmarketcap")
     return bool(token.get("api_key", False))
 
 
-class Boofcoin(commands.Cog):
+class BoofCoin(commands.Cog):
     """Buy and Sell BoofCoin"""
-
-    __version__ = "0.1.0"
     __author__ = "ropeadope65/Slurms Mackenzie"
+    __version__ = "1.0.0"
     
     custom_name_mapping = {
         "Boofcoin": "BTC",
@@ -81,8 +77,8 @@ class Boofcoin(commands.Cog):
             return
         
         real_symbol = self.custom_name_mapping.get(coin, coin)
+        real_symbol = self.custom_name_mapping.get(coin, coin)
         coin_data = await self.checkcoins(real_symbol)
-        coin_data = await self.checkcoins(coin)
         if "status" in coin_data:
             status = coin_data["status"]
             if status["error_code"] in [1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011]:
@@ -129,7 +125,7 @@ class Boofcoin(commands.Cog):
             f'You\'ve purchased {humanize_number(amount)} of {coin_data["name"]} for {humanize_number(inflate_price)} {currency}. ({humanize_number((float(coin_data["quote"]["USD"]["price"])) * 10)} {currency} each)!'
         )
 
-    @crypto.command()
+    @boofcoin.command()
     async def sell(self, ctx, coin, *, amount: float):
         """Sell crypto
 
