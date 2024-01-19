@@ -7,9 +7,9 @@ import math
 import os
 import random
 
-from .utils import checks
-from .utils.dataIO import dataIO
-from .utils.chat_formatting import error, escape_mass_mentions, pagify, warning
+from utils import checks
+from utils.dataIO import dataIO
+from utils.chat_formatting import error, escape_mass_mentions, pagify, warning
 
 
 # Constants
