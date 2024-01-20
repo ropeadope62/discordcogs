@@ -25,6 +25,7 @@ JSON = PATH + 'quotes.json'
 SQLDB = PATH + 'quotes.sqlite'
 DEFAULT_UPDATE_KEYS = (('quote_id',), ('server_id', 'server_quote_id'))
 
+
 # message links in embeds don't work yet
 # PERMALINK = 'https://discordapp.com/channels/{server_id}/{channel_id}/{message_id}'
 

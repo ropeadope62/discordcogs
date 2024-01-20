@@ -1,7 +1,13 @@
 import os
 import sqlite3 
 from io import BytesIO, StringIO
-from serverquotes import ServerQuotes
+from .serverquotes import ServerQuotes
+from utils.dataIO import dataIO
+
+PATH = 'data/serverquotes/'
+JSON = PATH + 'quotes.json'
+SQLDB = PATH + 'quotes.sqlite'
+DEFAULT_UPDATE_KEYS = (('quote_id',), ('server_id', 'server_quote_id'))
 
 def check_folder():
     if not os.path.exists(PATH):
