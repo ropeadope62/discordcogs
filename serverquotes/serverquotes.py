@@ -15,9 +15,9 @@ import struct
 from textwrap import dedent
 from typing import Iterable, Optional, Sequence
 
-from .utils.chat_formatting import error, warning
-from .utils.checks import check_permissions, is_owner, admin_or_permissions, mod_or_permissions
-from .utils.dataIO import dataIO
+from utils.chat_formatting import error, warning
+from utils.checks import check_permissions, is_owner, admin_or_permissions, mod_or_permissions
+from utils.dataIO import dataIO
 
 
 PATH = 'data/serverquotes/'
