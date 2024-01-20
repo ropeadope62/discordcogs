@@ -14,7 +14,7 @@ from utils.chat_formatting import error, escape_mass_mentions, pagify, warning
 
 # Constants
 MAX_ROUNDS = 4
-INITIAL_HP = 20
+INITIAL_HP = 100
 TARGET_SELF = 'self'
 TARGET_OTHER = 'target'
 
@@ -39,12 +39,6 @@ def indicatize(d):
 
 WEAPONS = {}
 
-SINGLE_PROJECTILE = {}
-
-FAMILIAR = {}
-
-SUMMON = {}
-
 MELEE = {
     'smash': {
         'elbow': 5
@@ -68,10 +62,43 @@ MARTIAL = {'roundhouse kick': 6,
            'bitch-slap': 2,
            'headbutt': 4}
 
-STYLE_KARATE = {}
+STYLE_KARATE = {'karate chop': 5,
+                'karate kick': 5,
+                'straight punch': 3, 
+                'hook': 3, 
+                'side kick': 3}
+
+STYLE_TAI_CHI = {}
+
+STYLE_WRESTLING = {}
+
+STYLE_BJJ = {}
+
+STYLE_BOXING = {}
+
+STYLE_KRAV_MAGA = {}
+
+STYLE_SAMBO = {}
+
+STYLE_MUAY_THAI = {}
+
+STYLE_AIKIDO = {}
+
+STYLE_JEETKUNDO = {}
+
+STYLE_KUNGFU = {}
 
 BODYPARTS = [
     'head',
+    'eye socket', 
+    'testicles', 
+    'tits', 
+    'tit',
+    'ass',
+    'liver', 
+    'ribs',
+    'temple',
+    'ear',
     'throat',
     'neck',
     'solar plexus',
@@ -80,6 +107,7 @@ BODYPARTS = [
     'spleen',
     'kidney',
     'leg',
+    'spine', 
     'arm',
     'jugular',
     'abdomen',
