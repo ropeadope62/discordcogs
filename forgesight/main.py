@@ -728,6 +728,25 @@ async def deduct_gold(Interaction: discord.Interaction, user: discord.Member, am
     else:
         await Interaction.followup.send(f"No data found for {user.mention}.", ephemeral=True)
 
+@bot.tree.command(
+    name="send_db",
+    description="Send the Forgesight database file to a user",
+)
+@is_mod_or_admin()
+async def send_db(Interaction: discord.Interaction, user: discord.User):
+    try:
+        with open("forgesight.db", "rb") as file:
+            await user.send(file=discord.File(file, "forgesight.db"))
+        await Interaction.response.send_message(
+            f"The Forgesight database file has been sent to {user.mention}",
+            ephemeral=False
+        )
+    except Exception as e:
+        await Interaction.response.send_message(
+            f"Failed to send the Forgesight database file: {str(e)}",
+            ephemeral=True
+        )
+
 
 # Make the bot send a message in the current channel - more of a test command than anything else
 @bot.tree.command(
