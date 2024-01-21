@@ -23,7 +23,6 @@ import aiosqlite
 
 # Global variables for the bot - these can be changed with slash command
 
-
 # Set up the bot intents
 intents = discord.Intents.default()
 intents.message_content = True
@@ -31,7 +30,6 @@ intents.messages = True
 intents.guilds = True
 intents.reactions = True
 intents.members = True
-
 
 # Define the bot
 bot = commands.Bot(command_prefix="/", intents=intents)
@@ -46,6 +44,9 @@ handler.setFormatter(
 )
 logger.addHandler(handler)
 
+# I've defined a separate logger for the database, so that it can be configured separately
+# However, for now most functins are logging to the main logger
+
 db_logger = logging.getLogger("forgesight_db_log")
 db_logger.setLevel(logging.DEBUG)
 db_handler = logging.FileHandler("forgesight_db.log", encoding="utf-8", mode="a")
@@ -54,17 +55,21 @@ db_handler.setFormatter(
     logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
 )
 
+# Load our environment variables 
 load_dotenv()
 
+# Define the database manager object
 db_manager = Forgesight_DB_Manager('forgesight.db', logger)
 
+# Create a variable for bot commands which can be used in the help command
 bot_commands = [command.name for command in bot.commands]
 
+#! Helper function to combine logging and executing a query
 def log_and_execute(cursor, query):
     logger.info(f"Executing query: {query}")
     cursor.execute(query)
     
-
+#! Helper function to check if a user is a mod or admin, there is a built in decorator for this but I prefer granular control
 def is_mod_or_admin():
     async def predicate(ctx):
         mod_role = discord.utils.get(ctx.guild.roles, name="Moderation Team")
@@ -74,6 +79,7 @@ def is_mod_or_admin():
 
     return commands.check(predicate)
 
+# Calculate the total gold in the bank, that is the balance of all users
 async def calculate_total_gold():
     total_gold = 0
     async with aiosqlite.connect('forgesight.db') as _:
@@ -90,6 +96,7 @@ async def calculate_total_gold():
 
     return total_gold
 
+# Similar to he calculate_total_gold function, but this one is used to record total gold and earn rates
 async def record_total_gold():
     all_data = await db_manager.load_all_vault_data()  
     if not all_data:
@@ -117,12 +124,12 @@ async def record_total_gold():
                 logger.error(f"Error calculating total gold: {e}")
             return total_gold
 
-
+# Function to update the last post time to be used in streak bonus calculations
 async def record_last_post_date(user_id):
     await db_manager.execute('UPDATE user_data SET last_post_date = ? WHERE user_id = ?', (datetime.date.today().isoformat(), user_id))
     await db_manager.commit()
 
-#! Gold recording as a whole needs to be reworked
+# task to manage the record total gold function
 async def record_gold_task(): 
     while True:
         logger.info("Starting gold recording task")
@@ -135,11 +142,12 @@ async def record_gold_task():
 
 
 #! This is in progress, needs to be finished
+#! This function will be used to create an image with the users gold balance
 async def modify_image(member, gold_balance):
     image = Image.open('./images/ledger-template.png')
     draw = ImageDraw.Draw(image)
     # Choose a font (replace 'font = ImageFont.load_default()' with the font path)
-    font_path = './fonts/firstreign.ttf'
+    font_path = './fonts/firstreign.otf'
     font = ImageFont.truetype(font_path, size=12)
     text = f"{member} \n {gold_balance} Gold"
     position = (50,50)
@@ -155,7 +163,7 @@ async def modify_image(member, gold_balance):
 
     return image_output
 
-
+# Shows the configuration for the bot
 @bot.tree.command(name="show_config", description="Show the current Forgesight configuration.\nUsage: /show_config")
 async def show_config(Interaction: discord.Interaction):
     guild_id = Interaction.guild_id
@@ -180,6 +188,7 @@ async def show_config(Interaction: discord.Interaction):
             f"An error occurred while retrieving the configuration: {str(e)}", ephemeral=True
         )
 
+#discord Synchronize the bot tree commands for slash commands
 @bot.tree.command(name="sync", description="Sync the bot tree commands. \n Usage: /sync")
 async def sync(Interaction: discord.Interaction):
     await Interaction.response.defer()
@@ -189,21 +198,23 @@ async def sync(Interaction: discord.Interaction):
     await Interaction.followup.send(f"{len(synced)} Bot tree commands synchronized.")
     print(f'{len(synced)} Bot tree commands synchronized.')
 
-
+#Retrieve the users gold balance - does not take arguments
 @bot.tree.command(name="balance", description="Check your gold balance. \n Usage: /balance")
 async def balance(Interaction: discord.Interaction):
-    member = Interaction.user  # Set the member to the user who triggered the command
-    user_data = await db_manager.load_vault_data(member.id)  # Fetch user data from the database
-
+    member = Interaction.user
+    user_name = member.display_name# Set the member to the user who triggered the command
+    user_data = await db_manager.load_vault_data(member.id, user_name)  # Fetch user data from the database
+   
     if user_data:
-        gold_balance = user_data[1]  # Adjust the index based on your table structure
+        gold_balance = user_data['gold']  # Adjust the index based on your table structure
         image = await modify_image(member, gold_balance)
         embed = discord.Embed(title="Gold Balance", description=f"Gold balance for {member}: {gold_balance}", color=discord.Color.gold())
         embed.set_image(url="attachment://balance.png")
         await Interaction.response.send_message(file=discord.File(image, filename='balance.png'), embed=embed)
     else:
         await Interaction.response.send_message("No data found for the user.", ephemeral=True)
-        
+
+#Manual Backup of the database to a flat file
 @bot.tree.command(name="backup", description="Manually Backup the Forgesight database. \n Usage: /backup <filename>")
 async def backup_db(Interaction: discord.Interaction, filename: str):
     try:
@@ -214,7 +225,8 @@ async def backup_db(Interaction: discord.Interaction, filename: str):
         await Interaction.response.send_message(f"Error creating database backup: {e}", ephemeral=True)
         logger.error(f"Error creating database backup: {e}")
 
-
+#! This is in progress, needs to be finished
+#! This will post information about the bot, but should be converted into a commands group so that I can properly implement subcommands 
 @bot.tree.command(
     name="forgesight",
     description="Forgesight - Community engagement bot for Tableflip Foundry.")
@@ -233,6 +245,8 @@ async def forgesight(Interaction: discord.Interaction):
 
 # Define the 'log' subcommand within the 'forgesight' group
 
+#! This is in progress, needs to be finished
+#! This will post the gold stats for the server
 @bot.tree.command(
     name="bank", 
     description="Show the current gold balance and stats of the Forgesight Bank.")
@@ -246,6 +260,8 @@ async def get_bank(Interaction: discord.Interaction):
     embed.set_image(url="attachment://bank.png")
     await Interaction.response.send_message(file=file, embed=embed, ephemeral=False)
 
+
+#View or clear the log file
 @bot.tree.command(
     name="log",
     description="Get or clear the Forgesight log file\n Usage: /log <get/clear>",
@@ -510,7 +526,7 @@ async def toggle_min_message_requirement(Interaction: discord.Interaction, toggl
 async def set_streak_bonus (Interaction: discord.Interaction, streak_bonus: int):
     guild_id = Interaction.guild_id
     if guild_id is None: 
-        await Interaction.response.send_msaage("This command can only be used in a server.", ephemeral=True)
+        await Interaction.response.send_message("This command can only be used in a server.", ephemeral=True)
         return
     try: 
         async with db_manager as db: 
@@ -523,13 +539,13 @@ async def set_streak_bonus (Interaction: discord.Interaction, streak_bonus: int)
         logger.error(f"Error updating configuration: {e}")
     
 @bot.tree.command(
-    name = "get_user_data", 
+    name="get_user_data",
     description="Get the Forgesight user data for a specific user. \n Usage: /get_user_data <user_id>"
 )
 @is_mod_or_admin()
 async def get_user_data(Interaction: discord.Interaction, member: discord.Member):
     user_id = str(member.id)
-    user_data = await db_manager.load_vault_data(user_id)
+    user_data = await db_manager.load_vault_data_from_id(user_id)
     if user_data:
         embed = discord.Embed(title="Forgesight User Data", description="Current User Data", color=0xCF2702)
         for key, value in user_data.items():
@@ -556,6 +572,7 @@ async def commands_list(Interaction: discord.Interaction):
         f"{Interaction.user} used the retrieved the command list."
     )  #! Debug print statement
     logger.info(f"{Interaction.user} used the retrieved the command list.")
+
 
 
 @bot.tree.command(
@@ -662,7 +679,7 @@ async def on_message(event):
         # Update user data
         user_data['gold'] = int(user_data.get('gold', 0)) + current_gold_award
         user_data['last_earned'] = time.time()
-        user_data['total_message_count'] = int(user_data.get('total_message_count', 0)) + 1
+        user_data['total_msg_count'] = int(user_data.get('total_msg_count', 0)) + 1
         user_data['msg_avg_length'] = int(user_data.get('msg_avg_length', 0)) + len(event.content)
         user_data['last_post_date'] = datetime.date.today().isoformat()
 
@@ -699,12 +716,14 @@ async def grant_gold(Interaction: discord.Interaction, user: discord.Member, amo
 async def deduct_gold(Interaction: discord.Interaction, user: discord.Member, amount: int):
     await Interaction.response.defer()
     user_id = str(user.id)
-    user_data = await db_manager.load_vault_data(user_id)
+    user_name = user.display_name
+    user_data = await db_manager.load_vault_data(user_id, user_name)
 
     if user_data:
-        new_gold = user_data[1] - amount
+        new_gold = user_data['gold'] - amount
+        user_data['gold'] = new_gold
         logger.info(f"Deducted {amount} gold from {user}. New gold: {new_gold}")
-        await db_manager.save_vault_data(user_id, new_gold, user_data[2], user_data[3], user_data[4])  # Update the user's gold
+        await db_manager.save_vault_data(**user_data)  
         await Interaction.followup.send(f"{amount} gold deducted {user.mention}.", ephemeral=False)
     else:
         await Interaction.followup.send(f"No data found for {user.mention}.", ephemeral=True)

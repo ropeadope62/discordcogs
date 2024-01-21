@@ -47,7 +47,7 @@ class Forgesight_DB_Manager:
                     media_bonuses INTEGER DEFAULT 0,
                     streak_bonuses INTEGER DEFAULT 0,
                     msg_avg_length INTEGER DEFAULT 0,
-                    total_message_count INTEGER DEFAULT 0
+                    total_msg_count INTEGER DEFAULT 0
                 )
             ''')
             self.logger.info('User Data Table: Created.')
@@ -114,16 +114,29 @@ class Forgesight_DB_Manager:
 
     async def load_vault_data(self, user_id, user_name):
         print(f"Loading vault data for user_id: {user_id}")
+        
         async with self as db:
             async with db.execute('SELECT * FROM user_data WHERE user_id = ?', (user_id,)) as cursor:
                 row = await cursor.fetchone()
                 if row is None: 
                     print(f"No vault data found for user_id: {user_id}")
-                    await self.create_new_user(user_id, user_name, gold=0, last_earned=0, last_post_date=None, consecutive_days=0, media_bonuses=0, streak_bonuses=0, msg_avg_length=0, total_message_count=0)  
+                    await self.create_new_user(user_id, user_name, gold=0, last_earned=0, last_post_date=None, consecutive_days=0, media_bonuses=0, streak_bonuses=0, msg_avg_length=0, total_msg_count=0)  
                     print(f'Created new user {user_name}, {user_id} with 0 gold.')
                     return {}
 
-                user_data_keys = ['user_id','user_name', 'gold', 'last_earned', 'last_post_date', 'consecutive_days', 'media_bonuses', 'streak_bonuses', 'msg_avg_length', 'total_message_count']
+                user_data_keys = ['user_id','user_name', 'gold', 'last_earned', 'last_post_date', 'consecutive_days', 'media_bonuses', 'streak_bonuses', 'msg_avg_length', 'total_msg_count']
+                return dict(zip(user_data_keys, row))
+            
+    async def load_vault_data_from_id(self, user_id):
+        print(f"Loading vault data for user_id: {user_id}")
+        
+        async with self as db:
+            async with db.execute('SELECT * FROM user_data WHERE user_id = ?', (user_id,)) as cursor:
+                row = await cursor.fetchone()
+                if row is None: 
+                    print(f"No vault data found for user_id: {user_id}")
+                    return {}
+                user_data_keys = ['user_id','user_name', 'gold', 'last_earned', 'last_post_date', 'consecutive_days', 'media_bonuses', 'streak_bonuses', 'msg_avg_length', 'total_msg_count']
                 return dict(zip(user_data_keys, row))
 
     async def load_all_vault_data(self):
@@ -134,22 +147,22 @@ class Forgesight_DB_Manager:
 
                     if not rows:
                         return []
-                    user_data_keys = ['user_id', 'gold', 'last_earned', 'last_post_date', 'consecutive_days', 'media_bonuses', 'streak_bonuses', 'msg_avg_length', 'total_message_count']
+                    user_data_keys = ['user_id', 'gold', 'last_earned', 'last_post_date', 'consecutive_days', 'media_bonuses', 'streak_bonuses', 'msg_avg_length', 'total_msg_count']
                     return [dict(zip(user_data_keys, row)) for row in rows]
 
         except Exception as e:
             print(f"Error loading all vault data: {e}")
             return []
 
-    async def save_vault_data(self, user_id, user_name, gold, last_earned, consecutive_days, last_post_date, media_bonuses, streak_bonuses, msg_avg_length, total_message_count):
+    async def save_vault_data(self, user_id, user_name, gold, last_earned, consecutive_days, last_post_date, media_bonuses, streak_bonuses, msg_avg_length, total_msg_count):
         try:
             print('Connecting to database to save vault data')  # Debug Print
             async with aiosqlite.connect('forgesight.db') as db:
                 print('Connected to database, executing REPLACE INTO')  # Debug Print
                 await db.execute('''
-                    REPLACE INTO user_data (user_id, user_name, gold, last_earned, consecutive_days, last_post_date, media_bonuses, streak_bonuses, msg_avg_length, total_message_count)
+                    REPLACE INTO user_data (user_id, user_name, gold, last_earned, consecutive_days, last_post_date, media_bonuses, streak_bonuses, msg_avg_length, total_msg_count)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (user_id, user_name, gold, last_earned, consecutive_days, last_post_date, media_bonuses, streak_bonuses, msg_avg_length, total_message_count))
+                ''', (user_id, user_name, gold, last_earned, consecutive_days, last_post_date, media_bonuses, streak_bonuses, msg_avg_length, total_msg_count))
                 await db.commit()
                 print('Vault data saved successfully')  # Debug Print
         except Exception as e:
@@ -165,12 +178,12 @@ class Forgesight_DB_Manager:
             ''', (timestamp, user_id, total_gold_earned, channel_id, base_gold, streak_bonus, media_bonus, subscriber_bonus, message_length))
             await db.commit()
             
-    async def create_new_user(self, user_id, user_name, gold=0, last_earned=0, consecutive_days=0, last_post_date=None, media_bonuses=0, streak_bonuses=0, msg_avg_length=0, total_message_count=0):
+    async def create_new_user(self, user_id, user_name, gold=0, last_earned=0, consecutive_days=0, last_post_date=None, media_bonuses=0, streak_bonuses=0, msg_avg_length=0, total_msg_count=0):
         async with aiosqlite.connect('forgesight.db') as db:
             await db.execute('''
-                INSERT INTO user_data (user_id, user_name, gold, last_earned, consecutive_days, last_post_date, media_bonuses, streak_bonuses, msg_avg_length, total_message_count)
+                INSERT INTO user_data (user_id, user_name, gold, last_earned, consecutive_days, last_post_date, media_bonuses, streak_bonuses, msg_avg_length, total_msg_count)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (user_id, user_name, gold, last_earned, consecutive_days, last_post_date, media_bonuses, streak_bonuses, msg_avg_length, total_message_count))
+            ''', (user_id, user_name, gold, last_earned, consecutive_days, last_post_date, media_bonuses, streak_bonuses, msg_avg_length, total_msg_count))
             await db.commit()
             if self.logger:
                 self.logger.info(f'New user {user_id} ({user_name}) created with {gold} gold.')
