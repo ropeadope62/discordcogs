@@ -24,13 +24,33 @@ To get started, use the command:
 ```
 
 ### Forgesight Command List
+[p]show config
+Get the current Forgesight configuration.
+Usade: /show
+
+[p]sync
+Synchronize the Forgesight Slash commands between Discord API and the bot. 
+Usage: /sync
+
+[p]balance
+Check your gold balance. Only visible to the command executor. 
+Usage: /balance
+
+[p]backup
+Manually backup the Forgesight database. Enter the path and file name (no extension necessary) 
+Usage: /backup forgesight_bak
+
+[p]bank
+Shows Forgesight Gold statistics. 
+Usage: /bank
 
 [p]log
 Get or clear the Forgesight log file
-Usage: /log <get/clear>
+Usage: /show_config
 
-[p]message_length
+[p]set_min_message_length
 Set the message size requirements for earning gold
+Usage: /set_min_message_length 5 
 
 [p]subscriber_bonus
 Set the subscriber bonus applied to Gold rewards.
@@ -81,6 +101,70 @@ Usage: /gold_reward <number of gold>
 Displays the current Forgesight configuration.
 Usage: /configuration
 
+
+show_config
+Show the current Forgesight configuration.
+Usage: /show_config
+sync
+Sync the bot tree commands.
+Usage: /sync
+balance
+Check your gold balance.
+Usage: /balance
+backup
+Manually Backup the Forgesight database.
+Usage: /backup <filename>
+forgesight
+Forgesight - Community engagement bot for Tableflip Foundry.
+bank
+Show the current gold balance and stats of the Forgesight Bank.
+log
+Get or clear the Forgesight log file
+Usage: /log <get/clear>
+set_min_message_length
+Set the minimum message length requirement for earning gold
+subscriber_bonus
+Set the subscriber bonus applied to Gold rewards.
+media_bonus
+Set the media bonus applied to Gold rewards.
+get_mediabonus
+Get the current media bonus applied to Gold rewards.
+toggle_rewards
+Toggle Gold rewards on or off.
+Usage: /toggle_rewards <on/off>
+reward_timeout
+Set the timeout for Gold rewards in seconds between messages.
+channel_restriction
+Toggle channel restriction on or off.
+Usage: /toggle_channel_restriction <on/off>
+toggle_min_message_requirement
+Toggle the message reward timeout on or off.
+Usage: /toggle_reward_timeout <on/off>
+set_streak_bonus
+Set the streak bonus applied to Gold rewards.
+get_user_data
+Get the Forgesight user data for a specific user.
+Usage: /get_user_data <user_id>
+commands
+Show a list of all Forgesight commands
+Usage: /commands
+gold_leaderboard
+Show the Server Gold leaderboard.
+Usage: /gold_leaderboard
+goldbalance
+Show your gold balance.
+grant_gold
+Grant gold to a user
+Usage: /grant_gold <@user> <amount of gold>
+deduct_gold
+Deduct gold to a user
+Usage: /deduct_gold <@user> <amount of gold>
+say
+Make the bot say something
+Usage: /say <thing to say>
+default_gold_award
+Set the gold reward per message.
+Usage: /gold_reward <number of gold>
 ## Features
 
 - **Gold Rewards**: Collect session notes in real-time with the `[p]storycraft start` and `[p]storycraft stop` commands.
