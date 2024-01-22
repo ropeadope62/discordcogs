@@ -29,7 +29,7 @@ class AcroCat(commands.Cog):
     acronym_template = generate_acronym()
 
     @commands.Cog.listener()
-    async def on_message(self,ctx, message):
+    async def on_message(self, message):
         if message.content.lower() == self.current_acronym.lower():
             # Perform action when the message matches the acronym exactly
             pass
@@ -41,7 +41,7 @@ class AcroCat(commands.Cog):
                 player_acronym = ''.join(acronym_letters).upper()
                 embed = discord.Embed(title="Acrocat - Current Entries")
                 embed.add_field(name="1.", value=player_acronym, inline=False)
-                await ctx.send(embed=embed)
+                await message.channel.send(embed=embed)
                 
     
     async def start_voting(self, ctx):
