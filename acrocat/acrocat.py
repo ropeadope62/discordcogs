@@ -30,10 +30,7 @@ class AcroCat(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.content.lower() == self.current_acronym.lower():
-            # Perform action when the message matches the acronym exactly
-            pass
-        else:
+        if message.content.lower() != self.current_acronym.lower():
             words = message.content.split()
             acronym_letters = [word[0].lower() for word in words]
             if ''.join(acronym_letters) == self.current_acronym.lower():
