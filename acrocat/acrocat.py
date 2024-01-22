@@ -2,7 +2,6 @@ import discord
 from redbot.core import commands
 import random
 import asyncio
-import random
 import string
 
 class AcroCat(commands.Cog):
@@ -13,7 +12,7 @@ class AcroCat(commands.Cog):
         self.votes = {}
 
     @commands.command()
-    async def acrocat(self, ctx):
+    async def acrocat(self, ctx: commands.Context):
         self.current_acronym = self.generate_acronym()
         embed = discord.Embed(title="Acrocat - The Best Acro Cog for Discord.", description=f"Your acronym is: `{self.current_acronym}`")
         await ctx.send(embed=embed)
