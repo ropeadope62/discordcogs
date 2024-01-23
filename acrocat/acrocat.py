@@ -60,12 +60,12 @@ class AcroCat(commands.Cog):
     @staticmethod
     def generate_acronym():
         return "".join(
-            random.choice(string.ascii_uppercase + '.') for _ in range(random.randint(3, 6))
+            random.choice(string.ascii_uppercase) for _ in range(random.randint(3, 6))
         )
 
-    @acrocat.command(name="limits")
+    @acrocat.command(name="letters")
     @commands.is_owner()  # Ensure only the bot owner can change the limits
-    async def set_limits(self, ctx, min_length: int, max_length: int):
+    async def set_letter_limits(self, ctx, min_length: int, max_length: int):
         if 1 <= min_length <= max_length:
             self.min_length = min_length
             self.max_length = max_length
@@ -78,12 +78,15 @@ class AcroCat(commands.Cog):
     
     @commands.Cog.listener()
     async def on_message(self, message):
-        if (
+        is_valid_acronym = (
             self.current_acronym
             and not message.author.bot
             and "".join(word[0].lower() for word in message.content.split() if word)
             == self.current_acronym.lower()
-        ):
+        )
+        
+        if is_valid_acronym:
+            print(f'found valid acronym from {message.author}')
             self.responses[message.author] = message.content
             try:
                 await message.delete()  # Delete the message to keep the submission anonymous
