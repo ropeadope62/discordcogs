@@ -16,7 +16,7 @@ class AcroCat(commands.Cog):
 
     @commands.group()
     async def acrocat(self, ctx: commands.Context):
-        if ctx.invoked.subcommand is None:
+        if ctx.invoked_subcommand is None:
             self.current_acronym = self.generate_acronym()
             embed = discord.Embed(title="Acrocat - The Cat's Ass of Acro Cogs. Period.", description=f"Your acronym is: `{self.current_acronym}`")
             
