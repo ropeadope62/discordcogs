@@ -36,8 +36,8 @@ class AcroCat(commands.Cog):
         if ctx.invoked_subcommand is None:
             self.current_acronym = self.generate_acronym()
             embed = discord.Embed(
-                title="Acrocat - The Cat's Ass of Acro Cogs. Period.",
-                description=f"Your acronym is: `{self.current_acronym}`",
+                title="Acrocat - The Cat's Ass of Acro Cogs.",
+                description=f"Your acronym is: **`{self.current_acronym}`**",
             )
             
             image_path = os.path.join(os.path.dirname(__file__), "acrocat_logo.png")
@@ -75,24 +75,19 @@ class AcroCat(commands.Cog):
                 "Invalid limits. Ensure that `min_length` is at least 1 and `max_length` is greater than or equal to `min_length`."
             )
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        is_valid_acronym = (
-            self.current_acronym
-            and not message.author.bot
-            and "".join(word[0].lower() for word in message.content.split() if word)
-            == self.current_acronym.lower()
-        )
-        if is_valid_acronym:
-            self.responses[message.author] = message.content
     
     @commands.Cog.listener()
     async def on_message(self, message):
-        is_valid_acronym = (
+        if (
             self.current_acronym
             and not message.author.bot
             and "".join(word[0].lower() for word in message.content.split() if word)
             == self.current_acronym.lower()
-        )
-        if is_valid_acronym:
+        ):
             self.responses[message.author] = message.content
+            try:
+                await message.delete()  # Delete the message to keep the submission anonymous
+            except discord.Forbidden:
+                print("Bot does not have permissions to delete messages.")
+            except discord.HTTPException:
+                print("Deleting the message failed.")
