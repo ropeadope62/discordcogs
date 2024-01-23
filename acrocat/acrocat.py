@@ -45,15 +45,15 @@ class AcroCat(commands.Cog):
             await self.start_voting(ctx)
             await asyncio.sleep(30)
 
-        async def start_voting(self, ctx):
-            # Creating an embed with all the responses
-            embed = discord.Embed(title="Acrocat - Current Entries")
-            for index, (author, acronym) in enumerate(self.responses.items(), start=1):
-                embed.add_field(
-                    name=f"{index}.",
-                    value=f"{acronym} by {author.display_name}",
-                    inline=False,
-                )
+    async def start_voting(self, ctx):
+        # Creating an embed with all the responses
+        embed = discord.Embed(title="Acrocat - Current Entries")
+        for index, (author, acronym) in enumerate(self.responses.items(), start=1):
+            embed.add_field(
+                name=f"{index}.",
+                value=f"{acronym} by {author.display_name}",
+                inline=False,
+            )
 
             voting_message = await ctx.send(embed=embed)
 
