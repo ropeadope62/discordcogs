@@ -15,6 +15,19 @@ class AcroCat(commands.Cog):
         self.min_acro_length = 3
         self.max_acro_length = 6
 
+    async def start_voting(self, ctx):
+        if not self.responses:
+            await ctx.send("No responses to vote on.")
+            return
+
+        embed = discord.Embed(title="Acrocat - Vote for the Best Acronym!")
+        for index, (author, response) in enumerate(self.responses.items(), start=1):
+            embed.add_field(name=f"{index}.", value=f"{response} by {author.display_name}", inline=False)
+        voting_message = await ctx.send(embed=embed)
+        self.responses = {}
+        self.votes = {}
+
+
     @commands.group()
     async def acrocat(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
@@ -45,7 +58,7 @@ class AcroCat(commands.Cog):
             await self.start_voting(ctx)
             await asyncio.sleep(30)
 
-
+    
 
     @staticmethod
     def generate_acronym():
