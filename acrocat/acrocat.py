@@ -62,27 +62,27 @@ class AcroCat(commands.Cog):
                 embed.add_field(name=f"{index}.", value=f"{acronym} by {author.display_name}", inline=False)
         
         # Sending the embed only once after it's fully populated
-        voting_message = await ctx.send(embed=embed)
+            voting_message = await ctx.send(embed=embed)
 
-        def check(message):
-            return message.author == ctx.author and message.channel == ctx.channel
+            def check(message):
+                return message.author == ctx.author and message.channel == ctx.channel
 
-        try:
-            response = await self.bot.wait_for('message', check=check, timeout=30)
-            vote = int(response.content)
-            if 1 <= vote <= len(self.responses):
-                voted_author = list(self.responses.keys())[vote - 1]
-                self.votes[voted_author] = self.votes.get(voted_author, 0) + 1
-                await ctx.send(f"{response.author.display_name}'s vote has been recorded.")
-            else:
-                await ctx.send(f"Invalid vote. Please enter a number between 1 and {len(self.responses)}.")
-        except asyncio.TimeoutError:
-            await ctx.send("Voting time has expired.")
-        
-        # Creating an embed with all the votes
-        embed = discord.Embed(title="Acrocat - Current Votes")
-        for index, (author, votes) in enumerate(self.votes.items(), start=1):
-            embed.add_field(name=f"{index}.", value=f"{author.display_name}: {votes}", inline=False)
-        await ctx.send(embed=embed)
-        
+            try:
+                response = await self.bot.wait_for('message', check=check, timeout=30)
+                vote = int(response.content)
+                if 1 <= vote <= len(self.responses):
+                    voted_author = list(self.responses.keys())[vote - 1]
+                    self.votes[voted_author] = self.votes.get(voted_author, 0) + 1
+                    await ctx.send(f"{response.author.display_name}'s vote has been recorded.")
+                else:
+                    await ctx.send(f"Invalid vote. Please enter a number between 1 and {len(self.responses)}.")
+            except asyncio.TimeoutError:
+                await ctx.send("Voting time has expired.")
+            
+            # Creating an embed with all the votes
+            embed = discord.Embed(title="Acrocat - Current Votes")
+            for index, (author, votes) in enumerate(self.votes.items(), start=1):
+                embed.add_field(name=f"{index}.", value=f"{author.display_name}: {votes}", inline=False)
+            await ctx.send(embed=embed)
+            
     
