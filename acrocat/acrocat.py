@@ -14,6 +14,7 @@ class AcroCat(commands.Cog):
         self.votes = {}
         self.min_acro_length = 3
         self.max_acro_length = 6
+        self.name_with_acro = 0
 
     async def start_voting(self, ctx):
         if not self.responses:
@@ -22,7 +23,9 @@ class AcroCat(commands.Cog):
 
         embed = discord.Embed(title="Acrocat - Vote for the Best Acronym!")
         for index, (author, response) in enumerate(self.responses.items(), start=1):
-            embed.add_field(name=f"{index}.", value=f"{response} by {author.display_name}", inline=False)
+            if self.name_with_acro == 1:
+                embed.add_field(name=f"{index}.", value=f"{response} by {author.display_name}", inline=False)
+            embed.add_field(name=f"{index}.", value=f"{response}", inline=False)
         voting_message = await ctx.send(embed=embed)
         self.responses = {}
         self.votes = {}
@@ -36,8 +39,7 @@ class AcroCat(commands.Cog):
                 title="Acrocat - The Cat's Ass of Acro Cogs. Period.",
                 description=f"Your acronym is: `{self.current_acronym}`",
             )
-
-            # Get the path to the image file
+            
             image_path = os.path.join(os.path.dirname(__file__), "acrocat_logo.png")
             embed.add_field(
                 name="About",
@@ -47,19 +49,13 @@ class AcroCat(commands.Cog):
                 name="Repo",
                 value="If you liked this, try my other stupid cogs! https://github.com/ropeadope62/discordcogs",
             )
-            # Set the image in the embed
             embed.set_image(url="attachment://acrocat_logo.png")
-
-            # Send the embed with the image
+            
             await ctx.send(
                 embed=embed, file=discord.File(image_path, "acrocat_logo.png")
             )
             await asyncio.sleep(30)
             await self.start_voting(ctx)
-            
-            
-
-    
 
     @staticmethod
     def generate_acronym():
@@ -79,6 +75,17 @@ class AcroCat(commands.Cog):
                 "Invalid limits. Ensure that `min_length` is at least 1 and `max_length` is greater than or equal to `min_length`."
             )
 
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        is_valid_acronym = (
+            self.current_acronym
+            and not message.author.bot
+            and "".join(word[0].lower() for word in message.content.split() if word)
+            == self.current_acronym.lower()
+        )
+        if is_valid_acronym:
+            self.responses[message.author] = message.content
+    
     @commands.Cog.listener()
     async def on_message(self, message):
         is_valid_acronym = (
