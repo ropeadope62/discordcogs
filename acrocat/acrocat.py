@@ -17,7 +17,7 @@ class AcroCat(commands.Cog):
 
     async def start_voting(self, ctx):
         if not self.responses:
-            await ctx.send("No responses to vote on.")
+            await ctx.send("Waiting for player responses...")
             return
 
         embed = discord.Embed(title="Acrocat - Vote for the Best Acronym!")
@@ -54,16 +54,17 @@ class AcroCat(commands.Cog):
             await ctx.send(
                 embed=embed, file=discord.File(image_path, "acrocat_logo.png")
             )
-
-            await self.start_voting(ctx)
             await asyncio.sleep(30)
+            await self.start_voting(ctx)
+            
+            
 
     
 
     @staticmethod
     def generate_acronym():
         return "".join(
-            random.choice(string.ascii_uppercase) for _ in range(random.randint(3, 6))
+            random.choice(string.ascii_uppercase + '.') for _ in range(random.randint(3, 6))
         )
 
     @acrocat.command(name="limits")
@@ -80,10 +81,11 @@ class AcroCat(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if (
+        is_valid_acronym = (
             self.current_acronym
             and not message.author.bot
             and "".join(word[0].lower() for word in message.content.split() if word)
             == self.current_acronym.lower()
-        ):
+        )
+        if is_valid_acronym:
             self.responses[message.author] = message.content
