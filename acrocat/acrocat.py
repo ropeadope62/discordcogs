@@ -19,7 +19,8 @@ class AcroCat(commands.Cog):
         
         # Get the path to the image file
         image_path = os.path.join(os.path.dirname(__file__), "acrocat_logo.png")
-        
+        embed.add_field(name = 'About', value='Another stupid discord cog by Slurms Mackenzie/ropeadope62' )
+        embed.add_field(name = 'Repo', value='If you liked this, try my other stupid cogs! https://github.com/ropeadope62/discordcogs' )
         # Set the image in the embed
         embed.set_image(url="attachment://acrocat_logo.png")
         
