@@ -21,7 +21,7 @@ class AcroCat(commands.Cog):
             await ctx.send("Waiting for player responses...")
             return
 
-        embed = discord.Embed(title="Acrocat - Vote for the Best Acronym!")
+        embed = discord.Embed(title="Vote for your favorite!")
         for index, (author, response) in enumerate(self.responses.items(), start=1):
             if self.name_with_acro == 1:
                 embed.add_field(name=f"{index}.", value=f"{response} by {author.display_name}", inline=False)
@@ -51,10 +51,15 @@ class AcroCat(commands.Cog):
             )
             embed.set_image(url="attachment://acrocat_logo.png")
             
-            await ctx.send(
+            message = await ctx.send(
                 embed=embed, file=discord.File(image_path, "acrocat_logo.png")
             )
-            await asyncio.sleep(30)
+            
+            for i in range(30, 0, -1):
+                await asyncio.sleep(1)
+                embed.description = f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {i}"
+                await message.edit(embed=embed)
+            
             await self.start_voting(ctx)
 
     @staticmethod
