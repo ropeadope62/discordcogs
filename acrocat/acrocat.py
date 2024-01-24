@@ -15,26 +15,29 @@ class AcroCat(commands.Cog):
         self.min_acro_length = 3
         self.max_acro_length = 6
         self.name_with_acro = 0
+        self.game_state = None
 
     async def start_voting(self, ctx):
         if not self.responses:
             await ctx.send("Waiting for player responses...")
             return
-
+        self.game_state = 'voting'
         embed = discord.Embed(title="Vote for your favorite!")
         for index, (author, response) in enumerate(self.responses.items(), start=1):
             if self.name_with_acro == 1:
                 embed.add_field(name=f"{index}.", value=f"{response} by {author.display_name}", inline=False)
             embed.add_field(name=f"{index}.", value=f"{response}", inline=False)
         voting_message = await ctx.send(embed=embed)
+        self.voting_message_id = voting_message.id  # Store the voting message ID
+        self.voting_channel = ctx.channel  # Store the voting channel
         self.responses = {}
-        self.votes = {}
 
 
     @commands.group()
     async def acrocat(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
             self.current_acronym = self.generate_acronym()
+            self.game_state = 'collecting'
             embed = discord.Embed(
                 title="Acrocat - The Cat's Ass of Acro Cogs.",
                 description=f"Your acronym is: **`{self.current_acronym}`**",
@@ -83,19 +86,58 @@ class AcroCat(commands.Cog):
     
     @commands.Cog.listener()
     async def on_message(self, message):
-        is_valid_acronym = (
-            self.current_acronym
-            and not message.author.bot
-            and "".join(word[0].lower() for word in message.content.split() if word)
-            == self.current_acronym.lower()
-        )
-        
-        if is_valid_acronym:
-            print(f'found valid acronym from {message.author}')
-            self.responses[message.author] = message.content
+        if message.author.bot or message.channel != self.voting_channel:
+            return
+
+        if self.game_state == 'collecting':
+            is_valid_acronym = (
+                self.current_acronym
+                and "".join(word[0].lower() for word in message.content.split() if word) == self.current_acronym.lower()
+            )
+
+            if is_valid_acronym:
+                print(f'found valid acronym from {message.author}')
+                self.responses[message.author] = message.content
+                try:
+                    await message.delete()  
+                except discord.Forbidden:
+                    print("Bot does not have permissions to delete messages.")
+                except discord.HTTPException:
+                    print("Deleting the message failed.")
+
+        elif self.game_state == 'voting':
             try:
-                await message.delete()  # Delete the message to keep the submission anonymous
-            except discord.Forbidden:
-                print("Bot does not have permissions to delete messages.")
-            except discord.HTTPException:
+                vote = int(message.content.strip())
+                if 1 <= vote <= len(self.responses):
+                    self.votes[message.author] = vote
+                    await message.add_reaction("✅")
+                    await message.delete()
+            except ValueError:
                 print("Deleting the message failed.")
+
+
+        async def end_vote(self, ctx):
+            if self.game_state != 'voting':
+                await ctx.send("Voting is not currently active.")
+                return
+
+            # Tally the votes
+            vote_counts = {index: 0 for index in range(1, len(self.responses) + 1)}
+            for vote in self.votes.values():
+                if vote in vote_counts:
+                    vote_counts[vote] += 1
+
+            if not vote_counts:
+                await ctx.send("No votes were cast.")
+                self.game_state = None
+                return
+
+            # Determine the winner
+            winning_vote = max(vote_counts, key=vote_counts.get)
+            winner_response = list(self.responses.values())[winning_vote - 1]
+            winner_user = list(self.responses.keys())[winning_vote - 1]
+            await ctx.send(f"The winner is {winner_user.display_name} with the response: {winner_response}")
+            self.game_state = None
+            self.current_acronym = None
+            self.responses = {}
+            self.votes = {}
