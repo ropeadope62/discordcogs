@@ -47,7 +47,7 @@ class AcroCat(commands.Cog):
             )
             embed.add_field(
                 name="Repo",
-                value="If you liked this, try my other stupid cogs! https://github.com/ropeadope62/discordcogs",
+                value="If you liked this, check out my other cogs! https://github.com/ropeadope62/discordcogs",
             )
             embed.set_image(url="attachment://acrocat_logo.png")
             
