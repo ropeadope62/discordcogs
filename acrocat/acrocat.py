@@ -74,7 +74,8 @@ class AcroCat(commands.Cog):
         )
 
     @acrocat.command(name="letters")
-    @commands.is_owner()  # Ensure only the bot owner can change the limits
+    @commands.has_permissions(manage_guild=True)
+    @commands.is_owner()
     async def set_letter_limits(self, ctx, min_length: int, max_length: int):
         if 1 <= min_length <= max_length:
             self.min_length = min_length
@@ -85,6 +86,10 @@ class AcroCat(commands.Cog):
                 "Invalid limits. Ensure that `min_length` is at least 1 and `max_length` is greater than or equal to `min_length`."
             )
 
+    @acrocat.command(name="endvote")
+    @commands.has_permissions(manage_messages=True)  
+    async def end_vote_command(self, ctx):
+        await self.end_vote(ctx)
     
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -111,6 +116,7 @@ class AcroCat(commands.Cog):
             try:
                 vote = int(message.content.strip())
                 if 1 <= vote <= len(self.responses):
+                    print(f'vote from {message.author} for {vote}')
                     self.votes[message.author] = vote
                     await message.add_reaction("✅")
                     await message.delete()
@@ -118,28 +124,28 @@ class AcroCat(commands.Cog):
                 print("Deleting the message failed.")
 
 
-        async def end_vote(self, ctx):
-            if self.game_state != 'voting':
-                await ctx.send("Voting is not currently active.")
-                return
+    async def end_vote(self, ctx):
+        if self.game_state != 'voting':
+            await ctx.send("Voting is not currently active.")
+            return
 
-            # Tally the votes
-            vote_counts = {index: 0 for index in range(1, len(self.responses) + 1)}
-            for vote in self.votes.values():
-                if vote in vote_counts:
-                    vote_counts[vote] += 1
+        # Tally the votes
+        vote_counts = {index: 0 for index in range(1, len(self.responses) + 1)}
+        for vote in self.votes.values():
+            if vote in vote_counts:
+                vote_counts[vote] += 1
 
-            if not vote_counts:
-                await ctx.send("No votes were cast.")
-                self.game_state = None
-                return
-
-            # Determine the winner
-            winning_vote = max(vote_counts, key=vote_counts.get)
-            winner_response = list(self.responses.values())[winning_vote - 1]
-            winner_user = list(self.responses.keys())[winning_vote - 1]
-            await ctx.send(f"The winner is {winner_user.display_name} with the response: {winner_response}")
+        if not vote_counts:
+            await ctx.send("No votes were cast.")
             self.game_state = None
-            self.current_acronym = None
-            self.responses = {}
-            self.votes = {}
+            return
+
+        # Determine the winner
+        winning_vote = max(vote_counts, key=vote_counts.get)
+        winner_response = list(self.responses.values())[winning_vote - 1]
+        winner_user = list(self.responses.keys())[winning_vote - 1]
+        await ctx.send(f"The winner is {winner_user.display_name} with the response: {winner_response}")
+        self.game_state = None
+        self.current_acronym = None
+        self.responses = {}
+        self.votes = {}
