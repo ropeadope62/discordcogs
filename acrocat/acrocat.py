@@ -18,10 +18,10 @@ class AcroCat(commands.Cog):
         self.game_state = None
 
     async def start_voting(self, ctx):
+        self.game_state = 'voting'
         if not self.responses:
             await ctx.send("Waiting for player responses...")
             return
-        self.game_state = 'voting'
         embed = discord.Embed(title="Vote for your favorite!")
         for index, (author, response) in enumerate(self.responses.items(), start=1):
             if self.name_with_acro == 1:
