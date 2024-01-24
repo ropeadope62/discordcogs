@@ -16,6 +16,7 @@ class AcroCat(commands.Cog):
         self.max_acro_length = 6
         self.name_with_acro = 0
         self.game_state = None
+        self.voting_channel = None
 
     async def start_voting(self, ctx):
         self.game_state = 'voting'
