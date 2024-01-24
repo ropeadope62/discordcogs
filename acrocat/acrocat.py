@@ -19,6 +19,7 @@ class AcroCat(commands.Cog):
         self.voting_channel = None
 
     async def start_voting(self, ctx):
+        self.voting_channel = ctx.channel
         self.game_state = 'voting'
         if not self.responses:
             await ctx.send("Waiting for player responses...")
@@ -36,7 +37,6 @@ class AcroCat(commands.Cog):
 
     @commands.group()
     async def acrocat(self, ctx: commands.Context):
-        self.voting_channel = ctx.channel
         if ctx.invoked_subcommand is None:
             self.current_acronym = self.generate_acronym()
             self.game_state = 'collecting'
