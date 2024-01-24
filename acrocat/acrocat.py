@@ -36,6 +36,7 @@ class AcroCat(commands.Cog):
 
     @commands.group()
     async def acrocat(self, ctx: commands.Context):
+        self.voting_channel = ctx.channel
         if ctx.invoked_subcommand is None:
             self.current_acronym = self.generate_acronym()
             self.game_state = 'collecting'
