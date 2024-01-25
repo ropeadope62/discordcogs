@@ -19,19 +19,24 @@ class AcroCat(commands.Cog):
         self.voting_channel = None
 
     async def start_voting(self, ctx):
+        print(f'starting voting in {ctx.channel}')
         self.voting_channel = ctx.channel
         self.game_state = 'voting'
+        print(f'game state is {self.game_state}')
         if not self.responses:
+            print(f'waiting for players responses')
             await ctx.send("Waiting for player responses...")
             return
         embed = discord.Embed(title="Vote for your favorite!")
         for index, (author, response) in enumerate(self.responses.items(), start=1):
             if self.name_with_acro == 1:
+                print(f'adding {index} {response} by {author.display_name}')
                 embed.add_field(name=f"{index}.", value=f"{response} by {author.display_name}", inline=False)
             embed.add_field(name=f"{index}.", value=f"{response}", inline=False)
         voting_message = await ctx.send(embed=embed)
-        self.voting_message_id = voting_message.id  # Store the voting message ID
-        self.voting_channel = ctx.channel  # Store the voting channel
+        self.voting_message_id = voting_message.id
+        print(f'storing voting message id {self.voting_message_id}')   
+        print(f'storing voting channel {self.voting_channel}')
         self.responses = {}
 
 
@@ -97,6 +102,7 @@ class AcroCat(commands.Cog):
             return
 
         if self.game_state == 'collecting':
+            print(f'game state is {self.game_state}')
             is_valid_acronym = (
                 self.current_acronym
                 and "".join(word[0].lower() for word in message.content.split() if word) == self.current_acronym.lower()
@@ -107,15 +113,18 @@ class AcroCat(commands.Cog):
                 self.responses[message.author] = message.content
                 try:
                     await message.delete()  
+                    print(f'Deleting message from {message.author}')
                 except discord.Forbidden:
                     print("Bot does not have permissions to delete messages.")
                 except discord.HTTPException:
                     print("Deleting the message failed.")
 
         elif self.game_state == 'voting':
+            print(f'game state is {self.game_state}')
             try:
                 vote = int(message.content.strip())
                 if 1 <= vote <= len(self.responses):
+                    print(f'determined vote is {vote}')
                     print(f'vote from {message.author} for {vote}')
                     self.votes[message.author] = vote
                     await message.add_reaction("✅")
