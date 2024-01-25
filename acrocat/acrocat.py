@@ -4,6 +4,7 @@ import random
 import asyncio
 import string
 import os
+from collections import Counter
 
 
 class AcroCat(commands.Cog):
@@ -54,23 +55,33 @@ class AcroCat(commands.Cog):
         self.game_state = 'voting'
         print(f'starting voting in {ctx.channel}')
         self.voting_channel = ctx.channel
-        print(f'game state is {self.game_state}')
         if not self.responses:
             print(f'waiting for players responses')
             await ctx.send("Waiting for player responses...")
             return
+
+        # Display voting options
         embed = discord.Embed(title="Vote for your favorite!")
         for index, (author, response) in enumerate(self.responses.items(), start=1):
-            if self.name_with_acro == 1:
-                print(f'adding {index} {response} by {author.display_name}')
-                embed.add_field(name=f"{index}.", value=f"{response} by {author.display_name}", inline=False)
-            else:
-                embed.add_field(name=f"{index}.", value=f"{response}", inline=False)
+            display_name = f"{response} by {author.display_name}" if self.name_with_acro == 1 else response
+            embed.add_field(name=f"{index}.", value=display_name, inline=False)
+        
         voting_message = await ctx.send(embed=embed)
         self.voting_message_id = voting_message.id
         print(f'storing voting message id {self.voting_message_id}')
         print(f'storing voting channel {self.voting_channel}')
+
+        # Wait 30 seconds for voting
+        await asyncio.sleep(30)
+
+        # Tally votes and announce the winner
+        await self.tally_votes(ctx)
+
+        # Reset game state and other variables for the next round
+        self.game_state = None
         self.responses = {}
+        self.votes = {}
+        self.voting_channel = None
 
 
     @staticmethod
@@ -90,31 +101,15 @@ class AcroCat(commands.Cog):
                 "Invalid limits. Ensure that `min_length` is at least 1 and `max_length` is greater than or equal to `min_length`."
             )
             
-    async def end_vote(self, ctx):
-        if self.game_state != 'voting':
-            await ctx.send("Voting is not currently active.")
-            return
-
-        # Tally the votes
-        vote_counts = {index: 0 for index in range(1, len(self.responses) + 1)}
-        for vote in self.votes.values():
-            if vote in vote_counts:
-                vote_counts[vote] += 1
-
-        if not vote_counts:
+    async def tally_votes(self, ctx):
+        vote_counts = Counter(self.votes.values())
+        winning_vote = vote_counts.most_common(1)
+        if winning_vote:
+            winning_index = winning_vote[0][0]
+            winning_author, winning_response = list(self.responses.items())[winning_index - 1]
+            await ctx.send(f"The winner is {winning_author.display_name} with the response: {winning_response}")
+        else:
             await ctx.send("No votes were cast.")
-            self.game_state = None
-            return
-
-        # Determine the winner
-        winning_vote = max(vote_counts, key=vote_counts.get)
-        winner_response = list(self.responses.values())[winning_vote - 1]
-        winner_user = list(self.responses.keys())[winning_vote - 1]
-        await ctx.send(f"The winner is {winner_user.display_name} with the response: {winner_response}")
-        self.game_state = None
-        self.current_acronym = None
-        self.responses = {}
-        self.votes = {}
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -137,16 +132,16 @@ class AcroCat(commands.Cog):
                     print("Deleting the message failed.")
 
         elif self.game_state == 'voting':
-            print(f'game state is {self.game_state}')
             try:
                 vote = int(message.content.strip())
                 if 1 <= vote <= len(self.responses):
-                    print(f'determined vote is {vote}')
-                    print(f'vote from {message.author} for {vote}')
-                    self.votes[message.author] = vote
-                    await message.add_reaction("✅")
-                    await message.delete()
-            except ValueError:
-                print("converting the vote to integer failed.")
+                    response_author = list(self.responses.keys())[vote - 1]
+                    if message.author != response_author:
+                        self.votes[message.author] = vote
+                    else:
+                        await message.channel.send(f"You cannot vote for your own response, {message.author.display_name}.")
+                await message.delete()
+            except (ValueError, IndexError):
+                pass
 
 
