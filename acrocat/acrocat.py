@@ -19,33 +19,12 @@ class AcroCat(commands.Cog):
         self.voting_channel = None
 
 
-    async def start_voting(self, ctx):
-        print(f'starting voting in {ctx.channel}')
-        self.voting_channel = ctx.channel
-        self.game_state = 'voting'
-        print(f'game state is {self.game_state}')
-        if not self.responses:
-            print(f'waiting for players responses')
-            await ctx.send("Waiting for player responses...")
-            return
-        embed = discord.Embed(title="Vote for your favorite!")
-        for index, (author, response) in enumerate(self.responses.items(), start=1):
-            if self.name_with_acro == 1:
-                print(f'adding {index} {response} by {author.display_name}')
-                embed.add_field(name=f"{index}.", value=f"{response} by {author.display_name}", inline=False)
-            else:
-                embed.add_field(name=f"{index}.", value=f"{response}", inline=False)
-        voting_message = await ctx.send(embed=embed)
-        self.voting_message_id = voting_message.id
-        print(f'storing voting message id {self.voting_message_id}')
-        print(f'storing voting channel {self.voting_channel}')
-        self.responses = {}
 
     @commands.group()
     async def acrocat(self, ctx: commands.Context):
+        self.game_state = 'collecting'
         if ctx.invoked_subcommand is None:
             self.current_acronym = self.generate_acronym()
-            self.game_state = 'collecting'
             embed = discord.Embed(
                 title="Acrocat - The Cat's Ass of Acro Cogs.",
                 description=f"Your acronym is: **`{self.current_acronym}`**",
@@ -71,6 +50,29 @@ class AcroCat(commands.Cog):
 
             await self.start_voting(ctx)
 
+    async def start_voting(self, ctx):
+        self.game_state = 'voting'
+        print(f'starting voting in {ctx.channel}')
+        self.voting_channel = ctx.channel
+        print(f'game state is {self.game_state}')
+        if not self.responses:
+            print(f'waiting for players responses')
+            await ctx.send("Waiting for player responses...")
+            return
+        embed = discord.Embed(title="Vote for your favorite!")
+        for index, (author, response) in enumerate(self.responses.items(), start=1):
+            if self.name_with_acro == 1:
+                print(f'adding {index} {response} by {author.display_name}')
+                embed.add_field(name=f"{index}.", value=f"{response} by {author.display_name}", inline=False)
+            else:
+                embed.add_field(name=f"{index}.", value=f"{response}", inline=False)
+        voting_message = await ctx.send(embed=embed)
+        self.voting_message_id = voting_message.id
+        print(f'storing voting message id {self.voting_message_id}')
+        print(f'storing voting channel {self.voting_channel}')
+        self.responses = {}
+
+
     @staticmethod
     def generate_acronym():
         return "".join(random.choice(string.ascii_uppercase) for _ in range(random.randint(3, 6)))
@@ -87,12 +89,7 @@ class AcroCat(commands.Cog):
             await ctx.send(
                 "Invalid limits. Ensure that `min_length` is at least 1 and `max_length` is greater than or equal to `min_length`."
             )
-
-    @acrocat.command(name="endvote")
-    @commands.has_permissions(manage_messages=True)
-    async def end_vote_command(self, ctx):
-        await self.end_vote(ctx)
-
+            
     async def end_vote(self, ctx):
         if self.game_state != 'voting':
             await ctx.send("Voting is not currently active.")
@@ -123,7 +120,6 @@ class AcroCat(commands.Cog):
     async def on_message(self, message):
         if message.author.bot or message.channel != self.voting_channel:
             return
-
         if self.game_state == 'collecting':
             print(f'game state is {self.game_state}')
             is_valid_acronym = (
