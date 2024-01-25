@@ -22,34 +22,7 @@ class AcroCat(commands.Cog):
 
 
     @commands.command()
-    async def acrocat(self, ctx: commands.Context):
-        self.game_state = 'collecting'
-        if ctx.invoked_subcommand is None:
-            self.current_acronym = self.generate_acronym()
-            embed = discord.Embed(
-                title="Acrocat - The Cat's Ass of Acro Cogs.",
-                description=f"Your acronym is: **`{self.current_acronym}`**",
-            )
-
-            image_path = os.path.join(os.path.dirname(__file__), "acrocat_logo.png")
-            embed.add_field(
-                name="About",
-                value="Another stupid discord cog by Slurms Mackenzie/ropeadope62",
-            )
-            embed.add_field(
-                name="Repo",
-                value="If you liked this, check out my other cogs! https://github.com/ropeadope62/discordcogs",
-            )
-            embed.set_image(url="attachment://acrocat_logo.png")
-
-            message = await ctx.send(embed=embed, file=discord.File(image_path, "acrocat_logo.png"))
-
-            for i in range(30, 0, -1):
-                await asyncio.sleep(1)
-                embed.description = f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {i}"
-                await message.edit(embed=embed)
-
-            await self.start_voting(ctx)
+    embed.set_image(url="attachment://acrocat_logo.png", width=276, height=94)
 
     async def start_voting(self, ctx):
         self.game_state = 'voting'
