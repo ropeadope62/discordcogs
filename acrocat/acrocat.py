@@ -1,5 +1,6 @@
 import discord
 from redbot.core import commands
+from redbot.core import Config
 import random
 import asyncio
 import string
@@ -18,6 +19,8 @@ class AcroCat(commands.Cog):
         self.name_with_acro = 0
         self.game_state = None
         self.voting_channel = None
+        self.config = Config.get_conf(self, identifier=1234567890, force_registration=True)
+        self.config.register_user(acros_submitted=0, wins=0, most_voted_acronym=None, most_votes=0)
 
 
 
@@ -77,18 +80,36 @@ class AcroCat(commands.Cog):
         # Tally votes and announce the winner
         await self.tally_votes(ctx)
 
-        # Reset game state and other variables for the next round
+    async def update_stats(self, winner, winning_acronym):
+        user_data = await self.config.user(winner).all()
+        user_data['wins'] += 1
+        current_votes = self.votes.values().count(winner)
+        if current_votes > user_data['most_votes']:
+            user_data['most_voted_acronym'] = winning_acronym
+            user_data['most_votes'] = current_votes
+
+        await self.config.user(winner).set(user_data)
+        
+    async def reset_gamestate(self):   
         self.game_state = None
         self.responses = {}
         self.votes = {}
         self.voting_channel = None
-
+        
+        await self.reset_gamestate()
 
     @staticmethod
     def generate_acronym():
         return "".join(random.choice(string.ascii_uppercase) for _ in range(random.randint(3, 6)))
 
-    @commands.command(name="letters")
+    
+    @commands.group()
+    @commands.has_permissions(manage_guild=True)
+    async def acrocatset(self, ctx): 
+        """Settings for Acrocat."""
+        pass
+    
+    @acrocatset.command(name="letters")
     @commands.has_permissions(manage_guild=True)
     @commands.is_owner()
     async def set_letter_limits(self, ctx, min_length: int, max_length: int):
@@ -106,10 +127,18 @@ class AcroCat(commands.Cog):
         winning_vote = vote_counts.most_common(1)
         if winning_vote:
             winning_index = winning_vote[0][0]
-            winning_author, winning_response = list(self.responses.items())[winning_index - 1]
+            winning_author, winning_response = list(self.responses.items())[winning_vote - 1]
             await ctx.send(f"The winner is {winning_author.display_name} with the response: {winning_response}")
+            await self.update_stats(winning_author, winning_response)
         else:
             await ctx.send("No votes were cast.")
+    
+    @commands.command(name="acrocatstat")
+    async def get_stats(self, ctx):
+        user_data = await self.config.user(ctx.author).all()
+        wins = user_data['wins']
+        most_voted_acronym = user_data['most_voted_acronym'] or 'N/A'
+        await ctx.send(f"{ctx.author.display_name}, you have won {wins} times. Your most voted acronym: {most_voted_acronym}")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -123,6 +152,8 @@ class AcroCat(commands.Cog):
             if is_valid_acronym:
                 print(f'found valid acronym from {message.author}')
                 self.responses[message.author] = message.content
+                current_entries = await self.config.user(message.author).entries()
+                await self.config.user(message.author).entries.set(current_entries + 1)
                 try:
                     await message.delete()                   
                     print(f'Deleting message from {message.author}')
@@ -148,5 +179,4 @@ class AcroCat(commands.Cog):
                     await message.delete()
             except (ValueError, IndexError):
                 pass
-
 
