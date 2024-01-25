@@ -20,7 +20,7 @@ class AcroCat(commands.Cog):
 
 
 
-    @commands.group()
+    @commands.command()
     async def acrocat(self, ctx: commands.Context):
         self.game_state = 'collecting'
         if ctx.invoked_subcommand is None:
@@ -77,7 +77,7 @@ class AcroCat(commands.Cog):
     def generate_acronym():
         return "".join(random.choice(string.ascii_uppercase) for _ in range(random.randint(3, 6)))
 
-    @acrocat.command(name="letters")
+    @commands.command(name="letters")
     @commands.has_permissions(manage_guild=True)
     @commands.is_owner()
     async def set_letter_limits(self, ctx, min_length: int, max_length: int):
