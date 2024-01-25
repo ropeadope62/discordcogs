@@ -118,8 +118,6 @@ class AcroCat(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot or message.channel != self.voting_channel:
-            return
         if self.game_state == 'collecting':
             print(f'game state is {self.game_state}')
             is_valid_acronym = (
