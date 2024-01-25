@@ -139,7 +139,7 @@ class AcroCat(commands.Cog):
         wins = user_data['wins']
         acros_submitted = user_data['acros_submitted']
         most_voted_acronym = user_data['most_voted_acronym'] or 'N/A'
-        await ctx.send(f"{ctx.author.display_name}, you have made made {acros_submitted} acronyms and won {wins} times. Your most voted acronym was: {most_voted_acronym}")
+        await ctx.send(f"{ctx.author.display_name}, you have made {acros_submitted} acronyms and won {wins} times. Your most voted acronym was: {most_voted_acronym}")
 
     @commands.Cog.listener()
     async def on_message(self, message):
