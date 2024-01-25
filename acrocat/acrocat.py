@@ -149,6 +149,6 @@ class AcroCat(commands.Cog):
                     await message.add_reaction("✅")
                     await message.delete()
             except ValueError:
-                print("Deleting the message failed.")
+                print("converting the vote to integer failed.")
 
 
