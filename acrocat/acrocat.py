@@ -136,11 +136,16 @@ class AcroCat(commands.Cog):
                 vote = int(message.content.strip())
                 if 1 <= vote <= len(self.responses):
                     response_author = list(self.responses.keys())[vote - 1]
-                    if message.author != response_author:
-                        self.votes[message.author] = vote
-                    else:
+                    if message.author == response_author:
                         await message.channel.send(f"You cannot vote for your own response, {message.author.display_name}.")
-                await message.delete()
+                        return
+                    if message.author in self.votes:
+                        await message.channel.send(f"{message.author.display_name}, you have already voted.")
+                    else:
+                        self.votes[message.author] = vote
+                        await message.channel.send(f"Vote recorded for {message.author.display_name}.")
+                        
+                    await message.delete()
             except (ValueError, IndexError):
                 pass
 
