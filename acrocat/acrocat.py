@@ -19,7 +19,7 @@ class AcroCat(commands.Cog):
         self.name_with_acro = 0
         self.game_state = None
         self.voting_channel = None
-        self.config = Config.get_conf(self, identifier=1234567890, force_registration=True)
+        self.config = Config.get_conf(self, identifier=94859234884920455, force_registration=True)
         self.config.register_user(acros_submitted=0, wins=0, most_voted_acronym=None, most_votes=0)
 
 
@@ -137,8 +137,9 @@ class AcroCat(commands.Cog):
     async def get_stats(self, ctx):
         user_data = await self.config.user(ctx.author).all()
         wins = user_data['wins']
+        acros_submitted = user_data['acros_submitted']
         most_voted_acronym = user_data['most_voted_acronym'] or 'N/A'
-        await ctx.send(f"{ctx.author.display_name}, you have won {wins} times. Your most voted acronym: {most_voted_acronym}")
+        await ctx.send(f"{ctx.author.display_name}, you have made made {acros_submitted} acronyms and won {wins} times. Your most voted acronym was: {most_voted_acronym}")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -152,8 +153,8 @@ class AcroCat(commands.Cog):
             if is_valid_acronym:
                 print(f'found valid acronym from {message.author}')
                 self.responses[message.author] = message.content
-                current_entries = await self.config.user(message.author).entries()
-                await self.config.user(message.author).entries.set(current_entries + 1)
+                acros_submitted = await self.config.user(message.author).acros_submitted()
+                await self.config.user(message.author).acros_submitted.set(acros_submitted + 1)
                 try:
                     await message.delete()                   
                     print(f'Deleting message from {message.author}')
