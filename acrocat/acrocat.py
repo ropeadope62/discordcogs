@@ -43,7 +43,7 @@ class AcroCat(commands.Cog):
                 name="Repo",
                 value="If you liked this, check out my other cogs! https://github.com/ropeadope62/discordcogs",
             )
-            embed.set_image(url="attachment://acrocat_logo.png")
+            embed.set_thumbnail(url="attachment://acrocat_logo.png")
 
             message = await ctx.send(embed=embed, file=discord.File(image_path, "acrocat_logo.png"))
 
