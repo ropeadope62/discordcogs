@@ -65,7 +65,7 @@ class AcroCat(commands.Cog):
             return
 
         # Display voting options
-        embed = discord.Embed(title="Vote for your favorite!")
+        embed = discord.Embed(title="Vote for your favorite!", color=discord.Color.orange())
         for index, (author, response) in enumerate(self.responses.items(), start=1):
             display_name = f"{response} by {author.display_name}" if self.name_with_acro == 1 else response
             embed.add_field(name=f"{index}.", value=display_name, inline=False)
@@ -75,7 +75,7 @@ class AcroCat(commands.Cog):
         # Update the embed with countdown
         for i in range(self.voting_countdown, 0, -1):
             await asyncio.sleep(1)
-            new_embed = discord.Embed(title="Vote for your favorite!", description=f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {i}")
+            new_embed = discord.Embed(title="Vote for your favorite!", description=f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {i}", color=discord.Color.orange())
             for index, (author, response) in enumerate(self.responses.items(), start=1):
                 display_name = f"{response} by {author.display_name}" if self.name_with_acro == 1 else response
                 new_embed.add_field(name=f"{index}.", value=display_name, inline=False)
