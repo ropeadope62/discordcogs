@@ -63,21 +63,15 @@ class AcroCat(commands.Cog):
             await ctx.send("Waiting for player responses...")
             return
 
-        # Display voting options
-        embed = discord.Embed(title="Vote for your favorite!")
-        for index, (author, response) in enumerate(self.responses.items(), start=1):
-            display_name = f"{response} by {author.display_name}" if self.name_with_acro == 1 else response
-            embed.add_field(name=f"{index}.", value=display_name, inline=False)
-        embed.description = f"Your acronym is: **`{self.current_acronym}`**\nCountdown: 45"
-        message = await ctx.send(embed=embed)
-
         # Update the embed with countdown
         for i in range(30, 0, -1):
             await asyncio.sleep(1)
             new_embed = discord.Embed(title="Vote for your favorite!", description=f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {i}")
+            new_embed.set_thumbnail(url="attachment://acrocat_logo.png")
             for index, (author, response) in enumerate(self.responses.items(), start=1):
                 display_name = f"{response} by {author.display_name}" if self.name_with_acro == 1 else response
                 new_embed.add_field(name=f"{index}.", value=display_name, inline=False)
+            message = await ctx.send(embed=new_embed)
             await message.edit(embed=new_embed)
                 
         voting_message = await ctx.send(embed=embed)
@@ -135,14 +129,14 @@ class AcroCat(commands.Cog):
             
     async def tally_votes(self, ctx):
         vote_counts = Counter(self.votes.values())
-        winning_vote = vote_counts.most_common(1)
-        if winning_vote:
-            winning_index = winning_vote[0][0]
-            winning_author, winning_response = list(self.responses.items())[winning_vote - 1]
+        winning_votes = vote_counts.most_common(2)
+        if len(winning_votes) == 1 or winning_votes[0][1] != winning_votes[1][1]:
+            winning_vote_index = int(winning_votes[0][0])
+            winning_author, winning_response = list(self.responses.items())[winning_vote_index]
             await ctx.send(f"The winner is {winning_author.display_name} with the response: {winning_response}")
             await self.update_stats(winning_author, winning_response)
         else:
-            await ctx.send("No votes were cast.")
+            await ctx.send("It's a tie!")
     
     @commands.command(name="acrocatstat")
     async def get_stats(self, ctx):
