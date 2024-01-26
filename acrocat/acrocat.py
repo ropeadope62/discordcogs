@@ -68,11 +68,17 @@ class AcroCat(commands.Cog):
         for index, (author, response) in enumerate(self.responses.items(), start=1):
             display_name = f"{response} by {author.display_name}" if self.name_with_acro == 1 else response
             embed.add_field(name=f"{index}.", value=display_name, inline=False)
-            message = await ctx.send(embed=embed)
-        for i in range(45, 0, -1):
-                await asyncio.sleep(1)
-                embed.description = f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {i}"
-                await message.edit(embed=embed)
+        embed.description = f"Your acronym is: **`{self.current_acronym}`**\nCountdown: 45"
+        message = await ctx.send(embed=embed)
+
+        # Update the embed with countdown
+        for i in range(30, 0, -1):
+            await asyncio.sleep(1)
+            new_embed = discord.Embed(title="Vote for your favorite!", description=f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {i}")
+            for index, (author, response) in enumerate(self.responses.items(), start=1):
+                display_name = f"{response} by {author.display_name}" if self.name_with_acro == 1 else response
+                new_embed.add_field(name=f"{index}.", value=display_name, inline=False)
+            await message.edit(embed=new_embed)
                 
         voting_message = await ctx.send(embed=embed)
         self.voting_message_id = voting_message.id
