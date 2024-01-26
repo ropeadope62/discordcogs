@@ -73,7 +73,7 @@ class AcroCat(commands.Cog):
         message = await ctx.send(embed=embed)
 
         # Update the embed with countdown
-        for i in range({self.voting_countdown}, 0, -1):
+        for i in range(self.voting_countdown, 0, -1):
             await asyncio.sleep(1)
             new_embed = discord.Embed(title="Vote for your favorite!", description=f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {i}")
             for index, (author, response) in enumerate(self.responses.items(), start=1):
