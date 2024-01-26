@@ -21,6 +21,7 @@ class AcroCat(commands.Cog):
         self.voting_channel = None
         self.config = Config.get_conf(self, identifier=94859234884920455, force_registration=True)
         self.config.register_user(acros_submitted=0, wins=0, most_voted_acronym=None, most_votes=0)
+        self.voting_countdown = 30
 
 
 
@@ -63,24 +64,29 @@ class AcroCat(commands.Cog):
             await ctx.send("Waiting for player responses...")
             return
 
+        # Display voting options
+        embed = discord.Embed(title="Vote for your favorite!")
+        for index, (author, response) in enumerate(self.responses.items(), start=1):
+            display_name = f"{response} by {author.display_name}" if self.name_with_acro == 1 else response
+            embed.add_field(name=f"{index}.", value=display_name, inline=False)
+        embed.description = f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {self.voting_countdown}"
+        message = await ctx.send(embed=embed)
+
         # Update the embed with countdown
-        for i in range(30, 0, -1):
+        for i in range({self.voting_countdown}, 0, -1):
             await asyncio.sleep(1)
             new_embed = discord.Embed(title="Vote for your favorite!", description=f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {i}")
-            new_embed.set_thumbnail(url="attachment://acrocat_logo.png")
             for index, (author, response) in enumerate(self.responses.items(), start=1):
                 display_name = f"{response} by {author.display_name}" if self.name_with_acro == 1 else response
                 new_embed.add_field(name=f"{index}.", value=display_name, inline=False)
-            message = await ctx.send(embed=new_embed)
             await message.edit(embed=new_embed)
                 
-        voting_message = await ctx.send(embed=embed)
-        self.voting_message_id = voting_message.id
+        self.voting_message_id = message.id
         print(f'storing voting message id {self.voting_message_id}')
         print(f'storing voting channel {self.voting_channel}')
 
         # Wait 30 seconds for voting
-        await asyncio.sleep(30)
+        await asyncio.sleep(self.voting_countdown)
 
         # Tally votes and announce the winner
         await self.tally_votes(ctx)
