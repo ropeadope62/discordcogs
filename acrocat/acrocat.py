@@ -47,7 +47,7 @@ class AcroCat(commands.Cog):
 
             message = await ctx.send(embed=embed, file=discord.File(image_path, "acrocat_logo.png"))
 
-            for i in range(30, 0, -1):
+            for i in range(45, 0, -1):
                 await asyncio.sleep(1)
                 embed.description = f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {i}"
                 await message.edit(embed=embed)
@@ -68,7 +68,12 @@ class AcroCat(commands.Cog):
         for index, (author, response) in enumerate(self.responses.items(), start=1):
             display_name = f"{response} by {author.display_name}" if self.name_with_acro == 1 else response
             embed.add_field(name=f"{index}.", value=display_name, inline=False)
-        
+            message = await ctx.send(embed=embed)
+        for i in range(45, 0, -1):
+                await asyncio.sleep(1)
+                embed.description = f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {i}"
+                await message.edit(embed=embed)
+                
         voting_message = await ctx.send(embed=embed)
         self.voting_message_id = voting_message.id
         print(f'storing voting message id {self.voting_message_id}')
