@@ -33,6 +33,7 @@ class AcroCat(commands.Cog):
             embed = discord.Embed(
                 title="Acrocat - The Cat's Ass of Acro Cogs.",
                 description=f"Your acronym is: **`{self.current_acronym}`**",
+                color=discord.Color.orange()
             )
 
             image_path = os.path.join(os.path.dirname(__file__), "acrocat_logo.png")
@@ -132,15 +133,31 @@ class AcroCat(commands.Cog):
             await ctx.send(
                 "Invalid limits. Ensure that `min_length` is at least 1 and `max_length` is greater than or equal to `min_length`."
             )
+    
+    @acrocatset.command(name="voting_timeout")
+    @commands.has_permissions(manage_guild=True)
+    @commands.is_owner()
+    async def set_voting_timeout(self, ctx, timeout: int):
+        if timeout >= 10:
+            self.voting_countdown = timeout
+            await ctx.send(f"Voting timeout set to {timeout} seconds.")
+        else:
+            await ctx.send("Invalid timeout. Ensure that `timeout` is at least 10 seconds.")
             
     async def tally_votes(self, ctx):
         vote_counts = Counter(self.votes.values())
         winning_votes = vote_counts.most_common(2)
-        if len(winning_votes) == 1 or winning_votes[0][1] != winning_votes[1][1]:
+        if len(winning_votes) == 0:
+            await ctx.send("No votes were cast.")
+        elif len(winning_votes) == 1 or winning_votes[0][1] != winning_votes[1][1]:
+            # Handle single response or clear winner
             winning_vote_index = int(winning_votes[0][0])
             winning_author, winning_response = list(self.responses.items())[winning_vote_index]
-            await ctx.send(f"The winner is {winning_author.display_name} with the response: {winning_response}")
-            await self.update_stats(winning_author, winning_response)
+            if len(winning_votes) == 1:
+                await ctx.send(f"{winning_author.display_name} won by default with the acro: {winning_response}. Too bad they are playing with themselves!")
+            else:
+                await ctx.send(f"The winner is {winning_author.display_name} with the response: {winning_response}")
+                await self.update_stats(winning_author, winning_response)
         else:
             await ctx.send("It's a tie!")
     
@@ -151,6 +168,7 @@ class AcroCat(commands.Cog):
         acros_submitted = user_data['acros_submitted']
         most_voted_acronym = user_data['most_voted_acronym'] or 'N/A'
         await ctx.send(f"{ctx.author.display_name}, you have made {acros_submitted} acronyms and won {wins} times. Your most voted acronym was: {most_voted_acronym}")
+
 
     @commands.Cog.listener()
     async def on_message(self, message):
