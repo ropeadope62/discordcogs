@@ -61,7 +61,7 @@ class AcroCat(commands.Cog):
         print(f'starting voting in {ctx.channel}')
         self.voting_channel = ctx.channel
         if not self.responses:
-            print(f'waiting for players responses')
+            print(f'No players found in {ctx.channel}')
             await ctx.send("Waiting for player responses...")
             return
 
@@ -142,6 +142,7 @@ class AcroCat(commands.Cog):
             await ctx.send("Invalid timeout. Ensure that `timeout` is at least 10 seconds.")
             
     async def tally_votes(self, ctx):
+        self.game_state = 'tallying'
         vote_counts = Counter(self.votes.values())
         winning_votes = vote_counts.most_common(2)
         if len(winning_votes) == 0:
@@ -159,6 +160,7 @@ class AcroCat(commands.Cog):
         else:
             await ctx.send("It's a tie!")
             return
+        await self.reset_gamestate()
     
     @commands.command(name="acrocatstat")
     async def get_stats(self, ctx):
