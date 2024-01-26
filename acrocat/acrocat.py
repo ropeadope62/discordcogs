@@ -149,7 +149,7 @@ class AcroCat(commands.Cog):
         winning_votes = vote_counts.most_common(2)
         if len(winning_votes) == 0:
             await ctx.send("No votes were cast.")
-        elif len(winning_votes) == 1 or winning_votes[0][1] != winning_votes[1][1]:
+        if len(winning_votes) == 1 or (len(winning_votes) > 1 and winning_votes[0][1] != winning_votes[1][1]):
             # Handle single response or clear winner
             winning_vote_index = int(winning_votes[0][0])
             winning_author, winning_response = list(self.responses.items())[winning_vote_index]
