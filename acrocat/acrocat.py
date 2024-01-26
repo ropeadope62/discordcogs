@@ -86,9 +86,6 @@ class AcroCat(commands.Cog):
         print(f'storing voting message id {self.voting_message_id}')
         print(f'storing voting channel {self.voting_channel}')
 
-        # Wait 30 seconds for voting
-        await asyncio.sleep(self.voting_countdown)
-
         # Tally votes and announce the winner
         await self.tally_votes(ctx)
 
@@ -148,7 +145,8 @@ class AcroCat(commands.Cog):
         vote_counts = Counter(self.votes.values())
         winning_votes = vote_counts.most_common(2)
         if len(winning_votes) == 0:
-            await ctx.send("No votes were cast.")
+            await ctx.send("No votes were cast. Everyone loses.")
+            return
         if len(winning_votes) == 1 or (len(winning_votes) > 1 and winning_votes[0][1] != winning_votes[1][1]):
             # Handle single response or clear winner
             winning_vote_index = int(winning_votes[0][0])
@@ -160,6 +158,7 @@ class AcroCat(commands.Cog):
                 await self.update_stats(winning_author, winning_response)
         else:
             await ctx.send("It's a tie!")
+            return
     
     @commands.command(name="acrocatstat")
     async def get_stats(self, ctx):
