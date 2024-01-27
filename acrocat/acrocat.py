@@ -84,8 +84,6 @@ class AcroCat(commands.Cog):
         self.responses = {}
         self.votes = {}
         self.voting_channel = None
-        
-        await self.reset_gamestate()
 
     @staticmethod
     def generate_acronym():
