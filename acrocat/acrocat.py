@@ -86,15 +86,15 @@ class AcroCat(commands.Cog):
             
         await self.tally_votes(ctx)
 
-    async def update_stats(self, winner, winning_acronym):
-        user_data = await self.config.user(winner).all()
+    async def update_stats(self, winning_author, winning_acronym):
+        user_data = await self.config.user(winning_author).all()
         user_data['wins'] += 1
         current_votes = list(self.votes.values()).count(winning_acronym)
         if current_votes > user_data['most_votes']:
             user_data['most_voted_acronym'] = winning_acronym
             user_data['most_votes'] = current_votes
 
-        await self.config.user(winner).set(user_data)
+        await self.config.user(winning_author).set(user_data)
         
     async def reset_gamestate(self):   
         self.game_state = None
@@ -140,22 +140,31 @@ class AcroCat(commands.Cog):
     async def tally_votes(self, ctx):
         self.game_state = 'tallying'
         vote_counts = Counter(self.votes.values())
-        winning_votes = vote_counts.most_common(2)
-        if len(winning_votes) == 0:
+
+        # Check if no votes were cast
+        if not vote_counts:
             await ctx.send("No votes were cast. Everyone loses.")
             return
-        if len(winning_votes) == 1 or (len(winning_votes) > 1 and winning_votes[0][1] != winning_votes[1][1]):
-            # Handle single response or clear winner
-            winning_vote_index = int(winning_votes[0][0])
-            winning_author, winning_acronym = list(self.responses.items())[winning_vote_index]
+
+        winning_votes = vote_counts.most_common()
+
+        if len(winning_votes) > 1 and winning_votes[0][1] == winning_votes[1][1]:
+            await ctx.send("It's a tie!")
+            return
+
+        winning_response_key = winning_votes[0][0]
+
+        if winning_response_key in self.responses:
+            winning_author, winning_acronym = self.responses[winning_response_key]
             if len(winning_votes) == 1:
                 await ctx.send(f"{winning_author.display_name} won by default with the acro: {winning_acronym}. Too bad they are playing with themselves!")
             else:
                 await ctx.send(f"The winner is {winning_author.display_name} with the response: {winning_acronym}")
                 await self.update_stats(winning_author, winning_acronym)
         else:
-            await ctx.send("It's a tie!")
+            await ctx.send("Error: Winning response not found.")
             return
+
         await self.reset_gamestate()
     
     @commands.command(name="acrocatstat")
