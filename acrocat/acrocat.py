@@ -14,12 +14,11 @@ class AcroCat(commands.Cog):
         self.current_acronym = None
         self.responses = {}
         self.votes = {}
-        self.min_acro_length = 3
-        self.max_acro_length = 6
         self.name_with_acro = 0
         self.game_state = None
         self.voting_channel = None
         self.config = Config.get_conf(self, identifier=94859234884920455, force_registration=True)
+        self.config.register_guild(min_acro_length=3, max_acro_length=6)
         self.config.register_user(acros_submitted=0, wins=0, most_voted_acronym=None, most_votes=0)
         self.voting_countdown = 30
 
@@ -28,8 +27,10 @@ class AcroCat(commands.Cog):
     @commands.command()
     async def acrocat(self, ctx: commands.Context):
         self.game_state = 'collecting'
+        min_acro_length = await self.config.guild(ctx.guild).min_acro_length()
+        max_acro_length = await self.config.guild(ctx.guild).max_acro_length()
         if ctx.invoked_subcommand is None:
-            self.current_acronym = self.generate_acronym()
+            self.current_acronym = self.generate_acronym(min_acro_length, max_acro_length)
             embed = discord.Embed(
                 title="Acrocat - The Cat's Ass of Acro Cogs.",
                 description=f"Your acronym is: **`{self.current_acronym}`**",
@@ -102,8 +103,9 @@ class AcroCat(commands.Cog):
         self.voting_channel = None
 
     @staticmethod
-    def generate_acronym():
-        return "".join(random.choice(string.ascii_uppercase) for _ in range(random.randint(3, 6)))
+    def generate_acronym(min_acro_length, max_acro_length):
+        
+        return "".join(random.choice(string.ascii_uppercase) for _ in range(random.randint(min_acro_length, max_acro_length)))
 
     
     @commands.group()
