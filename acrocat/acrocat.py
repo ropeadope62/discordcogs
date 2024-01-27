@@ -92,7 +92,7 @@ class AcroCat(commands.Cog):
     async def update_stats(self, winner, winning_acronym):
         user_data = await self.config.user(winner).all()
         user_data['wins'] += 1
-        current_votes = self.votes.values().count(winner)
+        current_votes = list(self.votes.values()).count(winning_acronym)
         if current_votes > user_data['most_votes']:
             user_data['most_voted_acronym'] = winning_acronym
             user_data['most_votes'] = current_votes
@@ -151,12 +151,12 @@ class AcroCat(commands.Cog):
         if len(winning_votes) == 1 or (len(winning_votes) > 1 and winning_votes[0][1] != winning_votes[1][1]):
             # Handle single response or clear winner
             winning_vote_index = int(winning_votes[0][0])
-            winning_author, winning_response = list(self.responses.items())[winning_vote_index]
+            winning_author, winning_acronym = list(self.responses.items())[winning_vote_index]
             if len(winning_votes) == 1:
-                await ctx.send(f"{winning_author.display_name} won by default with the acro: {winning_response}. Too bad they are playing with themselves!")
+                await ctx.send(f"{winning_author.display_name} won by default with the acro: {winning_acronym}. Too bad they are playing with themselves!")
             else:
-                await ctx.send(f"The winner is {winning_author.display_name} with the response: {winning_response}")
-                await self.update_stats(winning_author, winning_response)
+                await ctx.send(f"The winner is {winning_author.display_name} with the response: {winning_acronym}")
+                await self.update_stats(winning_author, winning_acronym)
         else:
             await ctx.send("It's a tie!")
             return
