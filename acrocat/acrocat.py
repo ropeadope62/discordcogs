@@ -60,14 +60,30 @@ class AcroCat(commands.Cog):
         self.game_state = 'voting'
         print(f'starting voting in {ctx.channel}')
         self.voting_channel = ctx.channel
-        if not self.responses: 
+
+        if not self.responses:
             await ctx.send("No responses were submitted. Ending the game.")
             return
+
         if len(self.responses) == 1:
             winning_author, winning_acronym = list(self.responses.items())[0]
             await ctx.send(f"{winning_author.display_name} is the only player and wins by default with the response: {winning_acronym}")
             await self.update_stats(winning_author, winning_acronym)
             return
+
+        embed = discord.Embed(title="Vote for your favorite response!", description=f"{self.voting_cooldown} seconds remaining")
+        for index, (author, response) in enumerate(self.responses.items(), start=1):
+            embed.add_field(name=f"Option {index}", value=f"{response} by {author.display_name}", inline=False)
+        voting_message = await ctx.send(embed=embed)
+        
+        for remaining in range(self.voting_cooldown, 0, -1):
+            await asyncio.sleep(1)  # Wait for 1 second
+            new_embed = discord.Embed(title="Vote for your favorite response!", description=f"{remaining} seconds remaining")
+            for index, (author, response) in enumerate(self.responses.items(), start=1):
+                new_embed.add_field(name=f"Option {index}", value=f"{response} by {author.display_name}", inline=False)
+            await voting_message.edit(embed=new_embed)
+            
+        await self.tally_votes(ctx)
 
     async def update_stats(self, winner, winning_acronym):
         user_data = await self.config.user(winner).all()
