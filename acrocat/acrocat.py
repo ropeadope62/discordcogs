@@ -60,34 +60,14 @@ class AcroCat(commands.Cog):
         self.game_state = 'voting'
         print(f'starting voting in {ctx.channel}')
         self.voting_channel = ctx.channel
-        if not self.responses:
-            print(f'No players found in {ctx.channel}')
-            await ctx.send("Waiting for player responses...")
+        if not self.responses: 
+            await ctx.send("No responses were submitted. Ending the game.")
             return
-
-        # Display voting options
-        embed = discord.Embed(title="Vote for your favorite!", color=discord.Color.orange())
-        for index, (author, response) in enumerate(self.responses.items(), start=1):
-            display_name = f"{response} by {author.display_name}" if self.name_with_acro == 1 else response
-            embed.add_field(name=f"{index}.", value=display_name, inline=False)
-        embed.description = f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {self.voting_countdown}"
-        message = await ctx.send(embed=embed)
-
-        # Update the embed with countdown
-        for i in range(self.voting_countdown, 0, -1):
-            await asyncio.sleep(1)
-            new_embed = discord.Embed(title="Vote for your favorite!", description=f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {i}", color=discord.Color.orange())
-            for index, (author, response) in enumerate(self.responses.items(), start=1):
-                display_name = f"{response} by {author.display_name}" if self.name_with_acro == 1 else response
-                new_embed.add_field(name=f"{index}.", value=display_name, inline=False)
-            await message.edit(embed=new_embed)
-                
-        self.voting_message_id = message.id
-        print(f'storing voting message id {self.voting_message_id}')
-        print(f'storing voting channel {self.voting_channel}')
-
-        # Tally votes and announce the winner
-        await self.tally_votes(ctx)
+        if len(self.responses) == 1:
+            winning_author, winning_acronym = list(self.responses.items())[0]
+            await ctx.send(f"{winning_author.display_name} is the only player and wins by default with the response: {winning_acronym}")
+            await self.update_stats(winning_author, winning_acronym)
+            return
 
     async def update_stats(self, winner, winning_acronym):
         user_data = await self.config.user(winner).all()
