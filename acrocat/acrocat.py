@@ -71,12 +71,12 @@ class AcroCat(commands.Cog):
             await self.update_stats(winning_author, winning_acronym)
             return
 
-        embed = discord.Embed(title="Vote for your favorite response!", description=f"{self.voting_cooldown} seconds remaining")
+        embed = discord.Embed(title="Vote for your favorite response!", description=f"{self.voting_countdown} seconds remaining")
         for index, (author, response) in enumerate(self.responses.items(), start=1):
             embed.add_field(name=f"Option {index}", value=f"{response} by {author.display_name}", inline=False)
         voting_message = await ctx.send(embed=embed)
         
-        for remaining in range(self.voting_cooldown, 0, -1):
+        for remaining in range(self.voting_countdown, 0, -1):
             await asyncio.sleep(1)  # Wait for 1 second
             new_embed = discord.Embed(title="Vote for your favorite response!", description=f"{remaining} seconds remaining")
             for index, (author, response) in enumerate(self.responses.items(), start=1):
