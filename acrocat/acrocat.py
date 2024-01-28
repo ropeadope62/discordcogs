@@ -144,18 +144,21 @@ class AcroCat(commands.Cog):
         # Check if no votes were cast
         if not vote_counts:
             await ctx.send("No votes were cast. Everyone loses.")
+            await self.reset_gamestate()
             return
 
         winning_votes = vote_counts.most_common()
 
         if len(winning_votes) > 1 and winning_votes[0][1] == winning_votes[1][1]:
             await ctx.send("It's a tie!")
+            await self.reset_gameestate()
             return
 
         winning_response_key = winning_votes[0][0]
 
         if winning_response_key in self.responses:
-            winning_author, winning_acronym = self.responses[winning_response_key]
+            winning_author = winning_votes[0][0]
+            winning_acronym = self.responses[winning_author]
             if len(winning_votes) == 1:
                 await ctx.send(f"{winning_author.display_name} won by default with the acro: {winning_acronym}. Too bad they are playing with themselves!")
             else:
@@ -201,6 +204,7 @@ class AcroCat(commands.Cog):
         elif self.game_state == 'voting':
             try:
                 vote = int(message.content.strip())
+                self.votes[message.author] = list(self.responses.keys())[vote - 1]
                 if 1 <= vote <= len(self.responses):
                     response_author = list(self.responses.keys())[vote - 1]
                     if message.author == response_author:
