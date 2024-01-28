@@ -203,17 +203,16 @@ class AcroCat(commands.Cog):
 
         elif self.game_state == 'voting':
             try:
-                vote = int(message.content.strip())
-                self.votes[message.author] = list(self.responses.keys())[vote - 1]
-                if 1 <= vote <= len(self.responses):
-                    response_author = list(self.responses.keys())[vote - 1]
+                vote_index = int(message.content.strip()) - 1  # Convert to zero-based index
+                if 0 <= vote_index < len(self.responses):
+                    response_author = list(self.responses.keys())[vote_index]
                     if message.author == response_author:
-                        await message.channel.send(f"You cannot vote for your own response, {message.author.display_name}.")
+                        await message.channel.send(f"{message.author.display_name} attempted to vote for themselves! Nice try!")
                         return
                     if message.author in self.votes:
                         await message.channel.send(f"{message.author.display_name}, you have already voted.")
                     else:
-                        self.votes[message.author] = vote
+                        self.votes[message.author] = response_author  # Store the author of the response
                         await message.channel.send(f"Vote recorded for {message.author.display_name}.")
                         
                     await message.delete()
