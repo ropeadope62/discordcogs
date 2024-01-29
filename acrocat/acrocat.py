@@ -167,7 +167,7 @@ class AcroCat(commands.Cog):
 
         if len(winning_votes) > 1 and winning_votes[0][1] == winning_votes[1][1]:
             await ctx.send("It's a tie!")
-            await self.reset_gameestate()
+            await self.reset_gamestate()
             return
 
         winning_response_key = winning_votes[0][0]
