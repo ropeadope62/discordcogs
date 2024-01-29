@@ -21,7 +21,7 @@ class AcroCat(commands.Cog):
         self.config.register_guild(min_acro_length=3, max_acro_length=6)
         self.config.register_user(acros_submitted=0, wins=0, most_voted_acronym=None, most_votes=0)
         self.voting_countdown = 30
-
+        self.acro_isanon = True
 
 
     @commands.command()
@@ -68,20 +68,26 @@ class AcroCat(commands.Cog):
 
         if len(self.responses) == 1:
             winning_author, winning_acronym = list(self.responses.items())[0]
-            await ctx.send(f"{winning_author.display_name} is the only player and wins by default with the response: {winning_acronym}")
+            await ctx.send(f"{winning_author.display_name} is playing with themselves since no one else made a submission. Too bad. Their acronym was: {winning_acronym}")
             await self.update_stats(winning_author, winning_acronym)
             return
 
         embed = discord.Embed(title="Vote for your favorite response!", description=f"{self.voting_countdown} seconds remaining")
         for index, (author, response) in enumerate(self.responses.items(), start=1):
-            embed.add_field(name=f"Option {index}", value=f"{response} by {author.display_name}", inline=False)
+            if self.acro_isanon == True: 
+                embed.add_field(name=f"Option {index}", value=f"{response}", inline=False)
+            else: 
+                embed.add_field(name=f"Option {index}", value=f"{response} by {author.display_name}", inline=False)
         voting_message = await ctx.send(embed=embed)
         
         for remaining in range(self.voting_countdown, 0, -1):
             await asyncio.sleep(1)  # Wait for 1 second
             new_embed = discord.Embed(title="Vote for your favorite response!", description=f"{remaining} seconds remaining")
             for index, (author, response) in enumerate(self.responses.items(), start=1):
-                new_embed.add_field(name=f"Option {index}", value=f"{response} by {author.display_name}", inline=False)
+                if self.acro_isanon == True:
+                    new_embed.add_field(name=f"Option {index}", value=f"{response}", inline=False)
+                else:
+                    new_embed.add_field(name=f"Option {index}", value=f"{response} by {author.display_name}", inline=False)
             await voting_message.edit(embed=new_embed)
             
         await self.tally_votes(ctx)
@@ -136,7 +142,17 @@ class AcroCat(commands.Cog):
             await ctx.send(f"Voting timeout set to {timeout} seconds.")
         else:
             await ctx.send("Invalid timeout. Ensure that `timeout` is at least 10 seconds.")
-            
+    
+    @acrocatset.command(name="anon")
+    @commands.has_permissions(manage_guild=True)
+    @commands.is_owner()
+    async def set_anon(self, ctx):
+        if self.acro_isanon == True:
+            self.acro_isanon = False
+            await ctx.send("Acrocat submissions are no longer anonymous.")
+        else:
+            self.acro_isanon = True
+            await ctx.send("Acrocat submissions are now anonymous.")
     async def tally_votes(self, ctx):
         self.game_state = 'tallying'
         vote_counts = Counter(self.votes.values())
