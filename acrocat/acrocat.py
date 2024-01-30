@@ -74,7 +74,7 @@ class AcroCat(commands.Cog):
         if len(self.responses) == 1:
             winning_author, winning_acronym = list(self.responses.items())[0]
             await ctx.send(f"{winning_author.display_name} is playing with themselves since no one else made a submission. Too bad. Their acronym was: {winning_acronym}")
-            await self.update_stats(winning_author, winning_acronym)
+            await self.update_stats(winning_author, winning_acronym, reward=0)
             return
 
         embed = discord.Embed(title="Vote for your favorite response!", description=f"{self.voting_countdown} seconds remaining")
