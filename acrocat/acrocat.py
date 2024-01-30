@@ -1,5 +1,5 @@
 import discord
-from redbot.core import commands
+from redbot.core import commands,bank
 from redbot.core import Config
 import random
 import asyncio
@@ -14,14 +14,19 @@ class AcroCat(commands.Cog):
         self.current_acronym = None
         self.responses = {}
         self.votes = {}
+        reward_range = {
+            "reward_range": [50,250],  
+        }
         self.name_with_acro = 0
         self.game_state = None
         self.voting_channel = None
         self.config = Config.get_conf(self, identifier=94859234884920455, force_registration=True)
-        self.config.register_guild(min_acro_length=3, max_acro_length=6)
-        self.config.register_user(acros_submitted=0, wins=0, most_voted_acronym=None, most_votes=0)
+        self.config.register_guild(min_acro_length=3, max_acro_length=6, **reward_range)
+        self.config.register_user(acros_submitted=0, wins=0, most_voted_acronym=None, most_votes=0, winnings=0)
         self.voting_countdown = 30
         self.acro_isanon = True
+        self.min_reward = 50
+        self.max_reward = 200
 
 
     @commands.command()
@@ -92,9 +97,10 @@ class AcroCat(commands.Cog):
             
         await self.tally_votes(ctx)
 
-    async def update_stats(self, winning_author, winning_acronym):
+    async def update_stats(self, winning_author, winning_acronym, reward):
         user_data = await self.config.user(winning_author).all()
         user_data['wins'] += 1
+        user_data['winnings'] += reward
         current_votes = list(self.votes.values()).count(winning_acronym)
         if current_votes > user_data['most_votes']:
             user_data['most_voted_acronym'] = winning_acronym
@@ -155,6 +161,9 @@ class AcroCat(commands.Cog):
             await ctx.send("Acrocat submissions are now anonymous.")
     async def tally_votes(self, ctx):
         self.game_state = 'tallying'
+        reward_range = await self.config.guild(ctx.guild).reward_range()
+        reward = random.randint(reward_range[0], reward_range[1]) * len(self.current_acronym)
+        currency_name = await bank.get_currency_name(ctx.guild)
         vote_counts = Counter(self.votes.values())
 
         # Check if no votes were cast
@@ -178,8 +187,9 @@ class AcroCat(commands.Cog):
             if len(winning_votes) == 1:
                 await ctx.send(f"{winning_author.display_name} won by default with the acro: {winning_acronym}. Too bad they are playing with themselves!")
             else:
-                await ctx.send(f"The winner is {winning_author.display_name} with the response: {winning_acronym}")
-                await self.update_stats(winning_author, winning_acronym)
+                await bank.deposit_credits(winning_author, reward)
+                await ctx.send(f"The winner is {winning_author.display_name} with the response: {winning_acronym}. They have been awarded {reward} {currency_name}!")
+                await self.update_stats(winning_author, winning_acronym, reward)
         else:
             await ctx.send("Error: Winning response not found.")
             return
