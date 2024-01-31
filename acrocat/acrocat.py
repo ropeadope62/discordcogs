@@ -130,14 +130,12 @@ class AcroCat(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     @commands.is_owner()
     async def set_letter_limits(self, ctx, min_length: int, max_length: int):
-        if 1 <= min_length <= max_length:
-            self.min_acro_length = min_length
-            self.max_acro_length = max_length
-            await ctx.send(f"Acronym length limits set to {min_length}-{max_length}.")
-        else:
-            await ctx.send(
-                "Invalid limits. Ensure that `min_length` is at least 1 and `max_length` is greater than or equal to `min_length`."
-            )
+        if min_length > max_length:
+            await ctx.send("Invalid limits. Ensure that `min_length` is less than or equal to `max_length`.")
+            return
+        await self.config.guild(ctx.guild).min_acro_length.set(min_length)
+        await self.config.guild(ctx.guild).max_acro_length.set(max_length)
+        await ctx.send(f"Acronym length limits set to {min_length}-{max_length}.")
     
     @acrocatset.command(name="voting_timeout")
     @commands.has_permissions(manage_guild=True)
@@ -153,7 +151,7 @@ class AcroCat(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     @commands.is_owner()
     async def set_anon(self, ctx):
-        if self.acro_isanon == True:
+        if self.acro_isanon is True:
             self.acro_isanon = False
             await ctx.send("Acrocat submissions are no longer anonymous.")
         else:
