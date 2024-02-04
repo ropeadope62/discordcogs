@@ -69,12 +69,14 @@ class AcroCat(commands.Cog):
 
         if not self.responses:
             await ctx.send("No responses were submitted. Ending the game.")
+            await self.reset_gamestate()
             return
 
         if len(self.responses) == 1:
             winning_author, winning_acronym = list(self.responses.items())[0]
             await ctx.send(f"{winning_author.display_name} is playing with themselves since no one else made a submission. Too bad. Their acronym was: {winning_acronym}")
             await self.update_stats(winning_author, winning_acronym, reward=0)
+            await self.reset_gamestate()
             return
 
         embed = discord.Embed(title="Vote for your favorite response!", description=f"{self.voting_countdown} seconds remaining")
@@ -137,7 +139,7 @@ class AcroCat(commands.Cog):
         await self.config.guild(ctx.guild).max_acro_length.set(max_length)
         await ctx.send(f"Acronym length limits set to {min_length}-{max_length}.")
     
-    @acrocatset.command(name="voting_timeout")
+    @acrocatset.command(name="timer")
     @commands.has_permissions(manage_guild=True)
     @commands.is_owner()
     async def set_voting_timeout(self, ctx, timeout: int):
