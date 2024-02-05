@@ -21,10 +21,13 @@ class AcroCat(commands.Cog):
         self.game_state = None
         self.voting_channel = None
         self.config = Config.get_conf(self, identifier=94859234884920455, force_registration=True)
-        self.config.register_guild(min_acro_length=3, max_acro_length=6, timer=30, acro_isanon=False, **reward_range)
+        self.config.register_guild(min_acro_length=3, 
+                                   max_acro_length=6, 
+                                   timer=30, 
+                                   acro_isanon=False, 
+                                   min_reward=None, 
+                                   max_reward=None)
         self.config.register_user(acros_submitted=0, wins=0, most_voted_acronym=None, most_votes=0, winnings=0)
-        self.min_reward = 50
-        self.max_reward = 200
 
 
     @commands.command()
@@ -124,6 +127,7 @@ class AcroCat(commands.Cog):
     @commands.group()
     @commands.has_permissions(manage_guild=True)
     async def acrocatset(self, ctx): 
+        
         if ctx.invoked_subcommand is None:
             embed = discord.Embed(
                 title="Acrocat - The Cat's Ass of Acro Cogs.",
@@ -142,7 +146,7 @@ class AcroCat(commands.Cog):
             )
             embed.add_field(
                 name="Current Settings",
-                value=f"Letters: {self.config.guild(ctx.guild).min_acro_length()}\n Timer: {self.config.guild(ctx.guild).timer()}", inline="False"
+                value=f"Letters: {await self.config.guild(ctx.guild).min_acro_length()}\n Timer: {await self.config.guild(ctx.guild).timer()}", inline="False"
             )
             embed.add_field(
                 name="timer",
@@ -152,7 +156,6 @@ class AcroCat(commands.Cog):
             embed.set_thumbnail(url="attachment://acrocat_logo.png")
 
             message = await ctx.send(embed=embed, file=discord.File(image_path, "acrocat_logo.png"))
-            await ctx.send(message)
     
     @acrocatset.command(name="letters")
     @commands.has_permissions(manage_guild=True)
@@ -188,8 +191,9 @@ class AcroCat(commands.Cog):
             await ctx.send("Acrocat submissions are now anonymous.")
     async def tally_votes(self, ctx):
         self.game_state = 'tallying'
-        reward_range = await self.config.guild(ctx.guild).reward_range()
-        reward = random.randint(reward_range[0], reward_range[1]) * len(self.current_acronym)
+        min_reward = await self.config.guild(ctx.guild).min_reward()
+        max_reward = await self.config.guild(ctx.guild).max_reward()
+        reward = random.randint(min_reward, max_reward) * len(self.current_acronym)
         currency_name = await bank.get_currency_name(ctx.guild)
         vote_counts = Counter(self.votes.values())
 
