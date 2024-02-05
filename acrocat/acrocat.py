@@ -18,7 +18,7 @@ class AcroCat(commands.Cog):
         self.game_state = None
         self.voting_channel = None
         self.config = Config.get_conf(self, identifier=94859234884920455, force_registration=True)
-        self.config.register_guild({"min_acro_length": 3, 
+        default_guild_settings = ({"min_acro_length": 3, 
                                    "max_acro_length": 5, 
                                    "timer": 30, 
                                    "acro_isanon": False, 
@@ -26,12 +26,13 @@ class AcroCat(commands.Cog):
                                    "max_reward": 100,
                                    "weighted_chars": False, 
                                    "rewards": True})
-        self.config.register_user({"acros_submitted": 0, 
+        default_user_settings = ({"acros_submitted": 0, 
                                    "wins": 0,
                                    "most_voted_acronym": None,
                                    "most_votes": 0, 
                                    "winnings": 0})
-
+        self.config.register_guild(**default_guild_settings)
+        self.config.register_user(**default_user_settings)
 
     @commands.command()
     async def acrocat(self, ctx: commands.Context):
