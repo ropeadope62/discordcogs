@@ -16,7 +16,7 @@ AcroCat is a Discord bot cog written for Red, a modular bot framework. It's a fu
 
 ### 2. `acrocatset`
 
--   **Description**: Group command for AcroCat settings.
+-   **Description**: Group command for AcroCat settings. Displays the current configuration and help menu. 
 -   **Usage**: `[p]acrocatset <subcommand>`
 -   **Permissions**: `manage_guild`
 
@@ -25,12 +25,18 @@ AcroCat is a Discord bot cog written for Red, a modular bot framework. It's a fu
 -   `letters`: Sets the minimum and maximum length of acronyms.
     -   **Usage**: `[p]acrocatset letters <min_length> <max_length>`
     -   **Permissions**: `manage_guild`, Bot owner only.
--   `voting_timeout`: Sets the duration for the voting phase.
+-   `timing`: Sets the duration for the voting phase.
     -   **Usage**: `[p]acrocatset voting_timeout <timeout>`
     -   **Permissions**: `manage_guild`, Bot owner only.
 -   `anon`: Toggles the anonymity of submissions.
     -   **Usage**: `[p]acrocatset anon`
     -   **Permissions**: `manage_guild`, Bot owner only.
+-   `weightedletters`: Selected letters for the game acronym will be weighted toward more common letters, preventing too many instances of X,Y,Z.
+    - **Usage**: `[p]acrocatset weightedletters 
+-   `rewards`: Toggle credits rewards for winning the game. This is integrated with Red Economy. 
+    - **Usage**: `[p]acrocatset rewards
+-   `rewardrange`: Set the range of the game reward
+    - **Usage**: [p]acrocatset <min> <max> 
 
 ### 3. `acrocatstat`
 
