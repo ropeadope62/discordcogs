@@ -122,7 +122,7 @@ class AcroCat(commands.Cog):
         self.voting_channel = None
 
 
-    async def generate_acronym(self, ctx, min_acro_length, max_acro_length):
+    async def generate_acronym(self, ctx):
         min_acro_length = await self.config.guild(ctx.guild).min_acro_length()
         max_acro_length = await self.config.guild(ctx.guild).max_acro_length()
         if not await self.config.guild(ctx.guild).weighted_chars():
