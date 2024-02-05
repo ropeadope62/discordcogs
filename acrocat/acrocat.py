@@ -40,7 +40,7 @@ class AcroCat(commands.Cog):
         min_acro_length = await self.config.guild(ctx.guild).min_acro_length()
         max_acro_length = await self.config.guild(ctx.guild).max_acro_length()
         if ctx.invoked_subcommand is None:
-            self.current_acronym = self.generate_acronym(min_acro_length, max_acro_length)
+            self.current_acronym = await self.generate_acronym(min_acro_length, max_acro_length)
             embed = discord.Embed(
                 title="Acrocat - The Cat's Ass of Acro Cogs.",
                 description=f"Your acronym is: **`{self.current_acronym}`**",
