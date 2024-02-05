@@ -21,10 +21,8 @@ class AcroCat(commands.Cog):
         self.game_state = None
         self.voting_channel = None
         self.config = Config.get_conf(self, identifier=94859234884920455, force_registration=True)
-        self.config.register_guild(min_acro_length=3, max_acro_length=6, **reward_range)
+        self.config.register_guild(min_acro_length=3, max_acro_length=6, timer=30, acro_isanon=False, **reward_range)
         self.config.register_user(acros_submitted=0, wins=0, most_voted_acronym=None, most_votes=0, winnings=0)
-        self.voting_countdown = 30
-        self.acro_isanon = True
         self.min_reward = 50
         self.max_reward = 200
 
@@ -78,10 +76,11 @@ class AcroCat(commands.Cog):
             await self.update_stats(winning_author, winning_acronym, reward=0)
             await self.reset_gamestate()
             return
-
-        embed = discord.Embed(title="Vote for your favorite response!", description=f"{self.voting_countdown} seconds remaining")
+        is_anon = await self.config.guild(ctx.guild).acro_isanon()
+        timer_value = await self.config.guild(ctx.guild).timer()
+        embed = discord.Embed(title="Vote for your favorite response!", description=f"{timer_value} seconds remaining")
         for index, (author, response) in enumerate(self.responses.items(), start=1):
-            if self.acro_isanon == True: 
+            if is_anon == True: 
                 embed.add_field(name=f"Option {index}", value=f"{response}", inline=False)
             else: 
                 embed.add_field(name=f"Option {index}", value=f"{response} by {author.display_name}", inline=False)
@@ -91,7 +90,7 @@ class AcroCat(commands.Cog):
             await asyncio.sleep(1)  # Wait for 1 second
             new_embed = discord.Embed(title="Vote for your favorite response!", description=f"{remaining} seconds remaining")
             for index, (author, response) in enumerate(self.responses.items(), start=1):
-                if self.acro_isanon == True:
+                if is_anon == True:
                     new_embed.add_field(name=f"Option {index}", value=f"{response}", inline=False)
                 else:
                     new_embed.add_field(name=f"Option {index}", value=f"{response} by {author.display_name}", inline=False)
@@ -125,8 +124,35 @@ class AcroCat(commands.Cog):
     @commands.group()
     @commands.has_permissions(manage_guild=True)
     async def acrocatset(self, ctx): 
-        """Settings for Acrocat."""
-        pass
+        if ctx.invoked_subcommand is None:
+            embed = discord.Embed(
+                title="Acrocat - The Cat's Ass of Acro Cogs.",
+                description=f"Your acronym is: **`{self.current_acronym}`**",
+                color=discord.Color.orange()
+            )
+
+            image_path = os.path.join(os.path.dirname(__file__), "acrocat_logo.png")
+            embed.add_field(
+                name="About",
+                value="Another stupid discord cog by Slurms Mackenzie/ropeadope62", inline="True"
+            )
+            embed.add_field(
+                name="Repo",
+                value="If you liked this, check out my other cogs! https://github.com/ropeadope62/discordcogs",inline="True"
+            )
+            embed.add_field(
+                name="Current Settings",
+                value=f"Letters: {self.config.guild(ctx.guild).min_acro_length()}\n Timer: {self.config.guild(ctx.guild).timer()}", inline="False"
+            )
+            embed.add_field(
+                name="timer",
+                value="Set the voting timeout in seconds. Usage: `timer <timeout>`",
+            )
+            
+            embed.set_thumbnail(url="attachment://acrocat_logo.png")
+
+            message = await ctx.send(embed=embed, file=discord.File(image_path, "acrocat_logo.png"))
+            await ctx.send(message)
     
     @acrocatset.command(name="letters")
     @commands.has_permissions(manage_guild=True)
@@ -144,7 +170,7 @@ class AcroCat(commands.Cog):
     @commands.is_owner()
     async def set_voting_timeout(self, ctx, timeout: int):
         if timeout >= 10:
-            self.voting_countdown = timeout
+            self.timer = timeout
             await ctx.send(f"Voting timeout set to {timeout} seconds.")
         else:
             await ctx.send("Invalid timeout. Ensure that `timeout` is at least 10 seconds.")
@@ -153,11 +179,12 @@ class AcroCat(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     @commands.is_owner()
     async def set_anon(self, ctx):
-        if self.acro_isanon is True:
-            self.acro_isanon = False
+        is_anon = await self.config.guild(ctx.guild).acro_isanon()
+        if is_anon is True:
+            await self.config.guild(ctx.guild).acro_isanon.set(False)
             await ctx.send("Acrocat submissions are no longer anonymous.")
         else:
-            self.acro_isanon = True
+            is_anon = True
             await ctx.send("Acrocat submissions are now anonymous.")
     async def tally_votes(self, ctx):
         self.game_state = 'tallying'
