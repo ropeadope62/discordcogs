@@ -18,15 +18,19 @@ class AcroCat(commands.Cog):
         self.game_state = None
         self.voting_channel = None
         self.config = Config.get_conf(self, identifier=94859234884920455, force_registration=True)
-        self.config.register_guild(min_acro_length=3, 
-                                   max_acro_length=6, 
-                                   timer=30, 
-                                   acro_isanon=False, 
-                                   min_reward=None, 
-                                   max_reward=None,
-                                   weighted_chars=False, 
-                                   rewards=True)
-        self.config.register_user(acros_submitted=0, wins=0, most_voted_acronym=None, most_votes=0, winnings=0)
+        self.config.register_guild({"min_acro_length": 3, 
+                                   "max_acro_length": 5, 
+                                   "timer": 30, 
+                                   "acro_isanon": False, 
+                                   "min_reward": 10, 
+                                   "max_reward": 100,
+                                   "weighted_chars": False, 
+                                   "rewards": True})
+        self.config.register_user({"acros_submitted": 0, 
+                                   "wins": 0,
+                                   "most_voted_acronym": None,
+                                   "most_votes": 0, 
+                                   "winnings": 0})
 
 
     @commands.command()
@@ -69,7 +73,6 @@ class AcroCat(commands.Cog):
         if len(self.responses) == 1:
             winning_author, winning_acronym = list(self.responses.items())[0]
             await ctx.send(f"{winning_author.display_name} is playing with themselves since no one else made a submission. Too bad. Their acronym was: {winning_acronym}")
-            await self.update_stats(winning_author, winning_acronym, reward=0)
             await self.reset_gamestate()
             return
         is_anon = await self.config.guild(ctx.guild).acro_isanon()
