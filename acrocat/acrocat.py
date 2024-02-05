@@ -46,14 +46,6 @@ class AcroCat(commands.Cog):
             )
 
             image_path = os.path.join(os.path.dirname(__file__), "acrocat_logo.png")
-            embed.add_field(
-                name="About",
-                value="Another stupid discord cog by Slurms Mackenzie/ropeadope62",
-            )
-            embed.add_field(
-                name="Repo",
-                value="If you liked this, check out my other cogs! https://github.com/ropeadope62/discordcogs",
-            )
             embed.set_thumbnail(url="attachment://acrocat_logo.png")
 
             message = await ctx.send(embed=embed, file=discord.File(image_path, "acrocat_logo.png"))
@@ -158,7 +150,7 @@ class AcroCat(commands.Cog):
             )
             embed.add_field(
                 name="Letter Count:",
-                value=f"{await self.config.guild(ctx.guild).min_acro_length()} - {await self.config.guild(ctx.guild).max_acro_length()}\n Timer: {await self.config.guild(ctx.guild).timer()}", inline="False")
+                value=f"{await self.config.guild(ctx.guild).min_acro_length()} - {await self.config.guild(ctx.guild).max_acro_length()}", inline="False")
             embed.add_field(
                 name="Voting Countdown:",
                 value=f"{await self.config.guild(ctx.guild).timer()}", inline="True"
