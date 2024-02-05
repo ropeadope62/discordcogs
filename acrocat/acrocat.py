@@ -37,10 +37,8 @@ class AcroCat(commands.Cog):
             await ctx.send("Another game is already in progress. Please wait for the current game to end.")
             return
         self.game_state = 'collecting'
-        min_acro_length = await self.config.guild(ctx.guild).min_acro_length()
-        max_acro_length = await self.config.guild(ctx.guild).max_acro_length()
         if ctx.invoked_subcommand is None:
-            self.current_acronym = await self.generate_acronym(min_acro_length, max_acro_length)
+            self.current_acronym = await self.generate_acronym()
             embed = discord.Embed(
                 title="Acrocat - The Cat's Ass of Acro Cogs.",
                 description=f"Your acronym is: **`{self.current_acronym}`**",
