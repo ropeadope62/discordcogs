@@ -38,7 +38,7 @@ class AcroCat(commands.Cog):
             return
         self.game_state = 'collecting'
         if ctx.invoked_subcommand is None:
-            self.current_acronym = await self.generate_acronym()
+            self.current_acronym = await self.generate_acronym(ctx)
             embed = discord.Embed(
                 title="Acrocat - The Cat's Ass of Acro Cogs.",
                 description=f"Your acronym is: **`{self.current_acronym}`**",
