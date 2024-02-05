@@ -14,9 +14,6 @@ class AcroCat(commands.Cog):
         self.current_acronym = None
         self.responses = {}
         self.votes = {}
-        reward_range = {
-            "reward_range": [50,250],  
-        }
         self.name_with_acro = 0
         self.game_state = None
         self.voting_channel = None
@@ -27,7 +24,8 @@ class AcroCat(commands.Cog):
                                    acro_isanon=False, 
                                    min_reward=None, 
                                    max_reward=None,
-                                   weighted_chars=False)
+                                   weighted_chars=False, 
+                                   rewards=True)
         self.config.register_user(acros_submitted=0, wins=0, most_voted_acronym=None, most_votes=0, winnings=0)
 
 
@@ -153,11 +151,23 @@ class AcroCat(commands.Cog):
                 value=f"{await self.config.guild(ctx.guild).min_acro_length()} - {await self.config.guild(ctx.guild).max_acro_length()}", inline="False")
             embed.add_field(
                 name="Voting Countdown:",
-                value=f"{await self.config.guild(ctx.guild).timer()}", inline="True"
+                value=f"{await self.config.guild(ctx.guild).timer()}", inline="False"
             )
             embed.add_field(
                 name="Weighted Letters",
-                value=f"{await self.config.guild(ctx.guild).weighted_chars()}", inline="True"
+                value=f"{await self.config.guild(ctx.guild).weighted_chars()}", inline="False"
+            )
+            embed.add_field(
+                name="Anonymous Submissions",
+                value=f"{await self.config.guild(ctx.guild).acro_isanon()}", inline="False"
+            )
+            embed.add_field(
+                name="Rewards Status:",
+                value=f"minimum: {await self.config.guild(ctx.guild).rewards()}", inline="False"
+            )
+            embed.add_field(
+                name="Reward Range:",
+                value=f"minimum: {await self.config.guild(ctx.guild).min_reward()} maximum: {await self.config.guild(ctx.guild).max_reward()}", inline="False"
             )
             
             embed.set_thumbnail(url="attachment://acrocat_logo.png")
