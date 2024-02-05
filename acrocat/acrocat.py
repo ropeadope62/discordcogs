@@ -143,7 +143,7 @@ class AcroCat(commands.Cog):
         if ctx.invoked_subcommand is None:
             embed = discord.Embed(
                 title="Acrocat - The Cat's Ass of Acro Cogs.",
-                description=f"Your acronym is: **`{self.current_acronym}`**",
+                description=f"Cog Settings",
                 color=discord.Color.orange()
             )
 
@@ -157,11 +157,15 @@ class AcroCat(commands.Cog):
                 value="If you liked this, check out my other cogs! https://github.com/ropeadope62/discordcogs",inline="True"
             )
             embed.add_field(
-                name="Current Settings",
-                value=f"Letters: {await self.config.guild(ctx.guild).min_acro_length()} - {await self.config.guild(ctx.guild).max_acro_length()}\n Timer: {await self.config.guild(ctx.guild).timer()}", inline="False")
+                name="Letter Count:",
+                value=f"{await self.config.guild(ctx.guild).min_acro_length()} - {await self.config.guild(ctx.guild).max_acro_length()}\n Timer: {await self.config.guild(ctx.guild).timer()}", inline="False")
             embed.add_field(
-                name="timer",
-                value="Set the voting timeout in seconds. Usage: `timer <timeout>`",
+                name="Voting Countdown:",
+                value=f"{await self.config.guild(ctx.guild).timer()}", inline="True"
+            )
+            embed.add_field(
+                name="Weighted Letters",
+                value=f"{await self.config.guild(ctx.guild).weighted_chars()}", inline="True"
             )
             
             embed.set_thumbnail(url="attachment://acrocat_logo.png")
