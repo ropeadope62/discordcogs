@@ -204,7 +204,7 @@ class AcroCat(commands.Cog):
             await self.config.guild(ctx.guild).weighted_chars.set(False)
             await ctx.send("Acrocat will no longer use weighted letters.")
         else:
-            weighted_chars = True
+            await self.config.guild(ctx.guild).weighted_chars.set(True)
             await ctx.send("Acrocat will now use weighted letters.")
             
     @acrocatset.command(name="rewards")
@@ -212,11 +212,11 @@ class AcroCat(commands.Cog):
     @commands.is_owner()
     async def set_rewards(self, ctx):
         rewards = await self.config.guild(ctx.guild).rewards()
-        if rewards is True:
+        if rewards:
             await self.config.guild(ctx.guild).rewards.set(False)
             await ctx.send("Acrocat rewards are now disabled.")
         else:
-            rewards = True
+            await self.config.guild(ctx.guild).rewards.set(True)  # Correctly update the config here
             await ctx.send("Acrocat rewards are now enabled.")
             
     @acrocatset.command(name="rewardrange")
@@ -239,7 +239,7 @@ class AcroCat(commands.Cog):
             await self.config.guild(ctx.guild).acro_isanon.set(False)
             await ctx.send("Acrocat submissions are no longer anonymous.")
         else:
-            is_anon = True
+            await self.config.guild(ctx.guild).acro_isanon.set(True)
             await ctx.send("Acrocat submissions are now anonymous.")
     async def tally_votes(self, ctx):
         self.game_state = 'tallying'
