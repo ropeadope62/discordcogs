@@ -26,12 +26,16 @@ class AcroCat(commands.Cog):
                                    timer=30, 
                                    acro_isanon=False, 
                                    min_reward=None, 
-                                   max_reward=None)
+                                   max_reward=None,
+                                   weighted_chars=False)
         self.config.register_user(acros_submitted=0, wins=0, most_voted_acronym=None, most_votes=0, winnings=0)
 
 
     @commands.command()
     async def acrocat(self, ctx: commands.Context):
+        if self.game_state is not None:
+            await ctx.send("Another game is already in progress. Please wait for the current game to end.")
+            return
         self.game_state = 'collecting'
         min_acro_length = await self.config.guild(ctx.guild).min_acro_length()
         max_acro_length = await self.config.guild(ctx.guild).max_acro_length()
@@ -67,6 +71,7 @@ class AcroCat(commands.Cog):
         self.game_state = 'voting'
         print(f'starting voting in {ctx.channel}')
         self.voting_channel = ctx.channel
+        voting_countdown = await self.config.guild(ctx.guild).timer()
 
         if not self.responses:
             await ctx.send("No responses were submitted. Ending the game.")
@@ -118,16 +123,25 @@ class AcroCat(commands.Cog):
         self.votes = {}
         self.voting_channel = None
 
-    @staticmethod
-    def generate_acronym(min_acro_length, max_acro_length):
-        
-        return "".join(random.choice(string.ascii_uppercase) for _ in range(random.randint(min_acro_length, max_acro_length)))
 
-    
+    async def generate_acronym(self, ctx, min_acro_length, max_acro_length):
+        min_acro_length = await self.config.guild(ctx.guild).min_acro_length()
+        max_acro_length = await self.config.guild(ctx.guild).max_acro_length()
+        if not await self.config.guild(ctx.guild).weighted_chars():
+            return "".join(random.choice(string.ascii_uppercase) for _ in range(random.randint(min_acro_length, max_acro_length)))
+        else:
+            weighted_letters = (
+            "A" * 9 + "B" * 2 + "C" * 2 + "D" * 4 + "E" * 12 + "F" * 2 + "G" * 3 +
+            "H" * 2 + "I" * 9 + "J" * 1 + "K" * 1 + "L" * 4 + "M" * 2 + "N" * 6 +
+            "O" * 8 + "P" * 2 + "Q" * 1 + "R" * 6 + "S" * 4 + "T" * 6 + "U" * 4 +
+            "V" * 2 + "W" * 2 + "X" * 1 + "Y" * 2 + "Z" * 1)
+        
+            return "".join(random.choice(weighted_letters) for _ in range(random.randint(min_acro_length, max_acro_length)))
+
+        
     @commands.group()
     @commands.has_permissions(manage_guild=True)
     async def acrocatset(self, ctx): 
-        
         if ctx.invoked_subcommand is None:
             embed = discord.Embed(
                 title="Acrocat - The Cat's Ass of Acro Cogs.",
@@ -146,7 +160,8 @@ class AcroCat(commands.Cog):
             )
             embed.add_field(
                 name="Current Settings",
-                value=f"Letters: {await self.config.guild(ctx.guild).min_acro_length()}\n Timer: {await self.config.guild(ctx.guild).timer()}", inline="False"
+                value=f"Letters: {await self.config.guild(ctx.guild).min_acro_length()} - {await self.config.guild(ctx.guild).max_acro_length()}\n 
+                Timer: {await self.config.guild(ctx.guild).timer()}", inline="False"
             )
             embed.add_field(
                 name="timer",
@@ -177,6 +192,18 @@ class AcroCat(commands.Cog):
             await ctx.send(f"Voting timeout set to {timeout} seconds.")
         else:
             await ctx.send("Invalid timeout. Ensure that `timeout` is at least 10 seconds.")
+            
+    @acrocatset.command(name="weightedletters")
+    @commands.has_permissions(manage_guild=True)
+    @commands.is_owner()
+    async def set_weighted_letters(self, ctx):
+        weighted_chars = await self.config.guild(ctx.guild).weighted_chars()
+        if weighted_chars is True:
+            await self.config.guild(ctx.guild).weighted_chars.set(False)
+            await ctx.send("Acrocat will no longer use weighted letters.")
+        else:
+            weighted_chars = True
+            await ctx.send("Acrocat will now use weighted letters.")
     
     @acrocatset.command(name="anon")
     @commands.has_permissions(manage_guild=True)
