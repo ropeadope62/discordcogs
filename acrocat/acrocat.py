@@ -218,6 +218,17 @@ class AcroCat(commands.Cog):
         else:
             rewards = True
             await ctx.send("Acrocat rewards are now enabled.")
+            
+    @acrocatset.command(name="rewardrange")
+    @commands.has_permissions(manage_guild=True)
+    @commands.is_owner()
+    async def set_reward_range(self, ctx, min_reward: int, max_reward: int):
+        if min_reward > max_reward:
+            await ctx.send("Invalid reward range. Ensure that `min_reward` is less than or equal to `max_reward`.")
+            return
+        await self.config.guild(ctx.guild).min_reward.set(min_reward)
+        await self.config.guild(ctx.guild).max_reward.set(max_reward)
+        await ctx.send(f"Reward range set to {min_reward}-{max_reward}.")
     
     @acrocatset.command(name="anon")
     @commands.has_permissions(manage_guild=True)
