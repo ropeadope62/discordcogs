@@ -160,9 +160,7 @@ class AcroCat(commands.Cog):
             )
             embed.add_field(
                 name="Current Settings",
-                value=f"Letters: {await self.config.guild(ctx.guild).min_acro_length()} - {await self.config.guild(ctx.guild).max_acro_length()}\n 
-                Timer: {await self.config.guild(ctx.guild).timer()}", inline="False"
-            )
+                value=f"Letters: {await self.config.guild(ctx.guild).min_acro_length()} - {await self.config.guild(ctx.guild).max_acro_length()}\n Timer: {await self.config.guild(ctx.guild).timer()}", inline="False")
             embed.add_field(
                 name="timer",
                 value="Set the voting timeout in seconds. Usage: `timer <timeout>`",
