@@ -163,7 +163,7 @@ class AcroCat(commands.Cog):
             )
             embed.add_field(
                 name="Rewards Status:",
-                value=f"minimum: {await self.config.guild(ctx.guild).rewards()}", inline="False"
+                value=f"{await self.config.guild(ctx.guild).rewards()}", inline="False"
             )
             embed.add_field(
                 name="Reward Range:",
@@ -206,6 +206,18 @@ class AcroCat(commands.Cog):
         else:
             weighted_chars = True
             await ctx.send("Acrocat will now use weighted letters.")
+            
+    @acrocatset.command(name="rewards")
+    @commands.has_permissions(manage_guild=True)
+    @commands.is_owner()
+    async def set_rewards(self, ctx):
+        rewards = await self.config.guild(ctx.guild).rewards()
+        if rewards is True:
+            await self.config.guild(ctx.guild).rewards.set(False)
+            await ctx.send("Acrocat rewards are now disabled.")
+        else:
+            rewards = True
+            await ctx.send("Acrocat rewards are now enabled.")
     
     @acrocatset.command(name="anon")
     @commands.has_permissions(manage_guild=True)
