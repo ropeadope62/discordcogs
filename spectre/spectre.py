@@ -41,3 +41,5 @@ class Spectre(commands.Cog):
         with open('spectre_data.json', 'w') as json_file:
             json.dump(invite_data, json_file)
 
+async def setup(bot):
+    bot.add_cog(Spectre(bot))
