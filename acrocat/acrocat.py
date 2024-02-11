@@ -317,9 +317,8 @@ class AcroCat(commands.Cog):
                 except discord.HTTPException:
                     print("Deleting the message failed.")
 
-        elif self.game_state == 'voting':
             try:
-                vote_index = int(message.content.strip()) - 1  # Convert to zero-based index
+                vote_index = int(message.content.strip()) - 1  
                 if 0 <= vote_index < len(self.responses):
                     response_author = list(self.responses.keys())[vote_index]
                     if message.author == response_author:
@@ -328,12 +327,12 @@ class AcroCat(commands.Cog):
                     if message.author in self.votes:
                         await message.channel.send(f"{message.author.display_name}, you have already voted.")
                     else:
-                        self.votes[message.author] = response_author  # Store the author of the response
+                        # Store the user response
+                        self.votes[message.author] = response_author  
                         await message.channel.send(f"{message.author.display_name} has voted!")
                         # Add the user to the set of users who have voted
                         self.voted_users.add(message.author)
-                        
-                    await message.delete()
+                        # Delete the vote message
+                        await message.delete()
             except (ValueError, IndexError):
                 pass
-
