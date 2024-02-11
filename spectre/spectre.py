@@ -41,5 +41,17 @@ class Spectre(commands.Cog):
                 json.dump(invite_data, json_file)
                 json_file.write('\n')  
 
+    @commands.Cog.listener()
+    async def on_invite_create(self, invite):
+        guild = invite.guild
+        inviter = invite.inviter
+        self.invite_cache[guild.id][invite.code] = invite
+        invite_data = {
+                "invite_code": invite.code,
+                "inviter": inviter.display_name
+            }
+        with open('spectre_data.json', 'a') as json_file:  
+            json.dump(invite_data, json_file)
+            json_file.write('\n') 
 async def setup(bot):
     await bot.add_cog(Spectre(bot))
