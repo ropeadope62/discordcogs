@@ -317,22 +317,22 @@ class AcroCat(commands.Cog):
                 except discord.HTTPException:
                     print("Deleting the message failed.")
 
-            elif self.game_state == 'voting' and message.channel == self.voting_channel and message.author != self.bot.user:
-                try:
-                    vote_index = int(message.content.strip()) - 1  # Convert to zero-based index
-                    if 0 <= vote_index < len(self.responses):
-                        response_author = list(self.responses.keys())[vote_index]
-                        if message.author == response_author:
-                            await message.channel.send(f"{message.author.display_name} attempted to vote for themselves! Nice try!")
-                            return
-                        if message.author in self.votes:
-                            await message.channel.send(f"{message.author.display_name}, you have already voted.")
-                        else:
-                            self.votes[message.author] = response_author  # Store the author of the response
-                            await message.channel.send(f"{message.author.display_name} has voted!")
-                            # Add the user to the set of users who have voted
-                            self.voted_users.add(message.author)
-                            # Delete the vote message
-                            await message.delete()
-                except (ValueError, IndexError):
-                    pass
+        elif self.game_state == 'voting':
+            try:
+                vote_index = int(message.content.strip()) - 1  # Convert to zero-based index
+                if 0 <= vote_index < len(self.responses):
+                    response_author = list(self.responses.keys())[vote_index]
+                    if message.author == response_author:
+                        await message.channel.send(f"{message.author.display_name} attempted to vote for themselves! Nice try!")
+                        return
+                    if message.author in self.votes:
+                        await message.channel.send(f"{message.author.display_name}, you have already voted.")
+                    else:
+                        self.votes[message.author] = response_author  # Store the author of the response
+                        await message.channel.send(f"{message.author.display_name} has voted!")
+                        # Add the user to the set of users who have voted
+                        self.voted_users.add(message.author)
+                        # Delete the vote message
+                        await message.delete()
+            except (ValueError, IndexError):
+                pass
