@@ -270,7 +270,8 @@ class AcroCat(commands.Cog):
             winners_message = "It's a tie! The winning submissions are:\n"
             for author in winning_responses:
                 winners_message += f"{author.display_name}: {self.responses[author]}\n"
-            await ctx.send(winners_message)
+                await bank.deposit_credits(author, 500)
+            await ctx.send(winners_message + f"You were both awarded 500 {currency_name} for playing!")
         else:
             # With no tie, proceed to determine the winner 
             winning_response_key = winning_votes[0][0]
