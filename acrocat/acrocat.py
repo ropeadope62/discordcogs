@@ -260,26 +260,28 @@ class AcroCat(commands.Cog):
             return
 
         winning_votes = vote_counts.most_common()
+        highest_vote_count = winning_votes[0][1]
 
-        if len(winning_votes) > 1 and winning_votes[0][1] == winning_votes[1][1]:
-            await ctx.send(f"It's a tie! {winning_votes[0][1]} votes each. No one wins.")
-            await self.reset_gamestate()
-            return
+        # Find the tied for winner responses
+        winning_responses = [author for author, votes in self.votes.items() if votes == highest_vote_count]
 
-        winning_response_key = winning_votes[0][0]
-
-        if winning_response_key in self.responses:
-            winning_author = winning_votes[0][0]
-            winning_acronym = self.responses[winning_author]
-            if len(winning_votes) == 1:
-                await ctx.send(f"{winning_author.display_name} won by default with the acro: {winning_acronym}. Too bad they are playing with themselves!")
-            else:
+        # Determine if the game is tied
+        if len(winning_responses) > 1:
+            winners_message = "It's a tie! The winning submissions are:\n"
+            for author in winning_responses:
+                winners_message += f"{author.display_name}: {self.responses[author]}\n"
+            await ctx.send(winners_message)
+        else:
+            # With no tie, proceed to determine the winner 
+            winning_response_key = winning_votes[0][0]
+            if winning_response_key in self.responses:
+                winning_author = winning_response_key
+                winning_acronym = self.responses[winning_author]
                 await bank.deposit_credits(winning_author, reward)
                 await ctx.send(f"The winner is {winning_author.display_name} with the response: {winning_acronym}. They have been awarded {reward} {currency_name}!")
                 await self.update_stats(winning_author, winning_acronym, reward)
-        else:
-            await ctx.send("Error: Winning response not found.")
-            return
+            else:
+                await ctx.send("Error: Winning response not found.")
 
         await self.reset_gamestate()
     
@@ -326,7 +328,9 @@ class AcroCat(commands.Cog):
                         await message.channel.send(f"{message.author.display_name}, you have already voted.")
                     else:
                         self.votes[message.author] = response_author  # Store the author of the response
-                        await message.channel.send(f"Vote recorded for {message.author.display_name}.")
+                        await message.channel.send(f"{message.author.display_name} has voted!")
+                        # Add the user to the set of users who have voted
+                        self.voted_users.add(message.author)
                         
                     await message.delete()
             except (ValueError, IndexError):
