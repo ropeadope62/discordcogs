@@ -30,7 +30,8 @@ class Spectre(commands.Cog):
 
         if invite:
             inviter = invite.inviter
-            await guild.text_channels[0].send(f"{member.display_name} JOINED WITH {invite.code}. THE INVITE WAS CREATED BY {inviter.display_name}")
+            channel = self.bot.get_channel(1202968017785585705)  # Replace with your channel ID
+            await channel.send(f"{member.display_name} JOINED WITH {invite.code}. THE INVITE WAS CREATED BY {inviter.display_name}")
 
         invite_data = {
             "member": member.display_name,
