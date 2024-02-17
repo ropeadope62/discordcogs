@@ -6,6 +6,7 @@ import asyncio
 import string
 import os
 from collections import Counter
+from contextlib import suppress
 
 
 class AcroCat(commands.Cog):
@@ -19,8 +20,9 @@ class AcroCat(commands.Cog):
         self.voting_channel = None
         self.config = Config.get_conf(self, identifier=94859234884920455, force_registration=True)
         default_guild_settings = ({"min_acro_length": 3, 
-                                   "max_acro_length": 5, 
-                                   "timer": 30, 
+                                   "max_acro_length": 5,
+                                   "submission_timer": 30,
+                                   "voting_timer": 30, 
                                    "acro_isanon": False, 
                                    "min_reward": 10, 
                                    "max_reward": 100,
@@ -52,8 +54,8 @@ class AcroCat(commands.Cog):
             embed.set_thumbnail(url="attachment://acrocat_logo.png")
 
             message = await ctx.send(embed=embed, file=discord.File(image_path, "acrocat_logo.png"))
-
-            for i in range(45, 0, -1):
+            submission_timer_value = await self.config.guild(ctx.guild).submission_timer()
+            for i in range(submission_timer_value, 0, -1):
                 await asyncio.sleep(1)
                 embed.description = f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {i}"
                 await message.edit(embed=embed)
@@ -64,7 +66,7 @@ class AcroCat(commands.Cog):
         self.game_state = 'voting'
         print(f'starting voting in {ctx.channel}')
         self.voting_channel = ctx.channel
-        voting_countdown = await self.config.guild(ctx.guild).timer()
+        voting_countdown = await self.config.guild(ctx.guild).voting_timer()
 
         if not self.responses:
             await ctx.send("No responses were submitted. Ending the game.")
@@ -77,8 +79,7 @@ class AcroCat(commands.Cog):
             await self.reset_gamestate()
             return
         is_anon = await self.config.guild(ctx.guild).acro_isanon()
-        timer_value = await self.config.guild(ctx.guild).timer()
-        embed = discord.Embed(title="Vote for your favorite response!", description=f"{timer_value} seconds remaining")
+        embed = discord.Embed(title="Vote for your favorite response!", description=f"{voting_countdown} seconds remaining")
         for index, (author, response) in enumerate(self.responses.items(), start=1):
             if is_anon == True: 
                 embed.add_field(name=f"Option {index}", value=f"{response}", inline=False)
@@ -155,7 +156,11 @@ class AcroCat(commands.Cog):
                 value=f"{await self.config.guild(ctx.guild).min_acro_length()} - {await self.config.guild(ctx.guild).max_acro_length()}", inline="False")
             embed.add_field(
                 name="Voting Countdown:",
-                value=f"{await self.config.guild(ctx.guild).timer()}", inline="False"
+                value=f"{await self.config.guild(ctx.guild).voting_timer()}", inline="False"
+            )
+            embed.add_field(
+                name="Submission Countdown:",
+                value=f"{await self.config.guild(ctx.guild).submission_timer()}", inline="False"
             )
             embed.add_field(
                 name="Weighted Letters",
@@ -178,7 +183,7 @@ class AcroCat(commands.Cog):
 
             message = await ctx.send(embed=embed, file=discord.File(image_path, "acrocat_logo.png"))
     
-    @acrocatset.command(name="letters")
+    @acrocatset.command(name="letters", description="Set the minimum and maximum length of the acronym.")
     @commands.has_permissions(manage_guild=True)
     @commands.is_owner()
     async def set_letter_limits(self, ctx, min_length: int, max_length: int):
@@ -189,17 +194,29 @@ class AcroCat(commands.Cog):
         await self.config.guild(ctx.guild).max_acro_length.set(max_length)
         await ctx.send(f"Acronym length limits set to {min_length}-{max_length}.")
     
-    @acrocatset.command(name="timer")
+    @acrocatset.command(name="votingtimer", description="Set the voting timeout in seconds.")
     @commands.has_permissions(manage_guild=True)
     @commands.is_owner()
     async def set_voting_timeout(self, ctx, timeout: int):
         if timeout >= 10:
-            self.timer = timeout
+            await self.config.guild(ctx.guild).voting_timer.set(timeout)
             await ctx.send(f"Voting timeout set to {timeout} seconds.")
         else:
             await ctx.send("Invalid timeout. Ensure that `timeout` is at least 10 seconds.")
             
-    @acrocatset.command(name="weightedletters")
+    @acrocatset.command(name="submissiontimer", description="Set the submission timeout in seconds.")
+    @commands.has_permissions(manage_guild=True)
+    @commands.is_owner()
+    async def set_submission_timeout(self, ctx, timeout: int):
+        if timeout >= 10:
+            await self.config.guild(ctx.guild).submission_timer.set(timeout)
+            await ctx.send(f"Submission timeout set to {timeout} seconds.")
+        else:
+            await ctx.send("Invalid timeout. Ensure that `timeout` is at least 10 seconds.")
+                    
+    
+    
+    @acrocatset.command(name="weightedletters", description="Toggle weighted letters for acronyms. When enabled, there will be less occurences of less common letters.")
     @commands.has_permissions(manage_guild=True)
     @commands.is_owner()
     async def set_weighted_letters(self, ctx):
@@ -211,7 +228,7 @@ class AcroCat(commands.Cog):
             await self.config.guild(ctx.guild).weighted_chars.set(True)
             await ctx.send("Acrocat will now use weighted letters.")
             
-    @acrocatset.command(name="rewards")
+    @acrocatset.command(name="rewards", description="Toggle rewards for winning acronyms.")
     @commands.has_permissions(manage_guild=True)
     @commands.is_owner()
     async def set_rewards(self, ctx):
@@ -223,7 +240,7 @@ class AcroCat(commands.Cog):
             await self.config.guild(ctx.guild).rewards.set(True)  # Correctly update the config here
             await ctx.send("Acrocat rewards are now enabled.")
             
-    @acrocatset.command(name="rewardrange")
+    @acrocatset.command(name="rewardrange", description= "Set the reward range for each letter submitted.")
     @commands.has_permissions(manage_guild=True)
     @commands.is_owner()
     async def set_reward_range(self, ctx, min_reward: int, max_reward: int):
@@ -234,7 +251,7 @@ class AcroCat(commands.Cog):
         await self.config.guild(ctx.guild).max_reward.set(max_reward)
         await ctx.send(f"Reward range set to {min_reward}-{max_reward}.")
     
-    @acrocatset.command(name="anon")
+    @acrocatset.command(name="anon", description= "Toggle anonymous submissions. When enabled, acro submissions will be anonymous.")
     @commands.has_permissions(manage_guild=True)
     @commands.is_owner()
     async def set_anon(self, ctx):
@@ -272,6 +289,8 @@ class AcroCat(commands.Cog):
                 winners_message += f"{author.display_name}: {self.responses[author]}\n"
                 await bank.deposit_credits(author, 500)
             await ctx.send(winners_message + f"You were both awarded 500 {currency_name} for playing!")
+            for author in winning_responses: 
+                await self.update_stats(author, self.responses[author], 500)
         else:
             # With no tie, proceed to determine the winner 
             winning_response_key = winning_votes[0][0]
@@ -286,14 +305,34 @@ class AcroCat(commands.Cog):
 
         await self.reset_gamestate()
     
-    @commands.command(name="acrocatstat")
-    async def get_stats(self, ctx):
-        user_data = await self.config.user(ctx.author).all()
-        wins = user_data['wins']
-        acros_submitted = user_data['acros_submitted']
-        most_voted_acronym = user_data['most_voted_acronym'] or 'N/A'
-        await ctx.send(f"{ctx.author.display_name}, you have made {acros_submitted} acronyms and won {wins} times. Your most voted acronym was: {most_voted_acronym}")
+    
+    
+    @commands.group(name="acrocatstat")
+    async def acrocatstat(self, ctx):
+        if ctx.subcommand_passed is None:
+            user_data = await self.config.user(ctx.author).all()
+            wins = user_data['wins']
+            acros_submitted = user_data['acros_submitted']
+            most_voted_acronym = user_data['most_voted_acronym'] or 'N/A'
+            await ctx.send(f"{ctx.author.display_name}, you have made {acros_submitted} acronyms and won {wins} times. Your most voted acronym was: {most_voted_acronym}")
+    
+    @acrocatstat.command(name="leaderboard")
+    async def acrocat_leaderboard(self, ctx):
+        all_users_data = await self.config.all_users()
+        sorted_users = sorted(all_users_data.items(), key=lambda x: x[1]['wins'], reverse=True)
 
+        # Prepare leaderboard message
+        leaderboard_message = ""
+        for i, (user, data) in enumerate(sorted_users, start=1):
+            user_obj = await self.bot.fetch_user(user)  # Fetch User object to get display name
+            leaderboard_message += f"{i}. {user_obj.display_name} - {data['wins']} wins - {data['winnings']} boofcoin\n"
+
+        # Create embed
+        embed = discord.Embed(title="Acrocat Leaderboard", description=leaderboard_message, color=discord.Color.orange())
+        embed.set_thumbnail(url="attachment://acrocat_logo.png")
+
+        # Send leaderboard message
+        await ctx.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -317,9 +356,10 @@ class AcroCat(commands.Cog):
                 except discord.HTTPException:
                     print("Deleting the message failed.")
 
-        elif self.game_state == 'voting':
+        elif self.game_state == 'voting' and message.channel == self.voting_channel:
             try:
-                vote_index = int(message.content.strip()) - 1  # Convert to zero-based index
+                with suppress((ValueError, IndexError)):
+                    vote_index = int(message.content.strip()) - 1  # Convert to zero-based index
                 if 0 <= vote_index < len(self.responses):
                     response_author = list(self.responses.keys())[vote_index]
                     if message.author == response_author:
@@ -329,10 +369,11 @@ class AcroCat(commands.Cog):
                         await message.channel.send(f"{message.author.display_name}, you have already voted.")
                     else:
                         self.votes[message.author] = response_author  # Store the author of the response
+                        await message.delete()
+                        
                         await message.channel.send(f"{message.author.display_name} has voted!")
                         # Add the user to the set of users who have voted
                         self.voted_users.add(message.author)
                         # Delete the vote message
-                        await message.delete()
             except (ValueError, IndexError):
                 pass
