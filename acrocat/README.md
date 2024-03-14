@@ -10,9 +10,10 @@ AcroCat is a Discord bot cog written for Red, a modular bot framework. It's a fu
 
 ### 1. `acrocat`
 
--   **Description**: Initiates an AcroCat game session.
--   **Usage**: `[p]acrocat`
+-   **Description**: Initiates an AcroCat game session with randomly chosen letters or letters chosen from a weighted dict (if weighted letters enabled). Alternatively, the game initator can define the game acronym by supplying it with the acrocat command. i.e [p]acrocat A C R O. 
+-   **Usage**: `[p]acrocat` ,  `[p]acrocat A B C D`
 -   **Permissions**: None required.
+
 
 ### 2. `acrocatset`
 
@@ -43,6 +44,9 @@ AcroCat is a Discord bot cog written for Red, a modular bot framework. It's a fu
 -   **Description**: Displays the user's AcroCat game statistics.
 -   **Usage**: `[p]acrocatstat`
 -   **Permissions**: None required.
+
+#### Subcommands:
+- `leaderboard`: Displays a server leaderboard ordered by Acrocat game wins. 
 
 ## Listeners
 
