@@ -5,7 +5,7 @@ import random
 import asyncio
 import string
 import os
-from collections import Counter
+from collections import Counter, defaultdict 
 from contextlib import suppress
 
 
@@ -35,38 +35,46 @@ class AcroCat(commands.Cog):
                                    "winnings": 0})
         self.config.register_guild(**default_guild_settings)
         self.config.register_user(**default_user_settings)
-
+    
     @commands.command()
-    async def acrocat(self, ctx: commands.Context):
+    async def acrocat(self, ctx: commands.Context, *letters: str):
         if self.game_state is not None:
             await ctx.send("Another game is already in progress. Please wait for the current game to end.")
             return
+        self.voting_channel = ctx.channel
         self.game_state = 'collecting'
-        if ctx.invoked_subcommand is None:
+        if letters:  # If letters are provided
+            if not all(letter.isalpha() and len(letter) == 1 for letter in letters):
+                await ctx.send("Invalid letters. Please provide single, alphabetical characters.")
+                await self.reset_gamestate()  # Ensure async function is awaited
+                return
+            self.current_acronym = "".join(letters).upper()
+        else:  # If no letters provided, generate the acronym automatically
             self.current_acronym = await self.generate_acronym(ctx)
-            embed = discord.Embed(
-                title="Acrocat - The Cat's Ass of Acro Cogs.",
-                description=f"Your acronym is: **`{self.current_acronym}`**",
-                color=discord.Color.orange()
-            )
+        embed = discord.Embed(
+            title="Acrocat - The Cat's Ass of Acro Cogs.",
+            description=f"Your acronym is: **`{self.current_acronym}`**",
+            color=discord.Color.orange()
+        )
 
-            image_path = os.path.join(os.path.dirname(__file__), "acrocat_logo.png")
-            embed.set_thumbnail(url="attachment://acrocat_logo.png")
+        image_path = os.path.join(os.path.dirname(__file__), "acrocat_logo.png")
+        embed.set_thumbnail(url="attachment://acrocat_logo.png")
 
-            message = await ctx.send(embed=embed, file=discord.File(image_path, "acrocat_logo.png"))
-            submission_timer_value = await self.config.guild(ctx.guild).submission_timer()
-            for i in range(submission_timer_value, 0, -1):
-                await asyncio.sleep(1)
-                embed.description = f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {i}"
-                await message.edit(embed=embed)
+        message = await ctx.send(embed=embed, file=discord.File(image_path, "acrocat_logo.png"))
+        submission_timer_value = await self.config.guild(ctx.guild).submission_timer()
+        for i in range(submission_timer_value, 0, -1):
+            await asyncio.sleep(1)
+            embed.description = f"Your acronym is: **`{self.current_acronym}`**\nCountdown: {i}"
+            await message.edit(embed=embed)
 
-            await self.start_voting(ctx)
+        await self.start_voting(ctx)
 
     async def start_voting(self, ctx):
         self.game_state = 'voting'
         print(f'starting voting in {ctx.channel}')
         self.voting_channel = ctx.channel
         voting_countdown = await self.config.guild(ctx.guild).voting_timer()
+        
 
         if not self.responses:
             await ctx.send("No responses were submitted. Ending the game.")
@@ -74,12 +82,12 @@ class AcroCat(commands.Cog):
             return
 
         if len(self.responses) == 1:
-            winning_author, winning_acronym = list(self.responses.items())[0]
-            await ctx.send(f"{winning_author.display_name} is playing with themselves since no one else made a submission. Too bad. Their acronym was: {winning_acronym}")
+            winning_author, winning_response = next(iter(self.responses.items()))
+            await ctx.send(f"{winning_author.display_name} is playing with themselves. They submitted: {winning_response}")
             await self.reset_gamestate()
             return
         is_anon = await self.config.guild(ctx.guild).acro_isanon()
-        embed = discord.Embed(title="Vote for your favorite response!", description=f"{voting_countdown} seconds remaining")
+        embed = discord.Embed(title="Vote for your favorite response!", description=f"{voting_countdown} seconds remaining", color=discord.Color.orange())
         for index, (author, response) in enumerate(self.responses.items(), start=1):
             if is_anon == True: 
                 embed.add_field(name=f"Option {index}", value=f"{response}", inline=False)
@@ -89,7 +97,7 @@ class AcroCat(commands.Cog):
         
         for remaining in range(voting_countdown, 0, -1):
             await asyncio.sleep(1)  # Wait for 1 second
-            new_embed = discord.Embed(title="Vote for your favorite response!", description=f"{remaining} seconds remaining")
+            new_embed = discord.Embed(title="Vote for your favorite response!", description=f"{remaining} seconds remaining", color=discord.Color.orange())
             for index, (author, response) in enumerate(self.responses.items(), start=1):
                 if is_anon == True:
                     new_embed.add_field(name=f"Option {index}", value=f"{response}", inline=False)
@@ -99,14 +107,13 @@ class AcroCat(commands.Cog):
             
         await self.tally_votes(ctx)
 
-    async def update_stats(self, winning_author, winning_acronym, reward):
+    async def update_stats(self, winning_author, winning_response, reward, votes_for_winning_response):
         user_data = await self.config.user(winning_author).all()
         user_data['wins'] += 1
         user_data['winnings'] += reward
-        current_votes = list(self.votes.values()).count(winning_acronym)
-        if current_votes > user_data['most_votes']:
-            user_data['most_voted_acronym'] = winning_acronym
-            user_data['most_votes'] = current_votes
+        if votes_for_winning_response > user_data.get('most_votes', 0):
+            user_data['most_voted_acronym'] = winning_response
+            user_data['most_votes'] = votes_for_winning_response
 
         await self.config.user(winning_author).set(user_data)
         
@@ -145,7 +152,7 @@ class AcroCat(commands.Cog):
             image_path = os.path.join(os.path.dirname(__file__), "acrocat_logo.png")
             embed.add_field(
                 name="About",
-                value="Another stupid discord cog by Slurms Mackenzie/ropeadope62", inline="True"
+                value="Another stupid discord cog by Slurms Mackenzie/ropeadope62\n Use [p]acrocatstat for stats or [p]acrocatstat leaderboard to show the leaderboard", inline="True"
             )
             embed.add_field(
                 name="Repo",
@@ -194,7 +201,7 @@ class AcroCat(commands.Cog):
         await self.config.guild(ctx.guild).max_acro_length.set(max_length)
         await ctx.send(f"Acronym length limits set to {min_length}-{max_length}.")
     
-    @acrocatset.command(name="votingtimer", description="Set the voting timeout in seconds.")
+    @acrocatset.command(name="votingcountdown", description="Set the voting timeout in seconds.")
     @commands.has_permissions(manage_guild=True)
     @commands.is_owner()
     async def set_voting_timeout(self, ctx, timeout: int):
@@ -204,7 +211,7 @@ class AcroCat(commands.Cog):
         else:
             await ctx.send("Invalid timeout. Ensure that `timeout` is at least 10 seconds.")
             
-    @acrocatset.command(name="submissiontimer", description="Set the submission timeout in seconds.")
+    @acrocatset.command(name="submissioncountdown", description="Set the submission timeout in seconds.")
     @commands.has_permissions(manage_guild=True)
     @commands.is_owner()
     async def set_submission_timeout(self, ctx, timeout: int):
@@ -262,49 +269,48 @@ class AcroCat(commands.Cog):
         else:
             await self.config.guild(ctx.guild).acro_isanon.set(True)
             await ctx.send("Acrocat submissions are now anonymous.")
+            
     async def tally_votes(self, ctx):
         self.game_state = 'tallying'
         min_reward = await self.config.guild(ctx.guild).min_reward()
         max_reward = await self.config.guild(ctx.guild).max_reward()
         reward = random.randint(min_reward, max_reward) * len(self.current_acronym)
         currency_name = await bank.get_currency_name(ctx.guild)
+        
         vote_counts = Counter(self.votes.values())
 
-        # Check if no votes were cast
         if not vote_counts:
-            await ctx.send("No votes were cast. Everyone loses.")
+            await ctx.send("No votes were cast. Ending the game.")
             await self.reset_gamestate()
             return
 
-        winning_votes = vote_counts.most_common()
-        highest_vote_count = winning_votes[0][1]
+        max_votes = max(vote_counts.values(), default=0)
+        winning_indices = [index for index, count in vote_counts.items() if count == max_votes]
 
-        # Find the tied for winner responses
-        winning_responses = [author for author, votes in self.votes.items() if votes == highest_vote_count]
+        response_authors = list(self.responses.keys())
+        winning_responses = {response_authors[index]: self.responses[response_authors[index]] for index in winning_indices if index < len(response_authors)}
 
-        # Determine if the game is tied
+        if not winning_responses:
+            await ctx.send("Error: Could not determine winning responses.")
+            await self.reset_gamestate()
+            return
         if len(winning_responses) > 1:
             winners_message = "It's a tie! The winning submissions are:\n"
-            for author in winning_responses:
-                winners_message += f"{author.display_name}: {self.responses[author]}\n"
-                await bank.deposit_credits(author, 500)
-            await ctx.send(winners_message + f"You were both awarded 500 {currency_name} for playing!")
-            for author in winning_responses: 
-                await self.update_stats(author, self.responses[author], 500)
+            split_reward = reward // len(winning_responses)
+            for author, response in winning_responses.items():
+                winners_message += f"{author.display_name}: {response}\n"
+                await bank.deposit_credits(author, split_reward)
+                await self.update_stats(author, response, split_reward, max_votes)
+            await ctx.send(winners_message + f"Each winner has been awarded {split_reward} {currency_name} for playing!")
         else:
-            # With no tie, proceed to determine the winner 
-            winning_response_key = winning_votes[0][0]
-            if winning_response_key in self.responses:
-                winning_author = winning_response_key
-                winning_acronym = self.responses[winning_author]
-                await bank.deposit_credits(winning_author, reward)
-                await ctx.send(f"The winner is {winning_author.display_name} with the response: {winning_acronym}. They have been awarded {reward} {currency_name}!")
-                await self.update_stats(winning_author, winning_acronym, reward)
-            else:
-                await ctx.send("Error: Winning response not found.")
+            winning_author = list(winning_responses.keys())[0]
+            winning_response = winning_responses[winning_author]
+            await bank.deposit_credits(winning_author, reward)
+            await ctx.send(f"The winner is {winning_author.display_name} with the response: {winning_response}. They have been awarded {reward} {currency_name}!")
+            await self.update_stats(winning_author, winning_response, reward, max_votes)
 
         await self.reset_gamestate()
-    
+        
     
     
     @commands.group(name="acrocatstat")
@@ -336,44 +342,41 @@ class AcroCat(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if self.game_state == 'collecting':
-            print(f'game state is {self.game_state}')
-            is_valid_acronym = (
-                self.current_acronym
-                and "".join(word[0].lower() for word in message.content.split() if word) == self.current_acronym.lower()
-            )
+        if message.author.bot or self.game_state not in ['collecting', 'voting'] or message.channel != self.voting_channel:
+            return
 
-            if is_valid_acronym:
-                print(f'found valid acronym from {message.author}')
+        print(f'game state is {self.game_state}')
+
+        if self.current_acronym and self.game_state == 'collecting':
+            acro_check = "".join(word[0].lower() for word in message.content.split() if word) == self.current_acronym.lower()
+            if acro_check:
                 self.responses[message.author] = message.content
                 acros_submitted = await self.config.user(message.author).acros_submitted()
                 await self.config.user(message.author).acros_submitted.set(acros_submitted + 1)
                 try:
-                    await message.delete()                   
+                    await message.delete()
                     print(f'Deleting message from {message.author}')
-                except discord.Forbidden:
-                    print("Bot does not have permissions to delete messages.")
-                except discord.HTTPException:
-                    print("Deleting the message failed.")
+                except (discord.Forbidden, discord.HTTPException) as e:
+                    print(f"Failed to delete the message: {e}")
 
-        elif self.game_state == 'voting' and message.channel == self.voting_channel:
+        elif self.game_state == 'voting':
             try:
-                with suppress((ValueError, IndexError)):
-                    vote_index = int(message.content.strip()) - 1  # Convert to zero-based index
+                vote_index = int(message.content.strip()) - 1
                 if 0 <= vote_index < len(self.responses):
-                    response_author = list(self.responses.keys())[vote_index]
-                    if message.author == response_author:
-                        await message.channel.send(f"{message.author.display_name} attempted to vote for themselves! Nice try!")
-                        return
                     if message.author in self.votes:
                         await message.channel.send(f"{message.author.display_name}, you have already voted.")
-                    else:
-                        self.votes[message.author] = response_author  # Store the author of the response
-                        await message.delete()
-                        
-                        await message.channel.send(f"{message.author.display_name} has voted!")
-                        # Add the user to the set of users who have voted
-                        self.voted_users.add(message.author)
-                        # Delete the vote message
-            except (ValueError, IndexError):
-                pass
+                        return
+                    response_authors = list(self.responses.keys())
+                    response_author = response_authors[vote_index]
+                    if message.author == response_author:
+                        await message.channel.send(f"{message.author.display_name} attempted to vote for themselves! Nice Try!")
+                        return
+                    # Record the vote
+                    self.votes[message.author] = vote_index
+                    await message.delete()
+                    await message.channel.send(f"{message.author.display_name}, your vote has been recorded.")
+                else:
+                    await message.channel.send("Invalid vote. Please select a valid option.")
+            except ValueError:
+                # Handle the case where the message isn't a valid integer
+                return
