@@ -16,6 +16,8 @@ from redbot.core.errors import BalanceTooHigh
 __version__ = "3.1.07"
 __authors__ = "Redjumpman", "Slurms Mackenzie/ropeadope62"
 
+channel_game_states = {}
+
 
 class RussianRoulette(commands.Cog):
     defaults = {
@@ -47,6 +49,7 @@ class RussianRoulette(commands.Cog):
         
             
     @commands.guild_only()
+    @commands.cooldown(1, 300, commands.BucketType.user)
     @rr.command()
     async def play(self, ctx):
         """Start or join a game of russian roulette.
@@ -67,7 +70,7 @@ class RussianRoulette(commands.Cog):
             print('adding players to the game')
             
     @rr.command()
-    async def bet(self, ctx, amount: int):
+    async def bet(self, ctx, amount: int, channel_id):
         """Place a bet on the Russian Roulette game."""
         settings = await self.config.guild(ctx.guild).all()
         if not settings["Session"]["Betting"]:
@@ -264,7 +267,7 @@ class RussianRoulette(commands.Cog):
             await bank.deposit_credits(winner, total_winnings)
         except BalanceTooHigh as e:
             await bank.set_balance(winner, e.max_balance)
-
+        
         await self.reset_game(ctx)
 
         try:        
@@ -281,4 +284,5 @@ class RussianRoulette(commands.Cog):
     async def reset_game(self, ctx):
         async with self.config.guild(ctx.guild).Session() as session:
             session["Players"] = []
+            session['Pot'] = 0
             session["Bets"] = {}
