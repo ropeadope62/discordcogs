@@ -145,11 +145,13 @@ class Powerballs(commands.Cog):
         currency_name = await bank.get_currency_name(ctx.guild)
         message = "Past Winners:\n"
         for user_id, amount in winners.items():
-            user = await ctx.guild.fetch_member(int(user_id))  # Use fetch_member to handle cases where the member might not be cached
-            if user:
-                message += f"{user.display_name} won {amount} {currency_name}.\n"
-            else:
-                message += f"User ID {user_id} won {amount} {currency_name}.\n"
+            try:
+                user = await ctx.guild.fetch_member(int(user_id))  # Ensure user_id is an integer and fetch the member
+                user_name = user.display_name  # Use display_name of the fetched member
+            except discord.NotFound:
+                user_name = f"User ID {user_id}"  # Fallback if the user is not found
+
+            message += f"{user_name} won {amount} {currency_name}.\n"
         
         await ctx.send(message)
     
