@@ -99,18 +99,15 @@ class Powerballs(commands.Cog):
         
         # Fetch the user's ticket numbers.
         try:
-            tickets = await self.config.guild_from_id(guild_id).tickets.get_raw(user_id, default=None)
-            if tickets is not None:
-                ticket_numbers = tickets.get('numbers', [])
-                if ticket_numbers:
-                    ticket_list = ', '.join(map(str, ticket_numbers))
-                    await ctx.send(f"Your tickets: {ticket_list}")
-                else:
-                    await ctx.send("You currently have no tickets.")
+            tickets = await self.config.guild_from_id(guild_id).tickets()
+            user_tickets = tickets.get(user_id, [])
+            if user_tickets:
+                ticket_list = ', '.join(map(str, user_tickets))
+                await ctx.send(f"Your tickets: {ticket_list}")
             else:
                 await ctx.send("You currently have no tickets.")
-        except KeyError:
-            await ctx.send("You have no tickets registered.")
+        except Exception as e:
+            await ctx.send(f"An error occurred: {str(e)}")
         
     @powerballs.command()
     async def viewjackpot(self, ctx):
@@ -164,7 +161,12 @@ class Powerballs(commands.Cog):
             await ctx.send("No tickets have been sold.")
             return
 
-        all_tickets = [ticket for sublist in tickets.values() for ticket in sublist]
+        # Flatten the list of all tickets
+        all_tickets = [ticket for user_tickets in tickets.values() for ticket in user_tickets]
+        if not all_tickets:
+            await ctx.send("No tickets have been sold.")
+            return
+
         winning_ticket = random.choice(all_tickets)
 
         # Find the winner
@@ -175,7 +177,7 @@ class Powerballs(commands.Cog):
                 break
 
         if winner_id:
-            winner = await ctx.guild.fetch_member(winner_id)  # Use fetch_member
+            winner = await ctx.guild.fetch_member(winner_id)  # Use fetch_member to get the member object
             jackpot = await self.config.guild(ctx.guild).jackpot()
             if winner:
                 await bank.deposit_credits(winner, jackpot)
