@@ -190,10 +190,9 @@ class Powerballs(commands.Cog):
                 await ctx.send(f"Congratulations {winner.mention}, you won the jackpot of {jackpot} credits with the ticket number {winning_ticket}!")
                 # Record the winner
                 async with self.config.guild(ctx.guild).winners() as winners:
-                    if str(winner_id) in winners:
-                        winners[str(winner_id)] += jackpot  # Add to existing amount if already a winner
-                    else:
-                        winners[str(winner_id)] = jackpot  # Set new winner with the jackpot amount
+                    if str(winner_id) not in winners:
+                        winners[str(winner_id)] = []
+                    winners[str(winner_id)].append({"amount": jackpot, "ticket_number": winning_ticket, "date": ctx.message.created_at.strftime("%Y-%m-%d %H:%M:%S")})
                 # Reset for the next round
                 await self.config.guild(ctx.guild).tickets.set({})
                 await self.config.guild(ctx.guild).jackpot.set(0)
