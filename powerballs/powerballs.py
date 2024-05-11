@@ -136,17 +136,17 @@ class Powerballs(commands.Cog):
     @powerballs.command()
     async def pastwinners(self, ctx):
         """View past winners of the Powerballs lottery."""
-        guild_id = ctx.guild.id 
-        winners = await self.config.guild(guild_id).winners()
+        guild = ctx.guild  # Directly use the guild object
+        winners = await self.config.guild(guild).winners()  # Pass the guild object directly
         if not winners:
             await ctx.send("No past winners.")
             return
 
-        currency_name = await bank.get_currency_name(ctx.guild)
+        currency_name = await bank.get_currency_name(guild)  # Use the guild object here as well
         message = "Past Winners:\n"
         for user_id, amount in winners.items():
             try:
-                user = await ctx.guild.fetch_member(int(user_id))  # Ensure user_id is an integer and fetch the member
+                user = await guild.fetch_member(int(user_id))  # Fetch member from the guild
                 user_name = user.display_name  # Use display_name of the fetched member
             except discord.NotFound:
                 user_name = f"User ID {user_id}"  # Fallback if the user is not found
