@@ -184,20 +184,20 @@ class Powerballs(commands.Cog):
                 break
 
         if winner_id:
-            try:
-                winner = await ctx.guild.fetch_member(winner_id)  # Use fetch_member to get the member object
-                if winner:
-                    await bank.deposit_credits(winner, jackpot)
-                    await ctx.send(f"Congratulations {winner.mention}, you won the jackpot of {jackpot} credits with the ticket number {winning_ticket}!")
-                    # Record the winner
-                    async with self.config.guild(ctx.guild).winners() as winners:
-                        winners[str(winner_id)] = jackpot
-                    # Reset for the next round
-                    await self.config.guild(ctx.guild).tickets.set({})
-                    await self.config.guild(ctx.guild).jackpot.set(0)
-                else:
-                    await ctx.send("Winner not found in the guild.")
-            except discord.NotFound:
-                await ctx.send(f"Winner with ID {winner_id} not found in the guild.")
+            winner = await ctx.guild.fetch_member(winner_id)  # Use fetch_member to get the member object
+            if winner:
+                await bank.deposit_credits(winner, jackpot)
+                await ctx.send(f"Congratulations {winner.mention}, you won the jackpot of {jackpot} credits with the ticket number {winning_ticket}!")
+                # Record the winner
+                async with self.config.guild(ctx.guild).winners() as winners:
+                    if str(winner_id) in winners:
+                        winners[str(winner_id)] += jackpot  # Add to existing amount if already a winner
+                    else:
+                        winners[str(winner_id)] = jackpot  # Set new winner with the jackpot amount
+                # Reset for the next round
+                await self.config.guild(ctx.guild).tickets.set({})
+                await self.config.guild(ctx.guild).jackpot.set(0)
+            else:
+                await ctx.send("Winner not found in the guild.")
         else:
             await ctx.send("An error occurred while drawing the winner.")
