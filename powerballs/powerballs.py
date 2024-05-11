@@ -135,16 +135,17 @@ class Powerballs(commands.Cog):
 
     @powerballs.command()
     async def pastwinners(self, ctx):
-        """View past winners of the Powerballslottery."""
+        """View past winners of the Powerballs lottery."""
         guild_id = ctx.guild.id 
         winners = await self.config.guild(guild_id).winners()
         if not winners:
             await ctx.send("No past winners.")
             return
-        currency_name = await bank.get_currency_name(guild_id)
+
+        currency_name = await bank.get_currency_name(ctx.guild)
         message = "Past Winners:\n"
         for user_id, amount in winners.items():
-            user = ctx.guild.get_member(int(user_id))
+            user = await ctx.guild.fetch_member(int(user_id))  # Use fetch_member to handle cases where the member might not be cached
             if user:
                 message += f"{user.display_name} won {amount} {currency_name}.\n"
             else:
@@ -167,6 +168,10 @@ class Powerballs(commands.Cog):
             await ctx.send("No tickets have been sold.")
             return
 
+        # Calculate the jackpot dynamically
+        ticket_price = await self.config.guild(ctx.guild).ticket_price()
+        jackpot = len(all_tickets) * ticket_price
+
         winning_ticket = random.choice(all_tickets)
 
         # Find the winner
@@ -178,10 +183,9 @@ class Powerballs(commands.Cog):
 
         if winner_id:
             winner = await ctx.guild.fetch_member(winner_id)  # Use fetch_member to get the member object
-            jackpot = await self.config.guild(ctx.guild).jackpot()
             if winner:
                 await bank.deposit_credits(winner, jackpot)
-                await ctx.send(f"Congratulations {winner.mention}, you won the jackpot of {jackpot} credits!")
+                await ctx.send(f"Congratulations {winner.mention}, you won the jackpot of {jackpot} credits with the ticket number {winning_ticket}!")
                 # Record the winner
                 async with self.config.guild(ctx.guild).winners() as winners:
                     winners[str(winner_id)] = jackpot
