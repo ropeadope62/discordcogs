@@ -10,7 +10,7 @@ logger = logging.getLogger("scrap.powerballs")
 class Powerballs(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=123123245456654847890, force_registration=True)
+        self.config = Config.get_conf(self, identifier=12312324545665484789021415623423, force_registration=True)
         default_guild = {
             "tickets": {}, 
             "jackpot": 0,
