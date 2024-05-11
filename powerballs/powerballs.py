@@ -191,8 +191,13 @@ class Powerballs(commands.Cog):
                 # Record the winner
                 async with self.config.guild(ctx.guild).winners() as winners:
                     if str(winner_id) not in winners:
-                        winners[str(winner_id)] = []
-                    winners[str(winner_id)].append({"amount": jackpot, "ticket_number": winning_ticket, "date": ctx.message.created_at.strftime("%Y-%m-%d %H:%M:%S")})
+                        winners[str(winner_id)] = []  # Ensure this is a list
+                    # Append the new win to the list of wins for this user
+                    winners[str(winner_id)].append({
+                        "amount": jackpot,
+                        "ticket_number": winning_ticket,
+                        "date": ctx.message.created_at.strftime("%Y-%m-%d %H:%M:%S")
+                    })
                 # Reset for the next round
                 await self.config.guild(ctx.guild).tickets.set({})
                 await self.config.guild(ctx.guild).jackpot.set(0)
