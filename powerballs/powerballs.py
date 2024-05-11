@@ -34,18 +34,23 @@ class Powerballs(commands.Cog):
         currency_name = await bank.get_currency_name(ctx.guild)
         if cost > user_balance:
             await ctx.send(f"You don't have enough {currency_name} to buy these tickets.")
+            return  # Ensure no further processing if the user cannot afford the tickets
+
         await bank.withdraw_credits(ctx.author, cost)      
         user_id_str = str(ctx.author.id)  # Convert to string for consistency
         tickets = await self.config.guild(ctx.guild).tickets()
+
+        # Initialize an empty list for the user's tickets if not already present
         if user_id_str not in tickets:
-            tickets[user_id_str] = []  # Initialize an empty list for the user's tickets
-            logger.debug(f"User {user_id_str} added to tickets dict")    
+            tickets[user_id_str] = []
+            logger.debug(f"User {user_id_str} added to tickets dict")
+
+        # Append the ticket numbers to the user's list of tickets
         for _ in range(number_of_tickets):
             ticket_number = random.randint(1000, 9999)
-            if user_id_str not in tickets:
-                tickets[user_id_str] = []  # Initialize an empty list for the user's tickets
-                tickets[user_id_str].append(ticket_number)  # Append the ticket number to the user's list of tickets
-                logger.debug(f"User {user_id_str} bought ticket {ticket_number}")
+            tickets[user_id_str].append(ticket_number)
+            logger.debug(f"User {user_id_str} bought ticket {ticket_number}")
+
         await self.config.guild(ctx.guild).tickets.set(tickets)  # Set the updated tickets dictionary
         logger.debug(f"Tickets set to {tickets}") 
         await ctx.send(f"You've successfully bought {number_of_tickets} tickets for {cost} {currency_name}!")
@@ -59,10 +64,10 @@ class Powerballs(commands.Cog):
         
         # Attempt to fetch the ticket numbers for the user.
         try:
-            tickets = await self.config.guild_from_id(guild_id).tickets.get_raw(user_id, default=None)
-            if tickets is not None:
-                ticket_numbers = tickets.get('numbers', [])
-                await ctx.send(f"You have {len(ticket_numbers)} Powerballs tickets.")
+            tickets = await self.config.guild_from_id(guild_id).tickets.get_raw(default={})
+            user_tickets = tickets.get(user_id, [])
+            if user_tickets:
+                await ctx.send(f"You have {len(user_tickets)} Powerballs tickets.")
             else:
                 await ctx.send("You have no tickets.")
         except KeyError:
@@ -73,10 +78,10 @@ class Powerballs(commands.Cog):
     async def totaltickets(self, ctx):
         guild_id = ctx.guild.id
         
-        # Count all the tickets.
+        # Fetch the tickets dictionary from the guild configuration
         try:
-            tickets = await self.config.guild_from_id(guild_id).tickets.get_raw(default=None)
-            if tickets is not None:
+            tickets = await self.config.guild_from_id(guild_id).tickets()
+            if tickets:
                 total_tickets = sum(len(user_tickets) for user_tickets in tickets.values())
                 if total_tickets > 0:
                     await ctx.send(f"There are a total of {total_tickets} tickets.")
@@ -84,8 +89,8 @@ class Powerballs(commands.Cog):
                     await ctx.send("There are currently no tickets.")
             else:
                 await ctx.send("There are currently no tickets.")
-        except KeyError:
-            await ctx.send("No tickets registered.")
+        except Exception as e:
+            await ctx.send(f"An error occurred: {str(e)}")
 
     @powerballs.command()
     async def checktickets(self, ctx):
@@ -111,16 +116,23 @@ class Powerballs(commands.Cog):
     async def viewjackpot(self, ctx):
         """View the current Powerballs jackpot amount."""
         guild_id = ctx.guild.id
-        # Retrieve the entire tickets data and ticket price from the guild configuration
-        tickets = await self.config.guild_from_id(guild_id).tickets.get_raw(default=None)
-        ticket_price = await self.config.guild(ctx.guild).ticket_price()
+        # Retrieve the entire tickets data from the guild configuration
+        try:
+            tickets = await self.config.guild_from_id(guild_id).tickets()
+            if not tickets:
+                await ctx.send("There are currently no tickets sold.")
+                return
 
-        # Calculate the total number of tickets sold
-        total_tickets = sum(len(user_tickets) for user_tickets in tickets.values())
-        jackpot = total_tickets * ticket_price
+            ticket_price = await self.config.guild(ctx.guild).ticket_price()
 
-        await ctx.send(f"The current Powerballs jackpot amount is {jackpot} {await bank.get_currency_name(ctx.guild)}.")
-    
+            # Calculate the total number of tickets sold
+            total_tickets = sum(len(user_tickets) for user_tickets in tickets.values())
+            jackpot = total_tickets * ticket_price
+
+            currency_name = await bank.get_currency_name(ctx.guild)
+            await ctx.send(f"The current Powerballs jackpot amount is {jackpot} {currency_name}.")
+        except Exception as e:
+            await ctx.send(f"An error occurred while retrieving jackpot information: {str(e)}")
 
     
 
