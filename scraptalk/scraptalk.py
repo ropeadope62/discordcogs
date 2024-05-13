@@ -14,6 +14,7 @@ logger = logging.FileHandler(
 logger.setFormatter(
     logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
 )
+logging.getLogger('scraptalk').setLevel(logging.DEBUG)
 logging.getLogger('scraptalk').addHandler(logger)
 
 class ScrapTalk(commands.Cog):
@@ -24,13 +25,17 @@ class ScrapTalk(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        logger.debug(f"on_message: {message.id} {message.channel.id} {message.channel}")
         if message.attachments:
             logger.debug(f"Message has attachments: {message.attachments}")
-            for attachment in message.attachments:
-                if attachment.filename.lower().endswith((".ogg", ".mp3", ".wav", ".m4a")):
-                    logger.debug(f"Attachment is an audio file: {attachment.filename}")
-                    await self.transcribe_audio(message, attachment.url)
-                    logger.debug(f'Transcribed audio file: {attachment.filename}')
+            channels = await self.config.channels()
+            if message.channel.id in channels:
+                logger.debug(f"Message in transcription channel: {message.channel.id}")
+                for attachment in message.attachments:
+                    if attachment.filename.lower().endswith((".ogg", ".mp3", ".wav", ".m4a")):
+                        logger.debug(f"Attachment is an audio file: {attachment.filename}")
+                        await self.transcribe_audio(message, attachment.url)
+                        logger.debug(f'Transcribed audio file: {attachment.filename}')
                     
     
 
@@ -57,6 +62,7 @@ class ScrapTalk(commands.Cog):
                 await message.channel.send(f"ScrapTalk Transcription: {text}")
         except Exception as e:
             await message.channel.send(f"An error occurred: {e}")
+            logger.error(f"Error transcribing audio: {e}")
 
     async def download_audio(self, url):
         logger.debug(f'Downloading audio from URL: {url}')
@@ -71,6 +77,7 @@ class ScrapTalk(commands.Cog):
     
     @scraptalk.command(name="channels", alias="addchannels", description="Adds channels to the list of channels to transcribe.")
     async def add_transcription_channel(self, ctx, channel: discord.TextChannel):
+        logger.debug(f"Adding channel: {channel.id} {channel.name}")
         async with self.config.channels() as channels:
             if channel.id not in channels:
                 channels.append(channel.id)
@@ -80,9 +87,11 @@ class ScrapTalk(commands.Cog):
                 
     @scraptalk.command(name="removechannels", alias="removechannels", description="Removes channels from the list of channels to transcribe.")
     async def remove_transcription_channel(self, ctx, channel: discord.TextChannel):
+        logger.debug(f"Removing channel: {channel.id} {channel.name}")
         async with self.config.channels() as channels:
             if channel.id in channels:
                 channels.remove(channel.id)
                 await ctx.send(f"{channel.name} removed from transcription channels.")
             else:
                 await ctx.send(f"{channel.name} was not a transcription channel.")
+
