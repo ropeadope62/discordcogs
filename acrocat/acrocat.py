@@ -46,15 +46,16 @@ class AcroCat(commands.Cog):
         min_length = await self.config.guild(ctx.guild).min_acro_length()
         max_length = await self.config.guild(ctx.guild).max_acro_length()
         if letters:  # If letters are provided
-            if not all(letter.isalpha() and len(letter) == 1 for letter in letters):
-                await ctx.send("Invalid letters. Please provide single, alphabetical characters.")
-                await self.reset_gamestate()  # Ensure async function is awaited
+            letters_str = ''.join(letters)
+            if not all(letter in string.ascii_letters for letter in letters_str):
+                await ctx.send("Invalid letters. Please provide letters in English.")
+                await self.reset_gamestate()  
                 return
-            if len(letters) < min_length or len(letters) > max_length:
+            if len(letters_str) < min_length or len(letters_str) > max_length:
                 await ctx.send(f"The length of the acronym must be between {min_length} and {max_length} characters long.")
                 await self.reset_gamestate()  # Ensure async function is awaited
                 return
-            self.current_acronym = "".join(letters).upper()
+            self.current_acronym = letters_str.upper()
         else:  # If no letters provided, generate the acronym automatically
             self.current_acronym = await self.generate_acronym(ctx)
         embed = discord.Embed(
