@@ -43,9 +43,15 @@ class AcroCat(commands.Cog):
             return
         self.voting_channel = ctx.channel
         self.game_state = 'collecting'
+        min_length = await self.config.guild(ctx.guild).min_acro_length()
+        max_length = await self.config.guild(ctx.guild).max_acro_length()
         if letters:  # If letters are provided
             if not all(letter.isalpha() and len(letter) == 1 for letter in letters):
                 await ctx.send("Invalid letters. Please provide single, alphabetical characters.")
+                await self.reset_gamestate()  # Ensure async function is awaited
+                return
+            if len(letters) < min_length or len(letters) > max_length:
+                await ctx.send(f"The length of the acronym must be between {min_length} and {max_length} characters long.")
                 await self.reset_gamestate()  # Ensure async function is awaited
                 return
             self.current_acronym = "".join(letters).upper()
