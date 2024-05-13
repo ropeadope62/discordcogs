@@ -6,16 +6,12 @@ from pydub import AudioSegment
 import logging 
 import os
 
-logger = logging.FileHandler(
-    filename='/home/slurms/scraptalk.log',
-    encoding='utf-8',
-    mode='w'
-)
-logger.setFormatter(
-    logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
-)
-logging.getLogger('scraptalk').setLevel(logging.DEBUG)
-logging.getLogger('scraptalk').addHandler(logger)
+
+file_handler = logging.FileHandler('/home/slurms/scraptalk.log', encoding='utf-8', mode='w')
+file_handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger = logging.getLogger('scraptalk')
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
 
 class ScrapTalk(commands.Cog):
     def __init__(self, bot):
