@@ -7,7 +7,7 @@ import logging
 import os
 
 logger = logging.FileHandler(
-    filename='~/home/slurms/scraptalk.log',
+    filename='/home/slurms/scraptalk.log',
     encoding='utf-8',
     mode='w'
 )
