@@ -61,10 +61,15 @@ class ScrapTalk(commands.Cog):
             logger.error(f"Error transcribing audio: {e}")
 
     async def download_audio(self, url):
-        logger.debug(f'Downloading audio from URL: {url}')
-        async with self.bot.session.get(url) as response:
-            logger.debug(f'Audio downloaded')
-            return await response.read()
+        try:
+            async with self.bot.session.get(url) as response:
+                if response.status == 200:
+                    logger.debug('Audio downloaded successfully')
+                    return await response.read()
+                else:
+                    logger.error(f'Failed to download audio, HTTP status: {response.status}')
+        except Exception as e:
+            logger.error(f'An error occurred while downloading audio: {e}')
 
     @commands.group()
     async def scraptalk(self, ctx):
