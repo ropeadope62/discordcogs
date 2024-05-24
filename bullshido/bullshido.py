@@ -33,6 +33,8 @@ class Bullshido(commands.Cog):
         embed = discord.Embed(title="Bullshido Game Commands", description="Learn how to play and interact with the Bullshido game.", color=0x00ff00)
         embed.add_field(name="/bullshido select_fighting_style", value="Select your fighting style.", inline=False)
         embed.add_field(name="/bullshido list_fighting_styles", value="List all available fighting styles.", inline=False)
+        embed.add_field(name="/bullshido start_fight", value="Start a fight with another player.", inline=False)
+        embed.add_field(name="/bullshido info", value="Displays information about the Bullshido game commands.", inline=False)
         embed.set_image(url="https://i.ibb.co/GWpXztm/bullshido.png")
         await ctx.send(embed=embed)
 
