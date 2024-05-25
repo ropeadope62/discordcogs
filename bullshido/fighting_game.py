@@ -223,4 +223,27 @@ class FightingGame:
             f"Introducing the fighters!\n"
             f"{self.player1.display_name} with the fighting style {self.player1_data['fighting_style']}!\n"
             f"Versus\n"
-            f"{self.player2.display_name} with the fighting style {self.player2_data['fighting_style']}!\n
+            f"{self.player2.display_name} with the fighting style {self.player2_data['fighting_style']}!\n"
+            "The match will begin in 10 seconds..."
+        )
+        await self.channel.send(intro_message)
+        await asyncio.sleep(10)
+
+        # Start the match
+        await self.channel.send("Ready? FIGHT!")
+
+        for round_number in range(1, self.rounds + 1):
+            round_message = f"Round {round_number} begins!"
+            await self.channel.send(round_message)
+            round_result = await self.play_round(round_number)
+            await self.channel.send(round_result)
+            if self.player1_health <= 0 or self.player2_health <= 0:
+                break
+
+        # Announce the winner
+        if self.player1_health > self.player2_health:
+            winner = self.player1
+        else:
+            winner = self.player2
+        
+        await self.channel.send(f"Game over! The winner is {winner.display_name}.")
