@@ -175,20 +175,20 @@ class FightingGame:
             attacker = self.player1
             defender = self.player2
             style = self.player1_data["fighting_style"]
-            strike, damage, critical_message, conclude_message = self.get_strike_damage(style)
+            strike, damage, critical_message, conclude_message = self.get_strike_damage(style, defender)
             self.player2_health -= damage
-            message = f"{critical_message} {attacker} {action} a {strike} into {defender}'s body causing {damage} damage! {conclude_message}"
+            message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s body causing {damage} damage! {conclude_message}"
             self.current_turn = self.player2
         else:
             attacker = self.player2
             defender = self.player1
             style = self.player2_data["fighting_style"]
-            strike, damage, critical_message, conclude_message = self.get_strike_damage(style)
+            strike, damage, critical_message, conclude_message = self.get_strike_damage(style, defender)
             self.player1_health -= damage
-            message = f"{critical_message} {attacker} {action} a {strike} into {defender}'s body causing {damage} damage! {conclude_message}"
+            message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s body causing {damage} damage! {conclude_message}"
             self.current_turn = self.player1
 
-        return message, f"{defender} has {self.player2_health if defender == self.player2 else self.player1_health} health left."
+        return message, f"{defender.display_name} has {self.player2_health if defender == self.player2 else self.player1_health} health left."
 
     async def play_round(self, round_number):
         strike_count = 0
@@ -223,27 +223,4 @@ class FightingGame:
             f"Introducing the fighters!\n"
             f"{self.player1.display_name} with the fighting style {self.player1_data['fighting_style']}!\n"
             f"Versus\n"
-            f"{self.player2.display_name} with the fighting style {self.player2_data['fighting_style']}!\n"
-            "The match will begin in 10 seconds..."
-        )
-        await self.channel.send(intro_message)
-        await asyncio.sleep(10)
-
-        # Start the match
-        await self.channel.send("Ready? FIGHT!")
-
-        for round_number in range(1, self.rounds + 1):
-            round_message = f"Round {round_number} begins!"
-            await self.channel.send(round_message)
-            round_result = await self.play_round(round_number)
-            await self.channel.send(round_result)
-            if self.player1_health <= 0 or self.player2_health <= 0:
-                break
-
-        # Announce the winner
-        if self.player1_health > self.player2_health:
-            winner = self.player1
-        else:
-            winner = self.player2
-        
-        await self.channel.send(f"Game over! The winner is {winner.display_name}.")
+            f"{self.player2.display_name} with the fighting style {self.player2_data['fighting_style']}!\n
