@@ -152,7 +152,7 @@ class FightingGame:
             
         ]
 
-    def get_strike_damage(self, style):
+    def get_strike_damage(self, style, defender):
         strike, damage_range = random.choice(list(self.strikes[style].items()))
         base_damage = random.randint(*damage_range)
         modifier = random.uniform(0.8, 1.2)
@@ -161,7 +161,7 @@ class FightingGame:
         if is_critical_hit:
             modified_damage = base_damage * 2
             message = random.choice(self.critical_messages)
-            conclude_message = random.choice(self.critical_concludes)
+            conclude_message = random.choice(self.critical_concludes).format(defender=defender.display_name)
         else:
             modified_damage = int(base_damage * modifier)
             message = ""
@@ -192,16 +192,18 @@ class FightingGame:
 
     async def play_round(self, round_number):
         strike_count = 0
-        messages = []
         player1_health_start = self.player1_health
         player2_health_start = self.player2_health
         
+        # Send initial message for the round
+        msg = await self.channel.send(f"Round {round_number} begins!")
+
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
             strike_message, health_status = await self.play_turn()
-            messages.append(f"{strike_message} {health_status}")
+            await msg.edit(content=f"{strike_message} {health_status}")
             strike_count += 1
+            await asyncio.sleep(random.uniform(2, 3))
 
-        round_summary = "\n".join(messages)
         player1_health_end = self.player1_health
         player2_health_end = self.player2_health
 
@@ -213,7 +215,7 @@ class FightingGame:
         else:
             round_result = f"{self.player1.display_name} had the edge this round!" if health_diff_player1 < health_diff_player2 else f"{self.player2.display_name} had the edge this round!"
 
-        return round_summary, round_result
+        return round_result
 
     async def start_game(self):
         # Introduce the fighters
@@ -233,8 +235,7 @@ class FightingGame:
         for round_number in range(1, self.rounds + 1):
             round_message = f"Round {round_number} begins!"
             await self.channel.send(round_message)
-            round_summary, round_result = await self.play_round(round_number)
-            await self.channel.send(f"Round {round_number} results:\n{round_summary}")
+            round_result = await self.play_round(round_number)
             await self.channel.send(round_result)
             if self.player1_health <= 0 or self.player2_health <= 0:
                 break
