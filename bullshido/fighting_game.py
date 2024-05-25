@@ -188,10 +188,7 @@ class FightingGame:
             message = f"{critical_message} {attacker} {action} a {strike} into {defender}'s body causing {damage} damage! {conclude_message}"
             self.current_turn = self.player1
 
-        health_status = f"{defender} has {self.player2_health if defender == self.player2 else self.player1_health} health left."
-        await self.channel.send(f"{message} {health_status}")
-        await asyncio.sleep(3)
-        return self.player1_health <= 0 or self.player2_health <= 0
+        return message, f"{defender} has {self.player2_health if defender == self.player2 else self.player1_health} health left."
 
     async def play_round(self, round_number):
         strike_count = 0
@@ -208,13 +205,13 @@ class FightingGame:
         player1_health_end = self.player1_health
         player2_health_end = self.player2_health
 
-        health_diff_player1 = player1_health_end - player1_health_start
-        health_diff_player2 = player2_health_end - player2_health_start
+        health_diff_player1 = player1_health_start - player1_health_end
+        health_diff_player2 = player2_health_start - player2_health_end
 
         if abs(health_diff_player1 - health_diff_player2) > 20:
-            round_result = f"{self.player1.display_name} won the round handily!" if health_diff_player1 > health_diff_player2 else f"{self.player2.display_name} won the round handily!"
+            round_result = f"{self.player1.display_name} won the round handily!" if health_diff_player1 < health_diff_player2 else f"{self.player2.display_name} won the round handily!"
         else:
-            round_result = f"{self.player1.display_name} had the edge this round!" if health_diff_player1 > health_diff_player2 else f"{self.player2.display_name} had the edge this round!"
+            round_result = f"{self.player1.display_name} had the edge this round!" if health_diff_player1 < health_diff_player2 else f"{self.player2.display_name} had the edge this round!"
 
         return round_summary, round_result
 
@@ -234,14 +231,13 @@ class FightingGame:
         await self.channel.send("Ready? FIGHT!")
 
         for round_number in range(1, self.rounds + 1):
-            round_message = f"Round {round_number}, FIGHT!"
+            round_message = f"Round {round_number} begins!"
             await self.channel.send(round_message)
             round_summary, round_result = await self.play_round(round_number)
             await self.channel.send(f"Round {round_number} results:\n{round_summary}")
             await self.channel.send(round_result)
             if self.player1_health <= 0 or self.player2_health <= 0:
                 break
-            await asyncio.sleep(5)
 
         # Announce the winner
         if self.player1_health > self.player2_health:
