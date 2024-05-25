@@ -1,4 +1,4 @@
-from redbot.core import commands, Config
+from redbot.core import app_commands, commands, Config
 from .ui_elements import SelectFightingStyleView
 from .fighting_game import FightingGame
 import discord
@@ -65,12 +65,36 @@ class Bullshido(commands.Cog):
         
         game = FightingGame(ctx.channel, player1, player2, player1_data, player2_data)
         await game.start_game()
+        
+    @bullshido_group.command(name="player_stats", description="Displays your wins and losses", alias="stats")
+    async def player_stats(self, ctx: commands.Context):
+        """Displays your wins and losses."""
+        user = ctx.author
+        wins = await self.config.user(user).wins()
+        losses = await self.config.user(user).losses()
+        
+        embed = discord.Embed(title=f"{user.display_name}'s Fight Record", color=0x00ff00)
+        embed.add_field(name="Wins", value=wins, inline=True)
+        embed.add_field(name="Losses", value=losses, inline=True)
+        embed.add_field(name=f"{user.display_name}'s Current Stats",inline=False)
+        embed.add_field(name="Level", value=await self.config.user(user).level(), inline=True)
+        embed.add_field(name="Training Level", value=await self.config.user(user).training_level(), inline=True)
+        embed.add_field(name="Nutrition Level", value=await self.config.user(user).nutrition_level(), inline=False)
+        embed.add_field(name="Morale", value=await self.config.user(user).morale(), inline=True)
+        embed.add_field(name="Intimidation Level", value=await self.config.user(user).intimidation_level(), inline=True)
+        embed.set_image(url="https://i.ibb.co/GWpXztm/bullshido.png")
+        await ctx.send(embed=embed)
 
     async def get_player_data(self, user):
         fighting_style = await self.config.user(user).fighting_style()
+        level = await self.config.user(user).level()
+        training_level = await self.config.user(user).training_level()
+        nutrition_level = await self.config.user(user).nutrition_level()
+        morale = await self.config.user(user).morale()
+        intimidation_level = await self.config.user(user).intimidation_level()
         wins = await self.config.user(user).wins()
         losses = await self.config.user(user).losses()
-        return {"fighting_style": fighting_style, "wins": wins, "losses": losses}
+        return {"fighting_style": fighting_style, "wins": wins, "losses": losses, "level": level, "training_level": training_level, "nutrition_level": nutrition_level, "morale": morale, "intimidation_level": intimidation_level}
     
     async def update_player_stats(self, user, win=True):
         if win:
@@ -80,3 +104,4 @@ class Bullshido(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Bullshido(bot))
+    
