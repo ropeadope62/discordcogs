@@ -63,10 +63,8 @@ class Bullshido(commands.Cog):
             await ctx.send("Both players must have selected a fighting style before starting a fight.", ephemeral=True)
             return
         
-        game = FightingGame(player1, player2, player1_data, player2_data)
-        result = game.start_game()
-        
-        await ctx.send(result, ephemeral=True)
+        game = FightingGame(ctx.channel, player1, player2, player1_data, player2_data)
+        await game.start_game()
 
     async def get_player_data(self, user):
         fighting_style = await self.config.user(user).fighting_style()
