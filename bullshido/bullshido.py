@@ -26,9 +26,9 @@ class Bullshido(commands.Cog):
             self.logger.addHandler(handler)
         self.logger.setLevel(logging.DEBUG)
 
-    async def set_fighting_style(self, user, style):
+    async def set_fighting_style(self, ctx, user, style):
         await self.config.user(user).fighting_style.set(style)
-        await user.send(f"Your fighting style has been set to {style}.")
+        await ctx.send(f"{user.mention} has trained in the style of {style}!")
 
     @commands.hybrid_group(name="bullshido", description="Commands related to the Bullshido game")
     async def bullshido_group(self, ctx: commands.Context):
@@ -55,11 +55,11 @@ class Bullshido(commands.Cog):
     @bullshido_group.command(name="list_fighting_styles", description="List all available fighting styles")
     async def list_fighting_styles(self, ctx: commands.Context):
         """List all available fighting styles."""
-        styles = ["Karate", "Muay-Thai", "Aikido", "Boxing", "Kung-Fu", "Judo", "Taekwondo", "Wrestling", "Sambo", "MMA", "Capoeira", "Kick-Boxing", "Krav-Maga", "Brazilian Jiu-Jitsu"]
+        styles = ["Karate", "Muay-Thai", "Aikido", "Boxing", "Kung-Fu", "Judo", "Taekwondo", "Wrestling", "Sambo", "MMA", "Capoeira", "Kickboxing", "Krav-Maga", "Brazilian Jiu-Jitsu"]
         await ctx.send(f"Available fighting styles: {', '.join(styles)}", ephemeral=True)
     
-    @bullshido_group.command(name="start_fight", description="Start a fight with another player")
-    async def start_fight(self, ctx: commands.Context, opponent: discord.Member):
+    @bullshido_group.command(name="fight", description="Start a fight with another player")
+    async def fight(self, ctx: commands.Context, opponent: discord.Member):
         """Start a fight with another player."""
         player1 = ctx.author
         player2 = opponent
