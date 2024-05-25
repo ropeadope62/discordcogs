@@ -12,7 +12,7 @@ class FightingGame:
         self.player1_health = 100
         self.player2_health = 100
         self.rounds = 3
-        self.max_strikes_per_round = 10 
+        self.max_strikes_per_round = 5 
 
         if player1_data['training_level'] >= player2_data['training_level']:
             self.current_turn = player1
@@ -20,99 +20,220 @@ class FightingGame:
             self.current_turn = player2
 
         self.strikes = {
-            "karate": {
-                "punch": (5, 10),
-                "kick": (7, 12),
-                "block": (2, 5),
-                "chop": (6, 11),
-                "knee_strike": (4, 9)
-            },
-            "muaythai": {
-                "elbow": (8, 14),
-                "knee": (6, 11),
-                "clinch": (3, 7),
-                "teep": (5, 10),
-                "headbutt": (7, 12)
-            },
-            "aikido": {
-                "throw": (4, 9),
-                "lock": (3, 7),
-                "redirect": (2, 5),
-                "sweep": (5, 10),
-                "joint_lock": (6, 11)
-            },
-            "boxing": {
-                "jab": (4, 8),
-                "cross": (6, 10),
-                "hook": (5, 9),
-                "uppercut": (7, 12),
-                "weave": (3, 7)
-            },
-            "kungfu": {
-                "palm_strike": (5, 9),
-                "sweep": (4, 8),
-                "dragon_strike": (6, 11),
-                "tiger_palm": (7, 12)
-            },
-            "judo": {
-                "throw": (7, 12),
-                "pin": (5, 9),
-                "sweep": (4, 8),
-                "chokehold": (6, 11),
-                "armbar": (8, 14)
-            },
-            "taekwondo": {
-                "spin_kick": (8, 13),
-                "front_kick": (6, 10),
-                "roundhouse_kick": (7, 11),
-                "axe_kick": (5, 9),
-                "back_kick": (7, 12)
-            },
-            "wrestling": {
-                "slam": (7, 12),
-                "grapple": (5, 9),
-                "takedown": (6, 10),
-                "suplex": (8, 14),
-                "arm_drag": (4, 8)
-            },
-            "kravmaga": {
-                "strike": (8, 14),
-                "kick": (7, 11),
-                "knee_strike": (6, 10),
-                "eye_gouge": (5, 9),
-                "groin_strike": (7, 12)
-            },
-            "capoeira": {
-                "kick": (7, 13),
-                "sweep": (6, 10),
-                "cartwheel": (4, 8),
-                "headbutt": (5, 9),
-                "spinning_kick": (8, 14)
-            },
-            "sambo": {
-                "throw": (6, 11),
-                "lock": (5, 9),
-                "sweep": (4, 8),
-                "chokehold": (7, 12),
-                "ankle_lock": (8, 14)
-            },
-            "kickboxing": {
-                "kick": (7, 12),
-                "punch": (6, 10),
-                "knee_strike": (5, 9),
-                "spinning_backfist": (8, 13),
-                "low_kick": (4, 8)
-            },
-            "mma": {
-                "punch": (6, 11),
-                "kick": (7, 12),
-                "submission": (4, 8),
-                "ground_and_pound": (8, 14),
-                "rear_naked_choke": (5, 9)
-            }
+        "Karate": {
+            "straight right": (5, 7),
+            "straight left": (6, 8),
+            "left cross": (4, 6),
+            "right cross": (4, 6),
+            "hook": (5, 7),
+            "uppercut": (6, 8),
+            "backfist": (4, 6),
+            "ridgehand": (5, 7),
+            "knifehand": (5, 7),
+            "palm strike": (4, 6),
+            "hammerfist": (5, 7),
+            "spearhand": (6, 8),
+            "reverse punch": (7, 9),
+            "reverse knifehand": (7, 9),
+            "reverse hammerfist": (7, 9),
+            "reverse spearhand": (8, 10),
+            "reverse backfist": (7, 9),
+            "reverse ridgehand": (7, 9),
+            "chop": (4, 6),
+            "knee strike": (5, 7)
+        },
+        "Muay-Thai": {
+            "elbow": (6, 8),
+            "knee": (5, 7),
+            "clinch": (4, 6),
+            "teep": (4, 6),
+            "low kick": (5, 7),
+            "high kick": (6, 8),
+            "body kick": (5, 7),
+            "uppercut": (5, 7),
+            "spinning elbow": (7, 9),
+            "spinning back elbow": (7, 9),
+            "spinning back kick": (7, 9),
+            "flying knee": (7, 9),
+            "flying elbow": (7, 9),
+            "flying kick": (7, 9),
+            "superman punch": (7, 9),
+            "jumping knee": (7, 9),
+            "jumping elbow": (7, 9)
+        },
+        "Aikido": {
+            "throw": (5, 7),
+            "lock": (4, 6),
+            "redirect": (3, 5),
+            "sweep": (4, 6),
+            "joint lock": (5, 7),
+            "wrist lock": (4, 6),
+            "arm lock": (5, 7),
+            "shoulder throw": (5, 7),
+            "hip throw": (5, 7)
+        },
+        "Boxing": {
+            "jab": (4, 6),
+            "cross": (5, 7),
+            "hook": (5, 7),
+            "uppercut": (6, 8),
+            "weave": (3, 5),
+            "body shot": (4, 6),
+            "left hook": (5, 7),
+            "right hook": (5, 7),
+            "left straight": (5, 7),
+            "right straight": (6, 8),
+            "overhand": (6, 8),
+            "counter": (5, 7)
+        },
+        "Kung-Fu": {
+            "palm strike": (5, 7),
+            "sweep": (4, 6),
+            "dragon strike": (5, 7),
+            "tiger palm": (5, 7),
+            "crane kick": (6, 8),
+            "mantis strike": (5, 7),
+            "iron fist": (6, 8),
+            "phoenix eye fist": (5, 7)
+        },
+        "judo": {
+            "throw": (5, 7),
+            "sweep": (4, 6),
+            "chokehold": (5, 7),
+            "armbar": (6, 8),
+            "hip throw": (5, 7),
+            "ankle pick": (4, 6),
+            "leg sweep": (5, 7),
+            "shoulder throw": (6, 8),
+            "counter throw": (5, 7)
+        },
+        "Taekwondo": {
+            "spin kick": (6, 8),
+            "front kick": (5, 7),
+            "roundhouse kick": (6, 8),
+            "axe kick": (5, 7),
+            "back kick": (6, 8),
+            "side kick": (5, 7),
+            "crescent kick": (6, 8),
+            "hook kick": (5, 7),
+            "reverse roundhouse": (6, 8),
+            "reverse side kick": (6, 8),
+            "reverse hook kick": (6, 8),
+            "reverse crescent kick": (6, 8),
+            "push kick": (4, 6)
+        },
+        "Wrestling": {
+            "slam": (6, 8),
+            "grapple": (5, 7),
+            "takedown": (5, 7),
+            "suplex": (6, 8),
+            "arm drag": (4, 6),
+            "double leg": (6, 8),
+            "single leg": (5, 7),
+            "neck crank": (5, 7),
+            "leg lock": (6, 8)
+        },
+        "Kravmaga": {
+            "palm strike": (6, 8),
+            "low kick": (5, 7),
+            "knee strike": (5, 7),
+            "eye gouge": (4, 6),
+            "groin strike": (5, 7),
+            "headbutt": (5, 7),
+            "short elbow": (4, 6),
+            "hammerfist": (5, 7),
+            "knee to the groin": (6, 8),
+            "elbow to the face": (6, 8),
+            "knee to the face": (6, 8)
+        },
+        "Capoeira": {
+            "sweep": (5, 7),
+            "cartwheel": (4, 6),
+            "headbutt": (5, 7),
+            "spinning kick": (6, 8),
+            "elbow strike": (6, 8),
+            "spinning elbow": (6, 8),
+            "knee strike": (5, 7),
+            "handstand": (4, 6),
+            "backflip": (6, 8),
+            "front kick": (5, 7),
+            "roundhouse kick": (6, 8),
+            "axe kick": (6, 8)
+        },
+        "Sambo": {
+            "throw": (5, 7),
+            "lock": (4, 6),
+            "sweep": (4, 6),
+            "chokehold": (5, 7),
+            "ankle lock": (6, 8),
+            "knee bar": (6, 8),
+            "armbar": (6, 8),
+            "leg lock": (6, 8),
+            "wrist lock": (5, 7),
+            "shoulder lock": (5, 7),
+            "neck crank": (6, 8),
+            "reverse armbar": (6, 8),
+            "reverse leg lock": (6, 8)
+        },
+        "Kickboxing": {
+            "kick": (6, 8),
+            "straight punch": (5, 7),
+            "hook": (5, 7),
+            "knee strike": (5, 7),
+            "spinning backfist": (6, 8),
+            "low kick": (5, 7),
+            "high kick": (6, 8),
+            "body kick": (5, 7),
+            "hook kick": (6, 8),
+            "roundhouse kick": (6, 8),
+            "axe kick": (6, 8),
+            "side kick": (5, 7),
+            "crescent kick": (6, 8),
+            "reverse roundhouse": (6, 8),
+            "reverse side kick": (6, 8)
+        },
+        "MMA": {
+            "left straight": (6, 8),
+            "right straight": (6, 8),
+            "hook": (5, 7),
+            "left uppercut": (6, 8),
+            "right uppercut": (6, 8),
+            "superman punch": (7, 9),
+            "flying knee": (7, 9),
+            "kick": (6, 8),
+            "submission": (4, 6),
+            "ground and pound": (7, 9),
+            "rear naked choke": (5, 7)
+        },
+        "Brazilian Jiu-Jitsu": {
+            "armbar": (6, 8),
+            "triangle choke": (5, 7),
+            "kimura": (6, 8),
+            "omoplata": (6, 8),
+            "rear naked choke": (6, 8),
+            "sweep": (4, 6),
+            "guard pass": (5, 7),
+            "mount": (6, 8),
+            "back take": (6, 8),
+            "darce choke": (7, 9),
+            "guillotine": (7, 9),
+            "arm triangle": (6, 8),
+            "heel hook": (7, 9),
+            "toe hold": (7, 9),
+            "knee bar": (7, 9),
+            "straight ankle lock": (6, 8),
+            "wrist lock": (5, 7),
+            "crucifix": (6, 8),
+            "loop choke": (7, 9),
+            "bow and arrow choke": (7, 9),
+            "clock choke": (6, 8),
+            "paper cutter choke": (7, 9),
+            "bread cutter choke": (8, 10)
         }
+    }
+
     
-        self.actions = ["throws", "slams", "nails", "whacks", "connects", "rips", "thuds", "crushes", "snaps", "smashes", "pounds", "cracks", "hits", "drives", "lands", "elbows", "knees", "headbutts", "grapples", "tackles", "sweeps", "locks", "redirects", "sweeps", "joint locks", "chokes", "armbars", "pins", "weaves", "spins", "front kicks", "roundhouse kicks", "axe kicks", "back kicks", "slams", "grapples", "takedowns", "suplexes", "arm drags", "strikes"]
+        self.actions = ["throws", "slams", "nails", "whacks", "connects", "rips", "thuds", "crushes", "snaps", "smashes", "pounds", "cracks", "hits", "drives", "lands"]
         self.critical_messages = [
             "Channeling the power of the Dim Mak strike,",
             "Harnessing the technique bestowed upon them by the Black Dragon Fighting Society,",

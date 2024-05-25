@@ -55,7 +55,7 @@ class Bullshido(commands.Cog):
     @bullshido_group.command(name="list_fighting_styles", description="List all available fighting styles")
     async def list_fighting_styles(self, ctx: commands.Context):
         """List all available fighting styles."""
-        styles = ["Karate", "Muay-Thai", "Aikido", "Boxing", "Kung-Fu", "Judo", "Taekwondo", "Wrestling", "Sambo", "MMA", "Capoeira", "Kick-Boxing", "Krav-Maga"]
+        styles = ["Karate", "Muay-Thai", "Aikido", "Boxing", "Kung-Fu", "Judo", "Taekwondo", "Wrestling", "Sambo", "MMA", "Capoeira", "Kick-Boxing", "Krav-Maga", "Brazilian Jiu-Jitsu"]
         await ctx.send(f"Available fighting styles: {', '.join(styles)}", ephemeral=True)
     
     @bullshido_group.command(name="start_fight", description="Start a fight with another player")
