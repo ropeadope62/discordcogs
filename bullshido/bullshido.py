@@ -2,6 +2,7 @@ import discord
 from redbot.core import commands, Config, app_commands
 from .ui_elements import SelectFightingStyleView
 from .fighting_game import FightingGame
+import logging
 
 class Bullshido(commands.Cog):
     def __init__(self, bot):
@@ -18,7 +19,13 @@ class Bullshido(commands.Cog):
             "intimidation_level": 0
         }
         self.config.register_user(**default_user)
-        
+        self.logger = logging.getLogger("red.bullshido")
+        if not self.logger.hasHandlers():
+            handler = logging.StreamHandler()
+            handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+            self.logger.addHandler(handler)
+        self.logger.setLevel(logging.DEBUG)
+
     async def set_fighting_style(self, user, style):
         await self.config.user(user).fighting_style.set(style)
         await user.send(f"Your fighting style has been set to {style}.")
@@ -103,10 +110,19 @@ class Bullshido(commands.Cog):
         return {"fighting_style": fighting_style, "wins": wins, "losses": losses, "level": level, "training_level": training_level, "nutrition_level": nutrition_level, "morale": morale, "intimidation_level": intimidation_level}
     
     async def update_player_stats(self, user, win=True):
-        if win:
-            await self.config.user(user).wins.set(await self.config.user(user).wins() + 1)
-        else:
-            await self.config.user(user).losses.set(await self.config.user(user).losses() + 1)
+        try:
+            current_wins = await self.config.user(user).wins()
+            current_losses = await self.config.user(user).losses()
+            if win:
+                new_wins = current_wins + 1
+                await self.config.user(user).wins.set(new_wins)
+                self.logger.debug(f"Updated wins for {user.display_name}: {current_wins} -> {new_wins}")
+            else:
+                new_losses = current_losses + 1
+                await self.config.user(user).losses.set(new_losses)
+                self.logger.debug(f"Updated losses for {user.display_name}: {current_losses} -> {new_losses}")
+        except Exception as e:
+            self.logger.error(f"Error updating stats for {user.display_name}: {e}")
 
 async def setup(bot):
     await bot.add_cog(Bullshido(bot))

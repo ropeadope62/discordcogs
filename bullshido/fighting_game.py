@@ -11,6 +11,8 @@ class FightingGame:
         self.player2_data = player2_data
         self.player1_health = 100
         self.player2_health = 100
+        self.rounds = 3
+        self.max_strikes_per_round = 10 
 
         if player1_data['training_level'] >= player2_data['training_level']:
             self.current_turn = player1
@@ -110,7 +112,7 @@ class FightingGame:
             }
         }
     
-        self.actions = ["throws", "slams", "nails", "brutalizes", "connects", "rips", "thuds", "crushes"]
+        self.actions = ["throws", "slams", "nails", "whacks", "connects", "rips", "thuds", "crushes", "snaps", "smashes", "pounds", "cracks", "hits", "drives", "lands", "elbows", "knees", "headbutts", "grapples", "tackles", "sweeps", "locks", "redirects", "sweeps", "joint locks", "chokes", "armbars", "pins", "weaves", "spins", "front kicks", "roundhouse kicks", "axe kicks", "back kicks", "slams", "grapples", "takedowns", "suplexes", "arm drags", "strikes"]
         self.critical_messages = [
             "Channeling the power of the Dim Mak strike,",
             "Harnessing the technique bestowed upon them by the Black Dragon Fighting Society,",
@@ -122,6 +124,32 @@ class FightingGame:
             "{defender} is left gasping for air.",
             "{defender} is left with a broken nose.",
             "{defender} is left with a shattered rib."
+            "{defender} is left with a dislocated shoulder.",
+            "{defender} is left with a broken jaw.",
+            "{defender} is left with a concussion.",
+            "{defender} is left with a broken leg.",
+            "{defender} is left with a broken arm.",
+            "{defender} is left with a broken collarbone.",
+            "{defender} is left with a broken wrist.",
+            "{defender} is left with a broken ankle.",
+            "{defender} is left with a broken finger.",
+            "{defender} is left with a broken toe.",
+            "{defender} is left with a broken nose.",
+            "{defender} is left with a broken rib.",
+            "{defender} is left with a broken shin.",
+            "{defender} is left with a broken thigh.",
+            "{defender} is left with a broken kneecap.",
+            "{defender} is left with a broken foot.",
+            "{defender} is left with a broken hand.",
+            "{defender} is cut over the eye.",
+            "{defender} is left with a black eye.",
+            "{defender} is left with a bloody nose.",
+            "{defender} is left with a bloody lip.",
+            "{defender} is left with a bloody ear.",
+            "{defender} is left with a bloody mouth.",
+            "{defender} is left with a bloody forehead.",
+            "{defender} is left with a bloody cheek."
+            
         ]
 
     def get_strike_damage(self, style):
@@ -165,6 +193,31 @@ class FightingGame:
         await asyncio.sleep(3)
         return self.player1_health <= 0 or self.player2_health <= 0
 
+    async def play_round(self, round_number):
+        strike_count = 0
+        messages = []
+        player1_health_start = self.player1_health
+        player2_health_start = self.player2_health
+        
+        while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
+            strike_message, health_status = await self.play_turn()
+            messages.append(f"{strike_message} {health_status}")
+            strike_count += 1
+
+        round_summary = "\n".join(messages)
+        player1_health_end = self.player1_health
+        player2_health_end = self.player2_health
+
+        health_diff_player1 = player1_health_end - player1_health_start
+        health_diff_player2 = player2_health_end - player2_health_start
+
+        if abs(health_diff_player1 - health_diff_player2) > 20:
+            round_result = f"{self.player1.display_name} won the round handily!" if health_diff_player1 > health_diff_player2 else f"{self.player2.display_name} won the round handily!"
+        else:
+            round_result = f"{self.player1.display_name} had the edge this round!" if health_diff_player1 > health_diff_player2 else f"{self.player2.display_name} had the edge this round!"
+
+        return round_summary, round_result
+
     async def start_game(self):
         # Introduce the fighters
         intro_message = (
@@ -179,9 +232,21 @@ class FightingGame:
 
         # Start the match
         await self.channel.send("Ready? FIGHT!")
-        while self.player1_health > 0 and self.player2_health > 0:
-            game_over = await self.play_turn()
-            if game_over:
-                winner = self.player2 if self.player1_health <= 0 else self.player1
-                await self.channel.send(f"Game over! The winner is {winner}.")
-                return
+
+        for round_number in range(1, self.rounds + 1):
+            round_message = f"Round {round_number}, FIGHT!"
+            await self.channel.send(round_message)
+            round_summary, round_result = await self.play_round(round_number)
+            await self.channel.send(f"Round {round_number} results:\n{round_summary}")
+            await self.channel.send(round_result)
+            if self.player1_health <= 0 or self.player2_health <= 0:
+                break
+            await asyncio.sleep(5)
+
+        # Announce the winner
+        if self.player1_health > self.player2_health:
+            winner = self.player1
+        else:
+            winner = self.player2
+        
+        await self.channel.send(f"Game over! The winner is {winner.display_name}.")
