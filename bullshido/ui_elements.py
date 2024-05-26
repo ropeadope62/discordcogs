@@ -2,10 +2,11 @@ from discord import ui, ButtonStyle
 import discord
 
 class SelectFightingStyleView(ui.View):
-    def __init__(self, on_fighting_style_selected, user):
+    def __init__(self, on_fighting_style_selected, user, ctx):
         super().__init__()
         self.on_fighting_style_selected = on_fighting_style_selected
         self.user = user
+        self.ctx = ctx
 
     @ui.button(label="Aikido", style=ButtonStyle.primary, custom_id="aikido")
     async def handle_aikido(self, interaction: discord.Interaction, button: ui.Button):

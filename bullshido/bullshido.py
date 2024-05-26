@@ -26,7 +26,7 @@ class Bullshido(commands.Cog):
             self.logger.addHandler(handler)
         self.logger.setLevel(logging.DEBUG)
 
-    async def set_fighting_style(self, ctx, user, style):
+    async def set_fighting_style(self, ctx: commands.Context,user, style):
         await self.config.user(user).fighting_style.set(style)
         await ctx.send(f"{user.mention} has trained in the style of {style}!")
 
