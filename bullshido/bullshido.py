@@ -1,5 +1,5 @@
 import discord
-from redbot.core import commands, Config, app_commands
+from redbot.core import commands, Config
 from .ui_elements import SelectFightingStyleView
 from .fighting_game import FightingGame
 import logging
@@ -7,7 +7,7 @@ import logging
 class Bullshido(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=123123451514345671215451351235890)
+        self.config = Config.get_conf(self, identifier=123123451514345671215451351235890, force_registration=True)
         default_user = {
             "fighting_style": None,
             "wins": 0,
