@@ -12,6 +12,24 @@ class SelectFightingStyleView(ui.View):
         await self.on_fighting_style_selected(self.user, "aikido")
         await interaction.response.send_message("You have selected Aikido", ephemeral=True)
         self.stop()
+        
+    @ui.button(label="Karate", style=ButtonStyle.primary, custom_id="karate")
+    async def handle_karate(self, interaction: discord.Interaction, button: ui.Button):
+        await self.on_fighting_style_selected(self.user, "karate")
+        await interaction.response.send_message("You have selected Karate", ephemeral=True)
+        self.stop()
+        
+    @ui.button(label="Muay-Thai", style=ButtonStyle.primary, custom_id="muaythai")
+    async def handle_muaythai(self, interaction: discord.Interaction, button: ui.Button):
+        await self.on_fighting_style_selected(self.user, "muaythai")
+        await interaction.response.send_message("You have selected Muay-Thai", ephemeral=True)
+        self.stop()
+    
+    @ui.button(label="Brazilian Jiu-Jitsu", style=ButtonStyle.primary, custom_id="bjj")
+    async def handle_bjj(self, interaction: discord.Interaction, button: ui.Button):
+        await self.on_fighting_style_selected(self.user, "bjj")
+        await interaction.response.send_message("You have selected Brazilian Jiu-Jitsu", ephemeral=True)
+        self.stop()
 
     @ui.button(label="Boxing", style=ButtonStyle.primary, custom_id="boxing")
     async def handle_boxing(self, interaction: discord.Interaction, button: ui.Button):
@@ -61,7 +79,7 @@ class SelectFightingStyleView(ui.View):
         await interaction.response.send_message("You have selected Sambo", ephemeral=True)
         self.stop()
 
-    @ui.button(label="Kick-Boxing", style=ButtonStyle.primary, custom_id="kickboxing")
+    @ui.button(label="Kickboxing", style=ButtonStyle.primary, custom_id="kickboxing")
     async def handle_kickboxing(self, interaction: discord.Interaction, button: ui.Button):
         await self.on_fighting_style_selected(self.user, "kickboxing")
         await interaction.response.send_message("You have selected Kick-Boxing", ephemeral=True)
