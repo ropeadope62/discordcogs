@@ -26,7 +26,7 @@ class Bullshido(commands.Cog):
             self.logger.addHandler(handler)
         self.logger.setLevel(logging.DEBUG)
 
-    async def set_fighting_style(self, ctx: commands.Context,user, style):
+    async def set_fighting_style(self, ctx: commands.Context, user: discord.Member, style: str):
         await self.config.user(user).fighting_style.set(style)
         await ctx.send(f"{user.mention} has trained in the style of {style}!")
 
@@ -40,7 +40,7 @@ class Bullshido(commands.Cog):
         embed = discord.Embed(title="Bullshido Game Commands", description="Learn how to play and interact with the Bullshido game.", color=0x00ff00)
         embed.add_field(name="/bullshido select_fighting_style", value="Select your fighting style.", inline=False)
         embed.add_field(name="/bullshido list_fighting_styles", value="List all available fighting styles.", inline=False)
-        embed.add_field(name="/bullshido start_fight", value="Start a fight with another player.", inline=False)
+        embed.add_field(name="/bullshido fight", value="Start a fight with another player.", inline=False)
         embed.add_field(name="/bullshido info", value="Displays information about the Bullshido game commands.", inline=False)
         embed.add_field(name="/bullshido player_stats", value="Displays your wins and losses.", inline=False)
         embed.set_image(url="https://i.ibb.co/GWpXztm/bullshido.png")
@@ -49,14 +49,14 @@ class Bullshido(commands.Cog):
     @bullshido_group.command(name="select_fighting_style", description="Select your fighting style")
     async def select_fighting_style(self, ctx: commands.Context):
         """Select your fighting style."""
-        view = SelectFightingStyleView(self.set_fighting_style, ctx.author)
-        await ctx.send("Please select your fighting style:", view=view, ephemeral=True)
+        view = SelectFightingStyleView(self.set_fighting_style, ctx.author, ctx)
+        await ctx.send("Please select your fighting style:", view=view)
 
     @bullshido_group.command(name="list_fighting_styles", description="List all available fighting styles")
     async def list_fighting_styles(self, ctx: commands.Context):
         """List all available fighting styles."""
         styles = ["Karate", "Muay-Thai", "Aikido", "Boxing", "Kung-Fu", "Judo", "Taekwondo", "Wrestling", "Sambo", "MMA", "Capoeira", "Kickboxing", "Krav-Maga", "Brazilian Jiu-Jitsu"]
-        await ctx.send(f"Available fighting styles: {', '.join(styles)}", ephemeral=True)
+        await ctx.send(f"Available fighting styles: {', '.join(styles)}")
     
     @bullshido_group.command(name="fight", description="Start a fight with another player")
     async def fight(self, ctx: commands.Context, opponent: discord.Member):
@@ -68,7 +68,7 @@ class Bullshido(commands.Cog):
         player2_data = await self.config.user(player2).all()
         
         if not player1_data['fighting_style'] or not player2_data['fighting_style']:
-            await ctx.send("Both players must have selected a fighting style before starting a fight.", ephemeral=True)
+            await ctx.send("Both players must have selected a fighting style before starting a fight.")
             return
         
         game = FightingGame(ctx.channel, player1, player2, player1_data, player2_data)
