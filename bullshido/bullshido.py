@@ -5,6 +5,20 @@ from .fighting_game import FightingGame
 from datetime import datetime, timedelta
 import logging
 
+class MemoryLogHandler(logging.Handler):
+    def __init__(self):
+        super().__init__()
+        self.log_records = []
+
+    def emit(self, record):
+        self.log_records.append(self.format(record))
+
+    def get_logs(self):
+        return self.log_records
+
+    def clear_logs(self):
+        self.log_records = []
+
 class Bullshido(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -22,10 +36,10 @@ class Bullshido(commands.Cog):
         }
         self.config.register_user(**default_user)
         self.logger = logging.getLogger("red.bullshido")
-        if not self.logger.hasHandlers():
-            handler = logging.StreamHandler()
-            handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-            self.logger.addHandler(handler)
+        self.memory_handler = MemoryLogHandler()
+        self.logger.addHandler(self.memory_handler)
+        formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
+        self.memory_handler.setFormatter(formatter)
         self.logger.setLevel(logging.DEBUG)
 
     async def set_fighting_style(self, ctx: commands.Context, user: discord.Member, style: str):
@@ -35,6 +49,17 @@ class Bullshido(commands.Cog):
     @commands.hybrid_group(name="bullshido", description="Commands related to the Bullshido game")
     async def bullshido_group(self, ctx: commands.Context):
         pass
+    
+    @bullshido_group.command(name="log", description="Displays the log")
+    async def show_log(self, ctx: commands.Context):
+        """Displays the Bullshido log."""
+        logs = self.memory_handler.get_logs()
+        if not logs:
+            await ctx.send("No logs available.")
+            return
+        for chunk in [logs[i:i+10] for i in range(0, len(logs), 10)]:  
+            await ctx.send("```\n{}\n```".format("\n".join(chunk)))
+    
     
     @bullshido_group.command(name="info", description="Displays information about the Bullshido game commands")
     async def bullshido_info(self, ctx: commands.Context):
