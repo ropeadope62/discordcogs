@@ -2,6 +2,7 @@ import discord
 from redbot.core import commands, Config
 from .ui_elements import SelectFightingStyleView
 from .fighting_game import FightingGame
+from datetime import datetime, timedelta
 import logging
 
 class Bullshido(commands.Cog):
@@ -16,7 +17,8 @@ class Bullshido(commands.Cog):
             "training_level": 1,
             "nutrition_level": 1,
             "morale": 100,
-            "intimidation_level": 0
+            "intimidation_level": 0,
+            "stamina_level": 100
         }
         self.config.register_user(**default_user)
         self.logger = logging.getLogger("red.bullshido")
@@ -45,6 +47,23 @@ class Bullshido(commands.Cog):
         embed.add_field(name="/bullshido player_stats", value="Displays your wins and losses.", inline=False)
         embed.set_image(url="https://i.ibb.co/GWpXztm/bullshido.png")
         await ctx.send(embed=embed)
+        
+    @bullshido_group.command(name="train")
+    async def train(self, interaction: discord.Interaction):
+        """Train daily to increase your Bullshido training level."""
+        user = interaction.user
+        style = await self.config.user(user).fighting_style.get()
+        await self.update_daily_interaction(user, "train")
+        await interaction.response.send_message(f"{user} has successfully trained in {style}!", ephemeral=False)
+        
+    @bullshido_group.command(name="diet")
+    async def diet(self, interaction: discord.Interaction):
+        """Focus on your diet to increase your nutrition level."""
+        user = interaction.user
+        await self.update_daily_interaction(user, "diet")
+        await interaction.response.send_message(f"{user} has followed their specialized diet today and gained nutrition level!", ephemeral=False)
+
+    
 
     @bullshido_group.command(name="select_fighting_style", description="Select your fighting style")
     async def select_fighting_style(self, ctx: commands.Context):
@@ -123,6 +142,33 @@ class Bullshido(commands.Cog):
                 self.logger.debug(f"Updated losses for {user.display_name}: {current_losses} -> {new_losses}")
         except Exception as e:
             self.logger.error(f"Error updating stats for {user.display_name}: {e}")
+            
+    async def update_daily_interaction(self, user, command_used):
+        user_data = await self.config.user(user).all()
+        last_interaction = user_data['last_interaction']
+        today = datetime.utcnow().date()
+
+        if last_interaction:
+            last_interaction_date = datetime.strptime(last_interaction, '%Y-%m-%d').date()
+            if today - last_interaction_date > timedelta(days=1):
+                # Apply penalty if the user missed a day
+                new_training_level = max(1, user_data['training_level'] - 20)
+                new_nutrition_level = max(1, user_data['nutrition_level'] - 20)
+                await self.config.user(user).training_level.set(new_training_level)
+                await self.config.user(user).nutrition_level.set(new_nutrition_level)
+                await user.send("You've lost 20 points in both training and nutrition levels due to inactivity.")
+
+        # Update the user's config for today
+        await self.config.user(user).last_interaction.set(today.strftime('%Y-%m-%d'))
+        await self.config.user(user).last_command_used.set(command_used)
+
+        # Increment specific stats based on the command used
+        if command_used == "train":
+            new_training_level = user_data['training_level'] + 1
+            await self.config.user(user).training_level.set(new_training_level)
+        elif command_used == "diet":
+            new_nutrition_level = user_data['nutrition_level'] + 1
+            await self.config.user(user).nutrition_level.set(new_nutrition_level)
 
 async def setup(bot):
     await bot.add_cog(Bullshido(bot))
