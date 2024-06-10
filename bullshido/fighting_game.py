@@ -307,7 +307,10 @@ class FightingGame:
             message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s body causing {damage} damage! {conclude_message}"
             self.current_turn = self.player1
 
-        return message, f"{defender.display_name} has {self.player2_health if defender == self.player2 else self.player1_health} health left."
+        message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s body causing {damage} damage! {conclude_message}"
+        sleep_duration = random.uniform(2, 3) + (2 if critical_message else 0)  # Add 2 extra seconds for critical hits
+        await asyncio.sleep(sleep_duration)
+        return message, f"{defender.display_name} now has {self.player2_health if defender == self.player2 else self.player1_health} health left."
 
     async def play_round(self, round_number):
         strike_count = 0
@@ -362,7 +365,16 @@ class FightingGame:
         # Announce the winner
         if self.player1_health > self.player2_health:
             winner = self.player1
+            loser = self.player2
         else:
             winner = self.player2
-        
+            loser = self.player1
+            
         await self.channel.send(f"Game over! The winner is {winner.display_name}.")
+            
+        bullshido_cog = self.channel.guild.get_cog('Bullshido')
+        if bullshido_cog:
+            await bullshido_cog.update_player_stats(winner, win=True)
+            await bullshido_cog.update_player_stats(loser, win=False)
+        
+       
