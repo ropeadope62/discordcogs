@@ -315,46 +315,43 @@ class FightingGame:
         return message, f"{defender.display_name} now has {self.player2_health if defender == self.player2 else self.player1_health} health left."
 
     async def play_round(self, round_number):
-        strike_count = 0
-        player1_health_start = self.player1_health
-        player2_health_start = self.player2_health
-        
-        # Send initial message for the round
-        msg = await self.channel.send(f"Round {round_number} begins!")
+        async with asyncio.Lock():  # Ensure that this block is executed by only one coroutine at a time
+            strike_count = 0
+            player1_health_start = self.player1_health
+            player2_health_start = self.player2_health
 
-        while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
-            strike_message, health_status = await self.play_turn()
-            await msg.edit(content=f"{strike_message} {health_status}")
-            strike_count += 1
-            await asyncio.sleep(random.uniform(2, 3))
+            while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
+                strike_message, health_status = await self.play_turn()
+                await self.channel.send(f"Round {round_number}: {strike_message} {health_status}")
+                strike_count += 1
+                await asyncio.sleep(random.uniform(2, 3))
 
-        player1_health_end = self.player1_health
-        player2_health_end = self.player2_health
+            player1_health_end = self.player1_health
+            player2_health_end = self.player2_health
 
-        health_diff_player1 = player1_health_start - player1_health_end
-        health_diff_player2 = player2_health_start - player2_health_end
+            health_diff_player1 = player1_health_start - player1_health_end
+            health_diff_player2 = player2_health_start - player2_health_end
 
-        # Determine round result and score
-        if abs(health_diff_player1 - health_diff_player2) > 20:  # Threshold for winning handily
-            if health_diff_player1 < health_diff_player2:
-                self.player1_score += 10
-                self.player2_score += 8  # Loser gets 8 points if lost handily
-                round_result = f"{self.player1.display_name} won the round handily!"
+            if abs(health_diff_player1 - health_diff_player2) > 20:
+                if health_diff_player1 < health_diff_player2:
+                    self.player1_score += 10
+                    self.player2_score += 8
+                    round_result = f"{self.player1.display_name} won the round handily!"
+                else:
+                    self.player1_score += 8
+                    self.player2_score += 10
+                    round_result = f"{self.player2.display_name} won the round handily!"
             else:
-                self.player1_score += 8
-                self.player2_score += 10
-                round_result = f"{self.player2.display_name} won the round handily!"
-        else:
-            if health_diff_player1 < health_diff_player2:
-                self.player1_score += 10
-                self.player2_score += 9
-                round_result = f"{self.player1.display_name} had the edge this round!"
-            else:
-                self.player1_score += 9
-                self.player2_score += 10
-                round_result = f"{self.player2.display_name} had the edge this round!"
+                if health_diff_player1 < health_diff_player2:
+                    self.player1_score += 10
+                    self.player2_score += 9
+                    round_result = f"{self.player1.display_name} had the edge this round!"
+                else:
+                    self.player1_score += 9
+                    self.player2_score += 10
+                    round_result = f"{self.player2.display_name} had the edge this round!"
 
-        return round_result
+            return round_result
 
     async def start_game(self):
         # Introduce the fighters
