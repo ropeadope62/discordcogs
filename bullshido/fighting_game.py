@@ -354,7 +354,6 @@ class FightingGame:
             return round_result
 
     async def start_game(self):
-        # Introduce the fighters
         intro_message = (
             f"Introducing the fighters!\n"
             f"{self.player1.display_name} with the fighting style {self.player1_data['fighting_style']}!\n"
@@ -365,18 +364,14 @@ class FightingGame:
         await self.channel.send(intro_message)
         await asyncio.sleep(10)
 
-        # Start the match
         await self.channel.send("Ready? FIGHT!")
 
         for round_number in range(1, self.rounds + 1):
-            round_message = f"Round {round_number} begins!"
-            await self.channel.send(round_message)
             round_result = await self.play_round(round_number)
             await self.channel.send(round_result)
             if self.player1_health <= 0 or self.player2_health <= 0:
                 break
 
-        # Announce the winner
         if self.player1_health > self.player2_health:
             winner = self.player1
             loser = self.player2
@@ -390,5 +385,3 @@ class FightingGame:
         if bullshido_cog:
             await bullshido_cog.update_player_stats(winner, win=True)
             await bullshido_cog.update_player_stats(loser, win=False)
-        
-       
