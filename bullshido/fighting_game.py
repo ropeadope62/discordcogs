@@ -313,10 +313,10 @@ class FightingGame:
             style = self.player2_data["fighting_style"]
             strike, damage, critical_message, conclude_message = self.get_strike_damage(style, defender)
             self.player1_health -= damage
-            message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s body causing {damage} damage! {conclude_message}"
+            message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"
             self.current_turn = self.player1
 
-        message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s body causing {damage} damage! {conclude_message}"
+        message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"
         sleep_duration = random.uniform(2, 3) + (2 if critical_message else 0)  # Add 2 extra seconds for critical hits
         await asyncio.sleep(sleep_duration)
         return message, f"{defender.display_name} now has {self.player2_health if defender == self.player2 else self.player1_health} health left."
