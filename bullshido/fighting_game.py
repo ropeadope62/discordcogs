@@ -295,32 +295,36 @@ class FightingGame:
     async def target_bodypart(self):
         bodypart = random.choice(self.body_parts)
         return bodypart
-    
+
     async def play_turn(self):
         action = random.choice(self.actions)
         if self.current_turn == self.player1:
             attacker = self.player1
             defender = self.player2
             style = self.player1_data["fighting_style"]
-            strike, damage, critical_message, conclude_message = self.get_strike_damage(style, defender)
-            self.player2_health -= damage
-            bodypart = await self.target_bodypart()
-            message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"
-            self.current_turn = self.player2
         else:
             attacker = self.player2
             defender = self.player1
             style = self.player2_data["fighting_style"]
+
+        try:
             strike, damage, critical_message, conclude_message = self.get_strike_damage(style, defender)
-            self.player1_health -= damage
+            bodypart = await self.target_bodypart()  
+            if self.current_turn == self.player1:
+                self.player2_health -= damage
+                self.current_turn = self.player2
+            else:
+                self.player1_health -= damage
+                self.current_turn = self.player1
+
             message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"
-            self.current_turn = self.player1
-
-        message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"
-        sleep_duration = random.uniform(2, 3) + (2 if critical_message else 0)  # Add 2 extra seconds for critical hits
-        await asyncio.sleep(sleep_duration)
-        return message, f"{defender.display_name} now has {self.player2_health if defender == self.player2 else self.player1_health} health left."
-
+            sleep_duration = random.uniform(2, 3) + (2 if critical_message else 0)  # Add 2 extra seconds for critical hits
+            await asyncio.sleep(sleep_duration)
+            return message, f"{defender.display_name} now has {self.player2_health if defender == self.player2 else self.player1_health} health left."
+        except Exception as e:
+            print(f"Error during play_turn: {e}")
+            return "An error occurred during the turn.", ""
+        
     async def play_round(self, round_number):
         strike_count = 0
         player1_health_start = self.player1_health
