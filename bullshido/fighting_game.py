@@ -21,6 +21,8 @@ class FightingGame:
         else:
             self.current_turn = player2
 
+        self.body_parts = ["head", "chest", "left arm", "right arm", "nose", "neck", "left ear", "right ear", "teeth", "left leg", "right leg", "right foot", "left foot", "liver", "kidneys", "spine", "clavical", "left hip", "right hip", "left knee", "right knee", "solar plexus", "cranium", "kisser", "chin", "left shoulder", "right shoulder", "ass", "crotch", "spine", "ribs", "spinal column"]
+
         self.strikes = {
             "Karate": {
                 "Straight Right": (5, 7),
@@ -290,6 +292,10 @@ class FightingGame:
         
         return strike, modified_damage, message, conclude_message
 
+    async def target_bodypart(self):
+        bodypart = random.choice(self.body_parts)
+        return bodypart
+    
     async def play_turn(self):
         action = random.choice(self.actions)
         if self.current_turn == self.player1:
@@ -298,7 +304,8 @@ class FightingGame:
             style = self.player1_data["fighting_style"]
             strike, damage, critical_message, conclude_message = self.get_strike_damage(style, defender)
             self.player2_health -= damage
-            message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s body causing {damage} damage! {conclude_message}"
+            bodypart = await self.target_bodypart()
+            message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"
             self.current_turn = self.player2
         else:
             attacker = self.player2
