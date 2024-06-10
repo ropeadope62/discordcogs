@@ -13,6 +13,8 @@ class FightingGame:
         self.player2_health = 100
         self.rounds = 3
         self.max_strikes_per_round = 5
+        self.player1_scorecard = 0
+        self.player2_scorecard = 0
 
         if player1_data['training_level'] >= player2_data['training_level']:
             self.current_turn = player1
@@ -332,10 +334,25 @@ class FightingGame:
         health_diff_player1 = player1_health_start - player1_health_end
         health_diff_player2 = player2_health_start - player2_health_end
 
-        if abs(health_diff_player1 - health_diff_player2) > 20:
-            round_result = f"{self.player1.display_name} won the round handily!" if health_diff_player1 < health_diff_player2 else f"{self.player2.display_name} won the round handily!"
+        # Determine round result and score
+        if abs(health_diff_player1 - health_diff_player2) > 20:  # Threshold for winning handily
+            if health_diff_player1 < health_diff_player2:
+                self.player1_score += 10
+                self.player2_score += 8  # Loser gets 8 points if lost handily
+                round_result = f"{self.player1.display_name} won the round handily!"
+            else:
+                self.player1_score += 8
+                self.player2_score += 10
+                round_result = f"{self.player2.display_name} won the round handily!"
         else:
-            round_result = f"{self.player1.display_name} had the edge this round!" if health_diff_player1 < health_diff_player2 else f"{self.player2.display_name} had the edge this round!"
+            if health_diff_player1 < health_diff_player2:
+                self.player1_score += 10
+                self.player2_score += 9
+                round_result = f"{self.player1.display_name} had the edge this round!"
+            else:
+                self.player1_score += 9
+                self.player2_score += 10
+                round_result = f"{self.player2.display_name} had the edge this round!"
 
         return round_result
 
@@ -370,7 +387,7 @@ class FightingGame:
             winner = self.player2
             loser = self.player1
             
-        await self.channel.send(f"Game over! The winner is {winner.display_name}.")
+        await self.channel.send(f"We go to the judges scorecard for a decision... Judges' scorecard: {self.player1.display_name} {self.player1_score} - {self.player2_score} {self.player2.display_name} The winner is {winner.display_name} by Unanimous Decision!")
             
         bullshido_cog = self.channel.guild.get_cog('Bullshido')
         if bullshido_cog:
