@@ -105,18 +105,24 @@ class Bullshido(commands.Cog):
     @bullshido_group.command(name="fight", description="Start a fight with another player")
     async def fight(self, ctx: commands.Context, opponent: discord.Member):
         """Start a fight with another player."""
-        player1 = ctx.author
-        player2 = opponent
-        
-        player1_data = await self.config.user(player1).all()
-        player2_data = await self.config.user(player2).all()
-        
-        if not player1_data['fighting_style'] or not player2_data['fighting_style']:
-            await ctx.send("Both players must have selected a fighting style before starting a fight.")
-            return
-        
-        game = FightingGame(ctx.channel, player1, player2, player1_data, player2_data)
-        await game.start_game()
+        await ctx.defer()
+        try: 
+            player1 = ctx.author
+            player2 = opponent
+            
+            player1_data = await self.config.user(player1).all()
+            player2_data = await self.config.user(player2).all()
+            
+            if not player1_data['fighting_style'] or not player2_data['fighting_style']:
+                await ctx.send("Both players must have selected a fighting style before starting a fight.")
+                return
+            
+            game = FightingGame(ctx.channel, player1, player2, player1_data, player2_data)
+            await game.start_game()
+            
+        except Exception as e:
+            self.logger.error(f"Failed to start fight: {e}")
+            await ctx.send(f"Failed to start the fight due to an error: {e}")
 
     @bullshido_group.command(name="player_stats", description="Displays your wins and losses", aliases=["stats"])
     async def player_stats(self, ctx: commands.Context):
