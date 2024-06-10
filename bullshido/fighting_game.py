@@ -315,43 +315,46 @@ class FightingGame:
         return message, f"{defender.display_name} now has {self.player2_health if defender == self.player2 else self.player1_health} health left."
 
     async def play_round(self, round_number):
-        async with asyncio.Lock():  # Ensure that this block is executed by only one coroutine at a time
-            strike_count = 0
-            player1_health_start = self.player1_health
-            player2_health_start = self.player2_health
+        strike_count = 0
+        player1_health_start = self.player1_health
+        player2_health_start = self.player2_health
 
-            while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
-                strike_message, health_status = await self.play_turn()
-                await self.channel.send(f"Round {round_number}: {strike_message} {health_status}")
-                strike_count += 1
-                await asyncio.sleep(random.uniform(2, 3))
+        print(f"Starting Round {round_number}")
 
-            player1_health_end = self.player1_health
-            player2_health_end = self.player2_health
+        while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
+            strike_message, health_status = await self.play_turn()
+            await self.channel.send(f"Round {round_number}: {strike_message} {health_status}")
+            strike_count += 1
+            await asyncio.sleep(random.uniform(2, 3))
 
-            health_diff_player1 = player1_health_start - player1_health_end
-            health_diff_player2 = player2_health_start - player2_health_end
+        player1_health_end = self.player1_health
+        player2_health_end = self.player2_health
 
-            if abs(health_diff_player1 - health_diff_player2) > 20:
-                if health_diff_player1 < health_diff_player2:
-                    self.player1_score += 10
-                    self.player2_score += 8
-                    round_result = f"{self.player1.display_name} won the round handily!"
-                else:
-                    self.player1_score += 8
-                    self.player2_score += 10
-                    round_result = f"{self.player2.display_name} won the round handily!"
+        health_diff_player1 = player1_health_start - player1_health_end
+        health_diff_player2 = player2_health_start - player2_health_end
+
+        print(f"Ending Round {round_number} - Player1 Health: {player1_health_end}, Player2 Health: {player2_health_end}")
+
+        if abs(health_diff_player1 - health_diff_player2) > 20:
+            if health_diff_player1 < health_diff_player2:
+                self.player1_score += 10
+                self.player2_score += 8
+                round_result = f"{self.player1.display_name} won the round handily!"
             else:
-                if health_diff_player1 < health_diff_player2:
-                    self.player1_score += 10
-                    self.player2_score += 9
-                    round_result = f"{self.player1.display_name} had the edge this round!"
-                else:
-                    self.player1_score += 9
-                    self.player2_score += 10
-                    round_result = f"{self.player2.display_name} had the edge this round!"
+                self.player1_score += 8
+                self.player2_score += 10
+                round_result = f"{self.player2.display_name} won the round handily!"
+        else:
+            if health_diff_player1 < health_diff_player2:
+                self.player1_score += 10
+                self.player2_score += 9
+                round_result = f"{self.player1.display_name} had the edge this round!"
+            else:
+                self.player1_score += 9
+                self.player2_score += 10
+                round_result = f"{self.player2.display_name} had the edge this round!"
 
-            return round_result
+        return round_result
 
     async def start_game(self):
         intro_message = (
@@ -367,6 +370,7 @@ class FightingGame:
         await self.channel.send("Ready? FIGHT!")
 
         for round_number in range(1, self.rounds + 1):
+            print(f"Round {round_number} is starting...")
             round_result = await self.play_round(round_number)
             await self.channel.send(round_result)
             if self.player1_health <= 0 or self.player2_health <= 0:
