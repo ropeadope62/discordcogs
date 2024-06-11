@@ -195,10 +195,10 @@ class Bullshido(commands.Cog):
 
         # Increment specific stats based on the command used
         if command_used == "train":
-            new_training_level = user_data['training_level'] + 1
+            new_training_level = user_data['training_level'] + 10
             await self.config.user(user).training_level.set(new_training_level)
         elif command_used == "diet":
-            new_nutrition_level = user_data['nutrition_level'] + 1
+            new_nutrition_level = user_data['nutrition_level'] + 10
             await self.config.user(user).nutrition_level.set(new_nutrition_level)
 
 async def setup(bot):

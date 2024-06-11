@@ -394,9 +394,13 @@ class FightingGame:
             winner = self.player2
             loser = self.player1
             
-        await self.channel.send(f"We go to the judges scorecard for a decision... Judges' scorecard: {self.player1.display_name} {self.player1_score} - {self.player2_score} {self.player2.display_name} The winner is {winner.display_name} by Unanimous Decision!")
             
         bullshido_cog = self.channel.guild.get_cog('Bullshido')
         if bullshido_cog:
             await bullshido_cog.update_player_stats(winner, win=True)
-            await bullshido_cog.update_player_stats(loser, win=False)
+            current_morale = await bullshido_cog.config.user(loser).morale()
+            new_morale = max(0, current_morale - 10)  # Ensure morale does not go below 0
+            await bullshido_cog.config.user(loser).morale.set(new_morale)
+            await self.channel.send(f"{loser.display_name}'s morale has been reduced!")
+        
+        await self.channel.send(f"We go to the judges scorecard for a decision... Judges' scorecard: {self.player1.display_name} {self.player1_score} - {self.player2_score} {self.player2.display_name} The winner is {winner.display_name} by Unanimous Decision!")
