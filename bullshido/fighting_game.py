@@ -13,8 +13,8 @@ class FightingGame:
         self.player2_health = 100
         self.rounds = 3
         self.max_strikes_per_round = 5
-        self.player1_scorecard = 0
-        self.player2_scorecard = 0
+        self.player1_score = 0
+        self.player2_score = 0
 
         if player1_data['training_level'] >= player2_data['training_level']:
             self.current_turn = player1
