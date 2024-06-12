@@ -297,7 +297,7 @@ class FightingGame:
         bodypart = random.choice(self.body_parts)
         return bodypart
 
-    async def play_turn(self):
+    async def play_turn(self, round_message):
         action = random.choice(self.actions)
         if self.current_turn == self.player1:
             attacker = self.player1
@@ -319,12 +319,17 @@ class FightingGame:
                 self.current_turn = self.player1
 
             message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"
+            health_status = f"{defender.display_name} now has {self.player2_health if defender == self.player2 else self.player1_health} health left."
             sleep_duration = random.uniform(2, 3) + (2 if critical_message else 0)  # Add 2 extra seconds for critical hits
             await asyncio.sleep(sleep_duration)
-            return message, f"{defender.display_name} now has {self.player2_health if defender == self.player2 else self.player1_health} health left."
+
+            # Edit the round message with updated content
+            await round_message.edit(content=f"Round in progress: {message}\n{health_status}")
+            return
         except Exception as e:
             print(f"Error during play_turn: {e}")
-            return "An error occurred during the turn.", ""
+            await round_message.edit(content="An error occurred during the turn.")
+            return
         
     async def play_round(self, round_number):
         strike_count = 0
@@ -333,9 +338,10 @@ class FightingGame:
 
         print(f"Starting Round {round_number}")
 
+        round_message = await self.channel.send(f"Round {round_number} is starting...")
+
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
-            strike_message, health_status = await self.play_turn()
-            await self.channel.send(f"Round {round_number}: {strike_message} {health_status}")
+            await self.play_turn(round_message)
             strike_count += 1
             await asyncio.sleep(random.uniform(2, 3))
 
@@ -366,6 +372,7 @@ class FightingGame:
                 self.player2_score += 10
                 round_result = f"{self.player2.display_name} had the edge this round!"
 
+        await self.channel.send(round_result)
         return round_result
 
     async def start_game(self):
@@ -385,7 +392,6 @@ class FightingGame:
         for round_number in range(1, self.rounds + 1):
             print(f"Round {round_number} is starting...")
             round_result = await self.play_round(round_number)
-            await self.channel.send(round_result)
             if self.player1_health <= 0 or self.player2_health <= 0:
                 break
 
@@ -395,7 +401,6 @@ class FightingGame:
         else:
             winner = self.player2
             loser = self.player1
-            
             
         try:
             bullshido_cog = self.channel.guild.get_cog('Bullshido')
