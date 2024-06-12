@@ -398,10 +398,24 @@ class FightingGame:
         if self.player1_health > self.player2_health:
             winner = self.player1
             loser = self.player2
-        else:
+        elif self.player2_health > self.player1_health:
             winner = self.player2
             loser = self.player1
-            
+        else:
+            if self.player1_score > self.player2_score:
+                winner = self.player1
+                loser = self.player2
+            else:
+                winner = self.player2
+                loser = self.player1
+
+        final_message = (
+            f"The fight is over!\n"
+            f"{winner.display_name} is the winner with a score of {self.player1_score if winner == self.player1 else self.player2_score}!\n"
+            f"{loser.display_name} fought valiantly but was defeated."
+        )
+        await self.channel.send(final_message)
+        
         try:
             bullshido_cog = self.channel.guild.get_cog('Bullshido')
             if bullshido_cog:
