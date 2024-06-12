@@ -60,7 +60,6 @@ class Bullshido(commands.Cog):
         for chunk in [logs[i:i+10] for i in range(0, len(logs), 10)]:  
             await ctx.send("```\n{}\n```".format("\n".join(chunk)))
     
-    
     @bullshido_group.command(name="info", description="Displays information about the Bullshido game commands")
     async def bullshido_info(self, ctx: commands.Context):
         """Displays information about the Bullshido game commands."""
@@ -87,9 +86,7 @@ class Bullshido(commands.Cog):
         user = interaction.user
         await self.update_daily_interaction(user, "diet")
         await interaction.response.send_message(f"{user} has followed their specialized diet today and gained nutrition level!", ephemeral=False)
-
     
-
     @bullshido_group.command(name="select_fighting_style", description="Select your fighting style")
     async def select_fighting_style(self, ctx: commands.Context):
         """Select your fighting style."""
@@ -117,7 +114,7 @@ class Bullshido(commands.Cog):
                 await ctx.send("Both players must have selected a fighting style before starting a fight.")
                 return
             
-            game = FightingGame(ctx.channel, player1, player2, player1_data, player2_data)
+            game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data)
             await game.start_game()
             
         except Exception as e:
