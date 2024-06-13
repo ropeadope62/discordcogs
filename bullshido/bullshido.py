@@ -34,7 +34,9 @@ class Bullshido(commands.Cog):
             "intimidation_level": 0,
             "stamina_level": 100,
             "last_interaction": None,
-            "last_command_used": None
+            "last_command_used": None,
+            "last_train": None,
+            "last_diet": None
         }
         self.config.register_user(**default_user)
         self.logger = logging.getLogger("red.bullshido")
@@ -79,14 +81,34 @@ class Bullshido(commands.Cog):
         """Train daily to increase your Bullshido training level."""
         user = ctx.author
         style = await self.config.user(user).fighting_style()
+        
+        # Check if the command was used in the last 24 hours
+        last_train = await self.config.user(user).last_train()
+        if last_train:
+            last_train_time = datetime.strptime(last_train, '%Y-%m-%d %H:%M:%S')
+            if datetime.utcnow() - last_train_time < timedelta(hours=24):
+                await ctx.send(f"{user.mention}, you can only use the train command once every 24 hours.")
+                return
+
         await self.update_daily_interaction(user, "train")
+        await self.config.user(user).last_train.set(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
         await ctx.send(f"{user.mention} has successfully trained in {style}!")
 
     @bullshido_group.command(name="diet", description="Focus on your diet to increase your nutrition level")
     async def diet(self, ctx: commands.Context):
         """Focus on your diet to increase your nutrition level."""
         user = ctx.author
+        
+        # Check if the command was used in the last 24 hours
+        last_diet = await self.config.user(user).last_diet()
+        if last_diet:
+            last_diet_time = datetime.strptime(last_diet, '%Y-%m-%d %H:%M:%S')
+            if datetime.utcnow() - last_diet_time < timedelta(hours=24):
+                await ctx.send(f"{user.mention}, you can only use the diet command once every 24 hours.")
+                return
+
         await self.update_daily_interaction(user, "diet")
+        await self.config.user(user).last_diet.set(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
         await ctx.send(f"{user.mention} has followed their specialized diet today and gained nutrition level!")
     
     @bullshido_group.command(name="select_fighting_style", description="Select your fighting style")
