@@ -411,13 +411,14 @@ class FightingGame:
 
         final_message = (
             f"The fight is over!\n"
-            f"After 3 rounds, we go to the judges scorecard for a decision.\n The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player1_score}{winner.display_name} for the winner, by unanimous decisionn, {self.player1 if winner == self.player1 else self.player2}!\n"
+            f"After 3 rounds, we go to the judges scorecard for a decision.\n The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player1_score} for the winner, by unanimous decision, {winner.display_name}!\n"
             f"{loser.display_name} fought valiantly but was defeated."
         )
         await self.channel.send(final_message)
         
         try:
             bullshido_cog = self.channel.guild.get_cog('Bullshido')
+            await self.channel.send(f'bullshido cog {bullshido_cog}')
             if bullshido_cog:
                 await bullshido_cog.update_player_stats(winner, win=True)
                 current_loser_morale = await bullshido_cog.config.user(loser).morale()
@@ -429,6 +430,6 @@ class FightingGame:
                 await self.channel.send(f"{loser.display_name}'s morale has been reduced!")
                 await self.channel.send(f"{winner.display_name}'s morale has increased!")
             else:
-                print("Bullshido cog not found.")
+                await self.channel.send('Could not find game instance to update stats')
         except Exception as e:
             print(f"An error occurred: {e}")
