@@ -411,7 +411,7 @@ class FightingGame:
 
         final_message = (
             f"The fight is over!\n"
-            f"{winner.display_name} is the winner with a score of {self.player1_score if winner == self.player1 else self.player2_score}!\n"
+            f"After 3 rounds, we go to the judges scorecard for a decision.\n The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player1_score}{winner.display_name} for the winner, by unanimous decisionn, {self.player1 if winner == self.player1 else self.player2}!\n"
             f"{loser.display_name} fought valiantly but was defeated."
         )
         await self.channel.send(final_message)
@@ -420,10 +420,14 @@ class FightingGame:
             bullshido_cog = self.channel.guild.get_cog('Bullshido')
             if bullshido_cog:
                 await bullshido_cog.update_player_stats(winner, win=True)
-                current_morale = await bullshido_cog.config.user(loser).morale()
-                new_morale = max(0, current_morale - 10)
-                await bullshido_cog.config.user(loser).morale.set(new_morale)
+                current_loser_morale = await bullshido_cog.config.user(loser).morale()
+                current_winner_morale = await bullshido_cog.config.user(winner).morale()
+                new_loser_morale = max(0, current_loser_morale - 20)
+                new_winner_morale = max(0, current_winner_morale + 20)
+                await bullshido_cog.config.user(loser).morale.set(new_loser_morale)
+                await bullshido_cog.config.user(loser).morale.set(new_winner_morale)
                 await self.channel.send(f"{loser.display_name}'s morale has been reduced!")
+                await self.channel.send(f"{winner.display_name}'s morale has increased!")
             else:
                 print("Bullshido cog not found.")
         except Exception as e:
