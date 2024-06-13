@@ -137,8 +137,8 @@ class Bullshido(commands.Cog):
             if not player1_data['fighting_style'] or not player2_data['fighting_style']:
                 await ctx.send("Both players must have selected a fighting style before starting a fight.")
                 return
-            
-            game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data)
+            # Set up an instance of game session
+            game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self)
             await game.start_game()
             
         except Exception as e:
@@ -169,6 +169,7 @@ class Bullshido(commands.Cog):
         embed.set_thumbnail(url="https://i.ibb.co/GWpXztm/bullshido.png")
         await ctx.send(embed=embed)
 
+    #Get player data from the redbot config 
     async def get_player_data(self, user):
         fighting_style = await self.config.user(user).fighting_style()
         level = await self.config.user(user).level()
@@ -180,6 +181,7 @@ class Bullshido(commands.Cog):
         losses = await self.config.user(user).losses()
         return {"fighting_style": fighting_style, "wins": wins, "losses": losses, "level": level, "training_level": training_level, "nutrition_level": nutrition_level, "morale": morale, "intimidation_level": intimidation_level}
     
+    #Update player win and loss stats post round 
     async def update_player_stats(self, user, win=True):
         try:
             current_wins = await self.config.user(user).wins()
