@@ -73,6 +73,8 @@ class Bullshido(commands.Cog):
         embed.add_field(name="/bullshido fight", value="Start a fight with another player.", inline=False)
         embed.add_field(name="/bullshido info", value="Displays information about the Bullshido game commands.", inline=False)
         embed.add_field(name="/bullshido player_stats", value="Displays your wins and losses.", inline=False)
+        embed.add_field(name="/bullshido train", value="Train daily to increase your Bullshido training level.", inline=False)
+        embed.add_field(name="/bullshido diet", value="Focus on your diet to increase your nutrition level.", inline=False)
         embed.set_image(url="https://i.ibb.co/GWpXztm/bullshido.png")
         await ctx.send(embed=embed)
 
