@@ -32,7 +32,9 @@ class Bullshido(commands.Cog):
             "nutrition_level": 1,
             "morale": 100,
             "intimidation_level": 0,
-            "stamina_level": 100
+            "stamina_level": 100,
+            "last_interaction": None,
+            "last_command_used": None
         }
         self.config.register_user(**default_user)
         self.logger = logging.getLogger("red.bullshido")
@@ -71,21 +73,21 @@ class Bullshido(commands.Cog):
         embed.add_field(name="/bullshido player_stats", value="Displays your wins and losses.", inline=False)
         embed.set_image(url="https://i.ibb.co/GWpXztm/bullshido.png")
         await ctx.send(embed=embed)
-        
-    @bullshido_group.command(name="train")
-    async def train(self, interaction: discord.Interaction):
+
+    @bullshido_group.command(name="train", description="Train daily to increase your Bullshido training level")
+    async def train(self, ctx: commands.Context):
         """Train daily to increase your Bullshido training level."""
-        user = interaction.user
-        style = await self.config.user(user).fighting_style.get()
+        user = ctx.author
+        style = await self.config.user(user).fighting_style()
         await self.update_daily_interaction(user, "train")
-        await interaction.response.send_message(f"{user} has successfully trained in {style}!", ephemeral=False)
-        
-    @bullshido_group.command(name="diet")
-    async def diet(self, interaction: discord.Interaction):
+        await ctx.send(f"{user.mention} has successfully trained in {style}!")
+
+    @bullshido_group.command(name="diet", description="Focus on your diet to increase your nutrition level")
+    async def diet(self, ctx: commands.Context):
         """Focus on your diet to increase your nutrition level."""
-        user = interaction.user
+        user = ctx.author
         await self.update_daily_interaction(user, "diet")
-        await interaction.response.send_message(f"{user} has followed their specialized diet today and gained nutrition level!", ephemeral=False)
+        await ctx.send(f"{user.mention} has followed their specialized diet today and gained nutrition level!")
     
     @bullshido_group.command(name="select_fighting_style", description="Select your fighting style")
     async def select_fighting_style(self, ctx: commands.Context):
