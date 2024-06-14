@@ -1,4 +1,5 @@
 import discord
+import asyncio
 from redbot.core import commands, Config
 from .ui_elements import SelectFightingStyleView
 from .fighting_game import FightingGame
@@ -146,6 +147,44 @@ class Bullshido(commands.Cog):
         except Exception as e:
             self.logger.error(f"Failed to start fight: {e}")
             await ctx.send(f"Failed to start the fight due to an error: {e}")
+            
+    @bullshido_group.command(name="reset_stats", description="Resets all Bullshido user data to default values")
+    async def reset_stats(self, ctx: commands.Context):
+        """Reset the Bullshido Redbot Configuration values to default for all users."""
+        # Send confirmation message
+        await ctx.send("Are you sure you want to reset Bullshido user data? Type 'YES' to confirm.")
+
+        # Check for the user's response
+        def check(m):
+            return m.author == ctx.author and m.channel == ctx.channel and m.content.upper() == "YES"
+
+        try:
+            # Wait for a response for 30 seconds
+            confirmation = await self.bot.wait_for('message', check=check, timeout=30.0)
+        except asyncio.TimeoutError:
+            await ctx.send("Reset operation cancelled due to timeout.")
+        else:
+            # If confirmed, reset all config values
+            default_user = {
+                "fighting_style": None,
+                "wins": 0,
+                "losses": 0,
+                "level": 1,
+                "training_level": 1,
+                "nutrition_level": 1,
+                "morale": 100,
+                "intimidation_level": 0,
+                "stamina_level": 100,
+                "last_interaction": None,
+                "last_command_used": None,
+                "last_train": None,
+                "last_diet": None
+            }
+            # Reset config for all users
+            async with self.config.all_users() as all_users:
+                for user_id in all_users:
+                    all_users[user_id].update(default_user)
+            await ctx.send("All config values have been reset to 0.")
 
     @bullshido_group.command(name="player_stats", description="Displays your wins and losses", aliases=["stats"])
     async def player_stats(self, ctx: commands.Context):
