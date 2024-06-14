@@ -85,8 +85,12 @@ class FightingGame:
             await round_message.edit(content=f"Round in progress: {message}\n{health_status}")
             return
         except Exception as e:
+            # Log detailed error information for debugging
             print(f"Error during play_turn: {e}")
-            await round_message.edit(content="An error occurred during the turn.")
+            print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
+            print(f"Strike: {strike}, Damage: {damage}, Bodypart: {bodypart}")
+            print(f"Attacker data: {self.player1_data if attacker == self.player1 else self.player2_data}")
+            await round_message.edit(content=f"An error occurred during the turn: {e}")
             return
         
     async def play_round(self, round_number):
