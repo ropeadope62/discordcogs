@@ -116,14 +116,17 @@ class Bullshido(commands.Cog):
         embed.add_field(
             name="Fighting Styles",
             value="Each style has unique strikes and abilities. Use `/bullshido list_fighting_styles` to see all available styles.",
+            inline=False
         )
         embed.add_field(
             name="Stamina",
             value="Fighting costs stamina, which will be regained daily, or can be replenished by purchasing stamina recovery items. Use `/bullshido stamina` to see your current stamina level.",
+            inline=False
         )
         embed.add_field(
             name="Buy",
             value="Buy stamina recovery items using `/bullshido buy <item>`.",
+            inline=False
         )
         embed.set_thumbnail(url="https://i.ibb.co/GWpXztm/bullshido.png")
         await ctx.send(embed=embed)
