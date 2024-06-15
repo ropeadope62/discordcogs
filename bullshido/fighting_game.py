@@ -2,7 +2,7 @@ import random
 import asyncio
 import discord
 import math
-from .fighting_constants import STRIKES, BODY_PARTS, ACTIONS, CRITICAL_MESSAGES, CRITICAL_CONCLUDES
+from .fighting_constants import STRIKES, BODY_PARTS, STRIKE_ACTIONS, GRAPPLE_ACTIONS, GRAPPLE_KEYWORDS, CRITICAL_MESSAGES, CRITICAL_CONCLUDES
 
 class FightingGame:
     def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog):
@@ -55,8 +55,11 @@ class FightingGame:
         bodypart = random.choice(BODY_PARTS)
         return bodypart
 
-    async def play_turn(self, round_message):
-        action = random.choice(ACTIONS)
+    def is_grapple_move(self, strike):
+        # Check if the strike contains any grapple keywords
+        return any(keyword.lower() in strike.lower() for keyword in GRAPPLE_KEYWORDS)
+
+    async def play_turn(self, round_message, round_number):
         if self.current_turn == self.player1:
             attacker = self.player1
             defender = self.player2
@@ -69,6 +72,14 @@ class FightingGame:
         try:
             strike, damage, critical_message, conclude_message = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender)
             bodypart = await self.target_bodypart()  
+
+            if self.is_grapple_move(strike):
+                action = random.choice(GRAPPLE_ACTIONS)
+                message = f"{critical_message} {attacker.display_name} {action} a {strike} causing {damage} damage! {conclude_message}"
+            else:
+                action = random.choice(STRIKE_ACTIONS)
+                message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"
+
             if self.current_turn == self.player1:
                 self.player2_health -= damage
                 self.current_turn = self.player2
@@ -76,14 +87,19 @@ class FightingGame:
                 self.player1_health -= damage
                 self.current_turn = self.player1
 
-            message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"
             health_status = f"{defender.display_name} now has {self.player2_health if defender == self.player2 else self.player1_health} health left."
             sleep_duration = random.uniform(2, 3) + (2 if critical_message else 0)  # Add 2 extra seconds for critical hits
             await asyncio.sleep(sleep_duration)
 
             # Edit the round message with updated content
-            await round_message.edit(content=f"Round in progress: {message}\n{health_status}")
-            return
+            await round_message.edit(content=f"Round {round_number} in progress: {message}\n{health_status}")
+
+            # Check for KO
+            if self.player1_health <= 0 or self.player2_health <= 0:
+                await self.declare_winner_by_ko(round_message)
+                return True
+
+            return False
         except Exception as e:
             # Log detailed error information for debugging
             print(f"Error during play_turn: {e}")
@@ -91,8 +107,37 @@ class FightingGame:
             print(f"Strike: {strike}, Damage: {damage}, Bodypart: {bodypart}")
             print(f"Attacker data: {self.player1_data if attacker == self.player1 else self.player2_data}")
             await round_message.edit(content=f"An error occurred during the turn: {e}")
-            return
-        
+            return True
+
+    async def declare_winner_by_ko(self, round_message):
+        if self.player1_health <= 0:
+            winner = self.player2
+            loser = self.player1
+        else:
+            winner = self.player1
+            loser = self.player2
+
+        final_message = (
+            f"Knock Out! {winner.display_name} wins the fight by KO!\n"
+            f"{loser.display_name} is unable to continue."
+        )
+        await round_message.edit(content=final_message)
+        await self.channel.send(final_message)
+
+        try:
+            await self.bullshido_cog.update_player_stats(winner, win=True)
+            await self.bullshido_cog.update_player_stats(loser, win=False)
+            current_loser_morale = await self.bullshido_cog.config.user(loser).morale()
+            current_winner_morale = await self.bullshido_cog.config.user(winner).morale()
+            new_loser_morale = max(0, current_loser_morale - 20)
+            new_winner_morale = min(100, current_winner_morale + 20)
+            await self.bullshido_cog.config.user(loser).morale.set(new_loser_morale)
+            await self.bullshido_cog.config.user(winner).morale.set(new_winner_morale)
+            await self.channel.send(f"{loser.display_name}'s morale has been reduced!")
+            await self.channel.send(f"{winner.display_name}'s morale has increased!")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
     async def play_round(self, round_number):
         strike_count = 0
         player1_health_start = self.player1_health
@@ -103,7 +148,10 @@ class FightingGame:
         round_message = await self.channel.send(f"Round {round_number} is starting...")
 
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
-            await self.play_turn(round_message)
+            ko_occurred = await self.play_turn(round_message, round_number)
+            if ko_occurred:
+                return
+
             strike_count += 1
             await asyncio.sleep(random.uniform(2, 3))
 
@@ -152,7 +200,7 @@ class FightingGame:
 
         for round_number in range(1, self.rounds + 1):
             print(f"Round {round_number} is starting...")
-            round_result = await self.play_round(round_number)
+            await self.play_round(round_number)
             if self.player1_health <= 0 or self.player2_health <= 0:
                 break
 
@@ -170,13 +218,13 @@ class FightingGame:
                 winner = self.player2
                 loser = self.player1
 
-        final_message = (
-            f"The fight is over!\n"
-            f"After 3 rounds, we go to the judges' scorecard for a decision.\n"
-            f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, by unanimous decision, {winner.display_name}!\n"
-            f"{loser.display_name} fought valiantly but was defeated."
-        )
-        await self.channel.send(final_message)
+        if self.player1_health > 0 and self.player2_health > 0:
+            final_message = (
+                f"The fight is over!\n"
+                f"After 3 rounds, we go to the judges' scorecard for a decision.\n"
+                f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, by unanimous decision, {winner.display_name}!\n"
+            )
+            await self.channel.send(final_message)
 
         try:
             await self.bullshido_cog.update_player_stats(winner, win=True)

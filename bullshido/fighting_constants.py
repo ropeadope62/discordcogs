@@ -123,9 +123,9 @@ STRIKES = {
                 "Headbutt": (5, 7),
                 "Short Elbow": (4, 6),
                 "Hammerfist": (5, 7),
-                "Knee to the Groin": (6, 8),
-                "Elbow to the Face": (6, 8),
-                "Knee to the Face": (6, 8)
+                "Inside Knee": (6, 8),
+                "Elbow": (6, 8),
+                "High Knee": (6, 8)
             },
             "Capoeira": {
                 "Sweep": (5, 7),
@@ -220,7 +220,14 @@ BODY_PARTS = [
     "cranium", "kisser", "chin", "left shoulder", "right shoulder", "ass", "crotch", "spine", "ribs", "spinal column"
 ]
 
-ACTIONS = [
+GRAPPLE_ACTIONS = [
+    "completes", "nails", "executes", "finishes", "performs"]
+
+GRAPPLE_KEYWORDS = [
+    "Choke", "Mount", "Triangle", "Kimura", "Omoplata", "Crucifix", "Guillotine", "Lock", "Bar", "Hold", "Submission", "Crank", "Takedown", "Suplex", "Slam", "Throw"
+]
+
+STRIKE_ACTIONS = [
     "throws", "slams", "nails", "whacks", "connects", "rips", "thuds", "crushes", "snaps", "smashes", 
     "pounds", "cracks", "hits", "drives", "lands"
 ]
