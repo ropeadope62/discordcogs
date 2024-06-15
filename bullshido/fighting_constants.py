@@ -75,7 +75,13 @@ STRIKES = {
                 "Crane Kick": (6, 8),
                 "Mantis Strike": (5, 7),
                 "Iron Fist": (6, 8),
-                "Phoenix Eye Fist": (5, 7)
+                "Phoenix Eye Fist": (5, 7),
+                "Monkey Strike": (5, 7),
+                "Dragon Fist": (5, 7),
+                "Tiger Fist": (5, 7),
+                "Crane Fist": (5, 7),
+                "Mantis Fist": (5, 7),
+                "Monkey Fist": (5, 7)
             },
             "Judo": {
                 "Throw": (5, 7),
@@ -104,6 +110,8 @@ STRIKES = {
                 "Push Kick": (4, 6)
             },
             "Wrestling": {
+                "Wild Punch": (5, 7),
+                "Kick": (6, 8),
                 "Slam": (6, 8),
                 "Grapple": (5, 7),
                 "Takedown": (5, 7),
@@ -119,7 +127,8 @@ STRIKES = {
                 "Low Kick": (5, 7),
                 "Knee Strike": (5, 7),
                 "Eye Gouge": (4, 6),
-                "Groin Strike": (5, 7),
+                "Backhand": (5, 7),
+                "Finger Strike": (5, 7),
                 "Headbutt": (5, 7),
                 "Short Elbow": (4, 6),
                 "Hammerfist": (5, 7),
@@ -224,7 +233,7 @@ GRAPPLE_ACTIONS = [
     "completes", "nails", "executes", "finishes", "performs"]
 
 GRAPPLE_KEYWORDS = [
-    "Choke", "Mount", "Triangle", "Kimura", "Omoplata", "Crucifix", "Guillotine", "Lock", "Bar", "Hold", "Submission", "Crank", "Takedown", "Suplex", "Slam", "Throw", "Drag"
+    "Choke", "Mount", "Triangle", "Kimura", "Omoplata", "Crucifix", "Guillotine", "Lock", "Bar", "Hold", "Submission", "Crank", "Takedown", "Suplex", "Slam", "Throw", "Drag", "Take", "Redirect", "Chokehold"
 ]
 
 STRIKE_ACTIONS = [
