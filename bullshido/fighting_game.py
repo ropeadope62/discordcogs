@@ -3,6 +3,7 @@ import asyncio
 import discord
 import math
 from .fighting_constants import STRIKES, BODY_PARTS, STRIKE_ACTIONS, GRAPPLE_ACTIONS, GRAPPLE_KEYWORDS, CRITICAL_MESSAGES, CRITICAL_CONCLUDES
+from PIL import Image, ImageDraw, ImageFont
 
 class FightingGame:
     def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog):

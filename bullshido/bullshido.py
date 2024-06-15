@@ -65,18 +65,67 @@ class Bullshido(commands.Cog):
         for chunk in [logs[i:i+10] for i in range(0, len(logs), 10)]:  
             await ctx.send("```\n{}\n```".format("\n".join(chunk)))
     
-    @bullshido_group.command(name="info", description="Displays information about the Bullshido game commands")
-    async def bullshido_info(self, ctx: commands.Context):
+    @bullshido_group.command(name="commands", description="Displays the Bullshido game commands")
+    async def bullshido_commands(self, ctx: commands.Context):
         """Displays information about the Bullshido game commands."""
         embed = discord.Embed(title="Bullshido Game Commands", description="Learn how to play and interact with the Bullshido game.", color=0x00ff00)
         embed.add_field(name="/bullshido select_fighting_style", value="Select your fighting style.", inline=False)
         embed.add_field(name="/bullshido list_fighting_styles", value="List all available fighting styles.", inline=False)
         embed.add_field(name="/bullshido fight", value="Start a fight with another player.", inline=False)
-        embed.add_field(name="/bullshido info", value="Displays information about the Bullshido game commands.", inline=False)
+        embed.add_field(name="/bullshido commands", value="Displays information about the Bullshido game commands.", inline=False)
         embed.add_field(name="/bullshido player_stats", value="Displays your wins and losses.", inline=False)
         embed.add_field(name="/bullshido train", value="Train daily to increase your Bullshido training level.", inline=False)
         embed.add_field(name="/bullshido diet", value="Focus on your diet to increase your nutrition level.", inline=False)
+        embed.add_field(name="/bullshido about", value="Displays information about the Bullshido game.", inline=False)
         embed.set_image(url="https://i.ibb.co/GWpXztm/bullshido.png")
+        await ctx.send(embed=embed)
+        
+    @bullshido_group.command(name="about", description="Learn how the Bullshido game works")
+    async def bullshido_about(self, ctx: commands.Context):
+        """Provides information about how the Bullshido game works."""
+        embed = discord.Embed(
+            title="About Bullshido",
+            description="Welcome to Bullshido, a Discord game of epic combat!",
+            color=0x00ff00
+        )
+        embed.add_field(
+            name="Selecting a Fighting Style",
+            value="Use `/bullshido select_fighting_style` to choose your fighting style. Each style has unique strikes and abilities.",
+            inline=False
+        )
+        embed.add_field(
+            name="Daily Training and Diet",
+            value="Train and follow a diet each day to improve your stats:\n- `/bullshido train`: Train daily to increase your training level.\n- `/bullshido diet`: Follow a diet to increase your nutrition level.\n*Note: Each can be used once every 24 hours.*\n Your overall nutrition and training level will improve your chances of winning a fight.",
+            inline=False
+        )
+        embed.add_field(
+            name="Starting a Fight",
+            value="Challenge another player to a fight using `/bullshido fight @player`. The fight consists of 3 rounds and will be scored by a panel of judges, unless a KO/TKO/Submission occurs.",
+            inline=False
+        )
+        embed.add_field(
+            name="Winning and Losing",
+            value="Winning a fight increases your wins and morale. Losing decreases your morale. Keep training and dieting to improve your chances in future fights.",
+            inline=False
+        )
+        embed.add_field(
+            name="Penalties for Inactivity",
+            value="If you miss a day of training or diet, your stats will decrease by 20 points.",
+            inline=False
+        )
+        embed.add_field(
+            name="Fighting Styles",
+            value="Each style has unique strikes and abilities. Use `/bullshido list_fighting_styles` to see all available styles.",
+        )
+        embed.add_field(
+            name="Stamina",
+            value="Fighting costs stamina, which will be regained daily, or can be replenished by purchasing stamina recovery items. Use `/bullshido stamina` to see your current stamina level.",
+        )
+        embed.add_field(
+            name="Buy",
+            value="Buy stamina recovery items using `/bullshido buy <item>`.",
+        )
+        embed.set_thumbnail(url="https://i.ibb.co/GWpXztm/bullshido.png")
         await ctx.send(embed=embed)
 
     @bullshido_group.command(name="train", description="Train daily to increase your Bullshido training level")
@@ -211,7 +260,7 @@ class Bullshido(commands.Cog):
         embed.add_field(name="Morale", value=morale, inline=True)
         embed.add_field(name="Intimidation Level", value=intimidation_level, inline=True)
         embed.add_field(name="Stamina", value=stamina, inline=True)
-        embed.set_thumbnail(url="https://i.ibb.co/GWpXztm/bullshido.png")
+        embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
         await ctx.send(embed=embed)
 
     #Get player data from the redbot config 
