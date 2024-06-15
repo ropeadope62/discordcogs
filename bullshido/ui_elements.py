@@ -88,3 +88,9 @@ class SelectFightingStyleView(ui.View):
         await self.on_fighting_style_selected(self.ctx, self.user, "MMA")
         await interaction.response.send_message("You have selected MMA", ephemeral=True)
         self.stop()
+    
+    @ui.button(label="Brazilian Jiu-Jitsu", style=ButtonStyle.primary)
+    async def handle_bjj(self, interaction: discord.Interaction, button: ui.Button):
+        await self.on_fighting_style_selected(self.ctx, self.user, "Brazilian Jiu-Jitsu")
+        await interaction.response.send_message("You have selected Brazilian Jiu-Jitsu", ephemeral=True)
+        self.stop()

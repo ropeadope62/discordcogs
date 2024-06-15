@@ -224,7 +224,7 @@ GRAPPLE_ACTIONS = [
     "completes", "nails", "executes", "finishes", "performs"]
 
 GRAPPLE_KEYWORDS = [
-    "Choke", "Mount", "Triangle", "Kimura", "Omoplata", "Crucifix", "Guillotine", "Lock", "Bar", "Hold", "Submission", "Crank", "Takedown", "Suplex", "Slam", "Throw"
+    "Choke", "Mount", "Triangle", "Kimura", "Omoplata", "Crucifix", "Guillotine", "Lock", "Bar", "Hold", "Submission", "Crank", "Takedown", "Suplex", "Slam", "Throw", "Drag"
 ]
 
 STRIKE_ACTIONS = [
