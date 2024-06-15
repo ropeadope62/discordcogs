@@ -77,7 +77,7 @@ class Bullshido(commands.Cog):
         embed.add_field(name="/bullshido train", value="Train daily to increase your Bullshido training level.", inline=False)
         embed.add_field(name="/bullshido diet", value="Focus on your diet to increase your nutrition level.", inline=False)
         embed.add_field(name="/bullshido about", value="Displays information about the Bullshido game.", inline=False)
-        embed.set_image(url="https://i.ibb.co/GWpXztm/bullshido.png")
+        embed.set_image(url="https://i.ibb.co/7KK90YH/bullshido.png")
         await ctx.send(embed=embed)
         
     @bullshido_group.command(name="about", description="Learn how the Bullshido game works")
@@ -128,7 +128,7 @@ class Bullshido(commands.Cog):
             value="Buy stamina recovery items using `/bullshido buy <item>`.",
             inline=False
         )
-        embed.set_thumbnail(url="https://i.ibb.co/GWpXztm/bullshido.png")
+        embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
         await ctx.send(embed=embed)
 
     @bullshido_group.command(name="train", description="Train daily to increase your Bullshido training level")
