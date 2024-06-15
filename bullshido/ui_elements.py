@@ -61,7 +61,7 @@ class SelectFightingStyleView(ui.View):
 
     @ui.button(label="Krav-Maga", style=ButtonStyle.primary)
     async def handle_kravmaga(self, interaction: discord.Interaction, button: ui.Button):
-        await self.on_fighting_style_selected(self.ctx, self.user, "Krav-Maga")
+        await self.on_fighting_style_selected(self.ctx, self.user, "Kravmaga")
         await interaction.response.send_message("You have selected Krav-Maga", ephemeral=True)
         self.stop()
 
