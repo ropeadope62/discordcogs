@@ -106,7 +106,7 @@ class StoryCraft_AI:
             },
             {
                 "role": "assistant",
-                "content": "The party members are Seeker (automaton fighter), Asinis (human cleric), Astrea (druid), Serath (hollowed one fighter), and Yfo (satyr Bard).",
+                "content": "The party members are Seeker (male, automaton, fighter), Asinis (male, human cleric), Astrea (female, human, druid), Serath (male, hollowed one fighter), and Draxis (Dark Elf Rogue).",
             },
             {
                 "role": "user",

@@ -15,7 +15,7 @@ class StoryMaps:
             return
         # Use os.path.join to construct the file path
         map_image_path = os.path.join(
-            os.getcwd(), "story_maps", "map_images", f"{location}.png"
+            os.path.dirname(__file__), "map_images", f"{location}.png"
         )
         if not os.path.exists(map_image_path):
             await ctx.send(f"Map for {location} not found.")

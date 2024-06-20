@@ -1,63 +1,49 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime
 import json
-from typing import List
 import os
 import glob
 import discord
+from typing import List
 
-from redbot.core import commands, checks, app_commands, Config
+from redbot.core import commands, checks, Config
 from redbot.core.utils.chat_formatting import pagify
 from redbot.core.utils import menus
 from redbot.core.utils.menus import DEFAULT_CONTROLS
-from interactions.ext.paginators import Paginator
-from .story_ai.story_ai import StoryCraft_AI
-from .story_maps.story_maps import StoryMaps
-
-from discord import (
-    Embed,
-    Button,
-    Interaction,
-    Message,
-    ui,
-    InteractionResponse,
-    ButtonStyle,
-)
+from storycraft.story_ai import StoryCraft_AI
+from storycraft.story_maps import StoryMaps
 
 story_ai = StoryCraft_AI()
 story_map = StoryMaps()
 
-
-class ConfirmButton(ui.Button["ConfirmationView"]):
+class ConfirmButton(discord.ui.Button["ConfirmationView"]):
     def __init__(self, label: str, custom_id: str):
         super().__init__(style=1, label=label, custom_id=custom_id)
 
-    async def callback(self, interaction: Interaction):
+    async def callback(self, interaction: discord.Interaction):
         assert self.view is not None
         self.view.value = self.custom_id
         self.view.stop()
 
-
-class ConfirmationView(ui.View):
+class ConfirmationView(discord.ui.View):
     def __init__(self):
         super().__init__()
         self.value = None
 
-    @ui.button(label="Yes", style=ButtonStyle.primary, custom_id="yes_generate")
-    async def yes_button(self, interaction: Interaction, button: ui.Button):
+    @discord.ui.button(label="Yes", style=discord.ButtonStyle.primary, custom_id="yes_generate")
+    async def yes_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.value = "yes_generate"
         await interaction.response.defer()
         self.stop()
         await self.generate.invoke(interaction)
         await interaction.followup.edit_message(interaction.message.id, view=None)
 
-    @ui.button(label="No", style=ButtonStyle.danger, custom_id="no_generate")
-    async def no_button(self, interaction: Interaction, button: ui.Button):
+    @discord.ui.button(label="No", style=discord.ButtonStyle.danger, custom_id="no_generate")
+    async def no_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.value = "no_generate"
         await interaction.response.defer()
         self.stop()
         await interaction.followup.edit_message(interaction.message.id, view=None)
-
 
 class StoryCraft(commands.Cog):
     def __init__(self, bot):
@@ -70,7 +56,7 @@ class StoryCraft(commands.Cog):
         self.party_location = None
         self.story_entries = 0
         self.config = Config.get_conf(self, identifier=7778465121547)
-        default_guild = {"stories": {}}
+        default_guild = {"stories": {}, "last_story_title": ""}
         self.config.register_guild(**default_guild)
 
     async def read_json_file(self, file_name):
@@ -99,22 +85,18 @@ class StoryCraft(commands.Cog):
 
     def get_latest_story(self):
         """Returns the path of the latest story file based on the creation time."""
-
         return max(glob.glob("story_*.txt"), key=os.path.getctime)
 
+    @staticmethod
     def get_formatted_date_from_filename(file_name):
         """Extract the date from the file name and format it."""
-        date_str = file_name.split("_")[1].split(".")[
-            0
-        ]  # Assuming "story_" prefix and ".txt" suffix
+        date_str = file_name.split("_")[1].split(".")[0]  # Assuming "story_" prefix and ".txt" suffix
         dt = datetime.strptime(date_str, "%Y%m%d%H%M%S")
         day = int(dt.strftime("%d"))
-        suffix = (
-            "th" if 11 <= day <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
-        )
-        formatted_date = f"{day}{suffix} of {dt.strftime('%B')}, {dt.year}"
-        return formatted_date
+        suffix = "th" if 11 <= day <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+        return f"{day}{suffix} of {dt.strftime('%B')}, {dt.year}"
 
+    @staticmethod
     async def send_story_chunks(ctx, content: str, chunk_size: int = 2000):
         """Splits the content into chunks that fit within Discord's 2000-character limit for messages."""
         if len(content) <= chunk_size:
@@ -127,7 +109,6 @@ class StoryCraft(commands.Cog):
             if len(message) + len(line) + 1 > chunk_size:
                 await ctx.send(message)
                 message = ""
-
             message += line + "\n"
 
         if message:
@@ -135,16 +116,13 @@ class StoryCraft(commands.Cog):
 
     def split_chunks_for_embed(self, last_story, chunk_size=1024):
         """Splits the content into chunks that fit within Discord's 1024-character limit for embed fields."""
-        chunks = []
-        for i in range(0, len(last_story), chunk_size):
-            chunks.append(last_story[i : i + chunk_size])
-        return chunks
+        return [last_story[i:i + chunk_size] for i in range(0, len(last_story), chunk_size)]
 
     async def send_paginated_embed(self, ctx, target_channel, content_list, summary, *, announcement_title):
         """For sending paginated embeds to be used with the story announce command."""
         embeds = []
         for page, content in enumerate(content_list, start=1):
-            embed = Embed(
+            embed = discord.Embed(
                 title=f"{announcement_title} - {datetime.now().strftime('%Y-%m-%d')}\n",
                 description=f"*{summary}*\n\n{content[:1024]}",
                 color=0x8E7CC3
@@ -155,11 +133,6 @@ class StoryCraft(commands.Cog):
             embeds.append(embed)
 
         await menus.menu(ctx, embeds, DEFAULT_CONTROLS, message=None, page=0, timeout=3600)
-
-        async def interaction_paginator(self, ctx, last_story):
-            bot = self.bot 
-            paginator = Paginator.create_from_string(bot, last_story, page_size=1000)
-            await paginator.send(ctx)            
 
     @commands.group()
     @checks.admin_or_permissions(manage_messages=True)
@@ -172,8 +145,7 @@ class StoryCraft(commands.Cog):
     @storycraft.command()
     async def start(self, ctx):
         """Start collecting messages.\n
-        Usage: >storycraft start
-        """
+        Usage: >storycraft start"""
         self.collecting = True
         await ctx.send("Started collecting messages for the story.")
 
@@ -199,17 +171,9 @@ class StoryCraft(commands.Cog):
             await ctx.send("Story generation cancelled.")
 
     @storycraft.command()
-    async def generate(
-        self,
-        ctx,
-        temperature: float = 0.3,
-        frequency_penalty: float = 0.5,
-        presence_penalty: float = 0.5,
-    ):
+    async def generate(self, ctx, temperature: float = 0.3, frequency_penalty: float = 0.5, presence_penalty: float = 0.5):
         """Send the latest session to OpenAI to generate a story.\n
-        Usage: >storycraft generate\n Optional Parameters: \n temperature: (default 0.3) \n frequency_penalty: (default 0.5) \n presence_penalty: (default 0.5) \n Usage with custom parameters: >storycraft generate 0.5 0.5 0.5
-        """
-
+        Usage: >storycraft generate\n Optional Parameters: \n temperature: (default 0.3) \n frequency_penalty: (default 0.5) \n presence_penalty: (default 0.5) \n Usage with custom parameters: >storycraft generate 0.5 0.5 0.5"""
         adjustment_params = {
             "temperature": temperature,
             "frequency_penalty": frequency_penalty,
@@ -224,6 +188,15 @@ class StoryCraft(commands.Cog):
             story_ai.set_last_story(response)
             await StoryCraft.send_story_chunks(ctx, response)
             await self.write_json_file("story_history.json", {"story": self.last_story})
+
+        # Store the story in the bot's configuration with a unique title
+        story_title = f"Story_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        guild = ctx.guild
+        async with self.config.guild(guild).stories() as stories:
+            stories[story_title] = {"summary": "Story Summary", "content": response}
+
+        # Store the latest story title
+        await self.config.guild(guild).last_story_title.set(story_title)
 
         await ctx.send(
             "\n\nAre you pleased with this story? Use >storycraft save to save it or >storycraft edit <changes> to make changes."
@@ -263,26 +236,20 @@ class StoryCraft(commands.Cog):
     async def announce(self, ctx, *, announcement_title):
         """Announce to the StoryCraft channel.\n
         Usage: >storycraft announce <message>"""
-        # send the paginated embed to the StoryCraft channel
         last_story = self.last_story
         target_channel = self.bot.get_channel(1154282874401456149)
         summary = await self.get_summary(ctx)
         if target_channel is None:
             await ctx.send("Channel not found")
             return
-        # make a discord embed
         story_chunks = self.split_chunks_for_embed(last_story)
 
         await self.send_paginated_embed(
-            ctx,
-            target_channel,
-            story_chunks,
-            summary,
-            announcement_title=announcement_title,
+            ctx, target_channel, story_chunks, summary, announcement_title=announcement_title
         )
 
         await ctx.send("Announcement posted to Story Craft channel")
-        
+
         guild = ctx.guild
         story_data = {
             "summary": summary,
@@ -302,31 +269,21 @@ class StoryCraft(commands.Cog):
             summary = story_data["summary"]
             content = story_data["content"]
             story_chunks = self.split_chunks_for_embed(content)
-            
-        await self.send_paginated_embed(
-            ctx,
-            target_channel,
-            story_chunks,
-            summary,
-            announcement_title=summary,
-        )
+            await self.send_paginated_embed(
+                ctx, target_channel, story_chunks, summary, announcement_title=summary
+            )
 
     @storycraft.command()
     async def announce_test(self, ctx, *, announcement_title):
         """Announce to the StoryCraft channel - Test Server\n
         Usage: >storycraft announce <message>"""
-        # send the paginated embed to the StoryCraft channel
         last_story = self.last_story
         target_channel = self.bot.get_channel(1157129358406856704)
         summary = await self.get_summary(ctx)
         story_chunks = self.split_chunks_for_embed(last_story)
 
         await self.send_paginated_embed(
-            ctx,
-            target_channel,
-            story_chunks,
-            summary,
-            announcement_title=announcement_title,
+            ctx, target_channel, story_chunks, summary, announcement_title=announcement_title
         )
 
         await ctx.send("Announcement posted to Story Craft channel")
@@ -334,16 +291,11 @@ class StoryCraft(commands.Cog):
     @storycraft.command()
     async def help(self, ctx):
         """Displays the StoryCraft Help Menu in an embed."""
-
-        # Create the embed
-
         embed = discord.Embed(
             title="StoryCraft Help Menu",
             description="StoryCraft will record dnd session notes as user messages and write them into a story in the style of high fantasy.",
             color=0x8E7CC3,
         )
-
-        # set the fields of the embed
         embed.set_thumbnail(url="https://iili.io/J28Etst.png")
         embed.add_field(
             name=">storycraft start",
@@ -393,14 +345,13 @@ class StoryCraft(commands.Cog):
                 value=StoryCraft.get_formatted_date_from_filename(file),
                 inline=False,
             )
-
         await ctx.send(embed=embed)
 
     @storycraft.command()
-    async def get(self, ctx, filename):
-        """get a session based on file in glob.glob("session_*.txt")"""
+    async def get(self, ctx, filename=None):
+        """Get a session based on file in glob.glob("session_*.txt")"""
         if filename is None:
-            filename = self.get_latest_session()
+            filename = self.get_latest_story()
             await ctx.send(f"Retrieving latest session: {filename}")
         else:
             await ctx.send(f"Retrieving session: {filename}")
@@ -416,9 +367,7 @@ class StoryCraft(commands.Cog):
             await ctx.send(f"No channel found with ID {target_channel}.")
             return
         self.announce_channel = target_channel_obj
-        await ctx.send(
-            f"Announcements will be posted to {self.announce_channel.mention}"
-        )
+        await ctx.send(f"Announcements will be posted to {self.announce_channel.mention}")
 
     @storycraft.command()
     async def showmap(self, ctx, *, location: str):
@@ -428,13 +377,39 @@ class StoryCraft(commands.Cog):
     @commands.Cog.listener("on_message")
     async def on_message_listener(self, message):
         """Listens for messages and appends the content of non-bot messages to the temporary messages list if collecting is enabled."""
-
         if message.author.bot:
             return
 
         if self.collecting and not message.content.startswith(">storycraft"):
             self.temp_messages.append(message.content)
 
+    @storycraft.command()
+    async def getfullstory(self, ctx, *, title: str):
+        """Retrieve and display the full story by its title at any time."""
+        guild = ctx.guild
+        stories = await self.config.guild(guild).stories()
+        story_data = stories.get(title)
+        if story_data:
+            content = story_data["content"]
+            await StoryCraft.send_story_chunks(ctx, content)
+        else:
+            await ctx.send(f"No story found with title '{title}'.")
+
+    @storycraft.command()
+    async def getlaststory(self, ctx):
+        """Retrieve and display the latest story."""
+        guild = ctx.guild
+        last_story_title = await self.config.guild(guild).last_story_title()
+        if last_story_title:
+            stories = await self.config.guild(guild).stories()
+            story_data = stories.get(last_story_title)
+            if story_data:
+                content = story_data["content"]
+                await StoryCraft.send_story_chunks(ctx, content)
+            else:
+                await ctx.send("No story data found for the latest story.")
+        else:
+            await ctx.send("No latest story title found.")
 
 def setup(bot):
     bot.add_cog(StoryCraft(bot))
