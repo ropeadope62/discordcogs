@@ -10,8 +10,8 @@ from redbot.core import commands, checks, Config
 from redbot.core.utils.chat_formatting import pagify
 from redbot.core.utils import menus
 from redbot.core.utils.menus import DEFAULT_CONTROLS
-from storycraft.story_ai import StoryCraft_AI
-from storycraft.story_maps import StoryMaps
+from .story_ai import StoryCraft_AI
+from .story_maps import StoryMaps
 
 story_ai = StoryCraft_AI()
 story_map = StoryMaps()
