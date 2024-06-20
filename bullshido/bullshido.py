@@ -1,3 +1,5 @@
+# bullshido.py
+
 import discord
 import asyncio
 from redbot.core import commands, Config
@@ -48,7 +50,6 @@ class Bullshido(commands.Cog):
         self.logger.setLevel(logging.DEBUG)
         self.bg_task = self.bot.loop.create_task(self.check_inactivity())
     
-    
     async def check_inactivity(self):
         await self.bot.wait_until_ready()
         while not self.bot.is_closed():
@@ -90,7 +91,7 @@ class Bullshido(commands.Cog):
         if not logs:
             await ctx.send("No logs available.")
             return
-        for chunk in [logs[i:i+10] for i in range(0, len(logs), 10)]:  
+        for chunk in [logs[i:i+10] for i in range(0, len(logs), 10)]:
             await ctx.send("```\n{}\n```".format("\n".join(chunk)))
     
     @bullshido_group.command(name="commands", description="Displays the Bullshido game commands")
@@ -296,7 +297,6 @@ class Bullshido(commands.Cog):
                 await ctx.send("All config values have been reset to default.")
         except asyncio.TimeoutError:
             await ctx.send("Reset operation cancelled due to timeout.")
-
 
     @bullshido_group.command(name="player_stats", description="Displays your wins and losses", aliases=["stats"])
     async def player_stats(self, ctx: commands.Context):
