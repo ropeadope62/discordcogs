@@ -46,6 +46,34 @@ class Bullshido(commands.Cog):
         formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
         self.memory_handler.setFormatter(formatter)
         self.logger.setLevel(logging.DEBUG)
+        self.bg_task = self.bot.loop.create_task(self.check_inactivity())
+    
+    
+    async def check_inactivity(self):
+        await self.bot.wait_until_ready()
+        while not self.bot.is_closed():
+            await self.apply_inactivity_penalties()
+            await asyncio.sleep(3600)  # Check every hour
+
+    async def apply_inactivity_penalties(self):
+        current_time = datetime.utcnow()
+        async with self.config.all_users() as users:
+            for user_id, user_data in users.items():
+                await self.apply_penalty(user_id, user_data, current_time, "train", "training_level")
+                await self.apply_penalty(user_id, user_data, current_time, "diet", "nutrition_level")
+
+    async def apply_penalty(self, user_id, user_data, current_time, last_action_key, level_key):
+        last_action = user_data.get(f"last_{last_action_key}")
+        if last_action:
+            last_action_time = datetime.strptime(last_action, '%Y-%m-%d %H:%M:%S')
+            if current_time - last_action_time > timedelta(days=1):
+                # Apply penalty if the user missed a day
+                new_level = max(1, user_data[level_key] - 20)
+                await self.config.user_from_id(user_id)[level_key].set(new_level)
+                user = self.bot.get_user(user_id)
+                if user:
+                    await user.send(f"You've lost 20 points in your {level_key.replace('_', ' ')} due to inactivity.")
+                await self.config.user_from_id(user_id)[f"last_{last_action_key}"].set(current_time.strftime('%Y-%m-%d %H:%M:%S'))
 
     async def set_fighting_style(self, ctx: commands.Context, user: discord.Member, style: str):
         await self.config.user(user).fighting_style.set(style)
@@ -165,6 +193,34 @@ class Bullshido(commands.Cog):
         await self.update_daily_interaction(user, "diet")
         await self.config.user(user).last_diet.set(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
         await ctx.send(f"{user.mention} has followed their specialized diet today and gained nutrition level!")
+
+    async def update_daily_interaction(self, user, command_used):
+        user_data = await self.config.user(user).all()
+        today = datetime.utcnow().date()
+        
+        last_interaction = user_data.get(f'last_{command_used}')
+        if last_interaction:
+            last_interaction_date = datetime.strptime(last_interaction, '%Y-%m-%d %H:%M:%S').date()
+            if today - last_interaction_date > timedelta(days=1):
+                # Apply penalty if the user missed a day
+                if command_used == "train":
+                    new_training_level = max(1, user_data['training_level'] - 20)
+                    await self.config.user(user).training_level.set(new_training_level)
+                elif command_used == "diet":
+                    new_nutrition_level = max(1, user_data['nutrition_level'] - 20)
+                    await self.config.user(user).nutrition_level.set(new_nutrition_level)
+                await user.send(f"You've lost 20 points in your {command_used} level due to inactivity.")
+        
+        # Update the user's config for today
+        await self.config.user(user)[f'last_{command_used}'].set(today.strftime('%Y-%m-%d %H:%M:%S'))
+        
+        # Increment specific stats based on the command used
+        if command_used == "train":
+            new_training_level = user_data['training_level'] + 10
+            await self.config.user(user).training_level.set(new_training_level)
+        elif command_used == "diet":
+            new_nutrition_level = user_data['nutrition_level'] + 10
+            await self.config.user(user).nutrition_level.set(new_nutrition_level)
     
     @bullshido_group.command(name="select_fighting_style", description="Select your fighting style")
     async def select_fighting_style(self, ctx: commands.Context):
@@ -213,30 +269,34 @@ class Bullshido(commands.Cog):
         try:
             # Wait for a response for 30 seconds
             confirmation = await self.bot.wait_for('message', check=check, timeout=30.0)
+            if confirmation:
+                # If confirmed, reset all config values
+                default_user = {
+                    "fighting_style": None,
+                    "wins": 0,
+                    "losses": 0,
+                    "level": 1,
+                    "training_level": 1,
+                    "nutrition_level": 1,
+                    "morale": 100,
+                    "intimidation_level": 0,
+                    "stamina_level": 100,
+                    "last_interaction": None,
+                    "last_command_used": None,
+                    "last_train": None,
+                    "last_diet": None
+                }
+
+                async with self.config.all_users() as all_users:
+                    for user_id in all_users:
+                        user_config = self.config.user_from_id(user_id)
+                        for key, value in default_user.items():
+                            await user_config.set_raw(key, value=value)
+
+                await ctx.send("All config values have been reset to default.")
         except asyncio.TimeoutError:
             await ctx.send("Reset operation cancelled due to timeout.")
-        else:
-            # If confirmed, reset all config values
-            default_user = {
-                "fighting_style": None,
-                "wins": 0,
-                "losses": 0,
-                "level": 1,
-                "training_level": 1,
-                "nutrition_level": 1,
-                "morale": 100,
-                "intimidation_level": 0,
-                "stamina_level": 100,
-                "last_interaction": None,
-                "last_command_used": None,
-                "last_train": None,
-                "last_diet": None
-            }
-            # Reset config for all users
-            async with self.config.all_users() as all_users:
-                for user_id in all_users:
-                    all_users[user_id].update(default_user)
-            await ctx.send("All config values have been reset to 0.")
+
 
     @bullshido_group.command(name="player_stats", description="Displays your wins and losses", aliases=["stats"])
     async def player_stats(self, ctx: commands.Context):
@@ -293,33 +353,6 @@ class Bullshido(commands.Cog):
                 self.logger.debug(f"Updated losses for {user.display_name}: {current_losses} -> {new_losses}")
         except Exception as e:
             self.logger.error(f"Error updating stats for {user.display_name}: {e}")
-            
-    async def update_daily_interaction(self, user, command_used):
-        user_data = await self.config.user(user).all()
-        last_interaction = user_data['last_interaction']
-        today = datetime.utcnow().date()
-
-        if last_interaction:
-            last_interaction_date = datetime.strptime(last_interaction, '%Y-%m-%d').date()
-            if today - last_interaction_date > timedelta(days=1):
-                # Apply penalty if the user missed a day
-                new_training_level = max(1, user_data['training_level'] - 20)
-                new_nutrition_level = max(1, user_data['nutrition_level'] - 20)
-                await self.config.user(user).training_level.set(new_training_level)
-                await self.config.user(user).nutrition_level.set(new_nutrition_level)
-                await user.send("You've lost 20 points in both training and nutrition levels due to inactivity.")
-
-        # Update the user's config for today
-        await self.config.user(user).last_interaction.set(today.strftime('%Y-%m-%d'))
-        await self.config.user(user).last_command_used.set(command_used)
-
-        # Increment specific stats based on the command used
-        if command_used == "train":
-            new_training_level = user_data['training_level'] + 10
-            await self.config.user(user).training_level.set(new_training_level)
-        elif command_used == "diet":
-            new_nutrition_level = user_data['nutrition_level'] + 10
-            await self.config.user(user).nutrition_level.set(new_nutrition_level)
 
 async def setup(bot):
     await bot.add_cog(Bullshido(bot))
