@@ -1,5 +1,3 @@
-# bullshido.py
-
 import discord
 import asyncio
 from redbot.core import commands, Config
@@ -174,9 +172,12 @@ class Bullshido(commands.Cog):
                 await ctx.send(f"{user.mention}, you can only use the train command once every 24 hours.")
                 return
 
-        await self.update_daily_interaction(user, "train")
+        # Update the last train time before executing the command to avoid timing issues
         await self.config.user(user).last_train.set(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
-        await ctx.send(f"{user.mention} has successfully trained in {style}!")
+        
+        # Increment training level
+        new_training_level = await self.increment_training_level(user)
+        await ctx.send(f"{user.mention} has successfully trained in {style}! Your training level is now {new_training_level}.")
 
     @bullshido_group.command(name="diet", description="Focus on your diet to increase your nutrition level")
     async def diet(self, ctx: commands.Context):
@@ -191,9 +192,24 @@ class Bullshido(commands.Cog):
                 await ctx.send(f"{user.mention}, you can only use the diet command once every 24 hours.")
                 return
 
-        await self.update_daily_interaction(user, "diet")
+        # Update the last diet time before executing the command to avoid timing issues
         await self.config.user(user).last_diet.set(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
-        await ctx.send(f"{user.mention} has followed their specialized diet today and gained nutrition level!")
+        
+        # Increment nutrition level
+        new_nutrition_level = await self.increment_nutrition_level(user)
+        await ctx.send(f"{user.mention} has followed their specialized diet today and gained nutrition level! Your nutrition level is now {new_nutrition_level}.")
+
+    async def increment_training_level(self, user):
+        user_data = await self.config.user(user).all()
+        new_training_level = user_data['training_level'] + 10
+        await self.config.user(user).training_level.set(new_training_level)
+        return new_training_level
+
+    async def increment_nutrition_level(self, user):
+        user_data = await self.config.user(user).all()
+        new_nutrition_level = user_data['nutrition_level'] + 10
+        await self.config.user(user).nutrition_level.set(new_nutrition_level)
+        return new_nutrition_level
 
     async def update_daily_interaction(self, user, command_used):
         user_data = await self.config.user(user).all()
@@ -214,15 +230,7 @@ class Bullshido(commands.Cog):
         
         # Update the user's config for today
         await self.config.user(user)[f'last_{command_used}'].set(today.strftime('%Y-%m-%d %H:%M:%S'))
-        
-        # Increment specific stats based on the command used
-        if command_used == "train":
-            new_training_level = user_data['training_level'] + 10
-            await self.config.user(user).training_level.set(new_training_level)
-        elif command_used == "diet":
-            new_nutrition_level = user_data['nutrition_level'] + 10
-            await self.config.user(user).nutrition_level.set(new_nutrition_level)
-    
+
     @bullshido_group.command(name="select_fighting_style", description="Select your fighting style")
     async def select_fighting_style(self, ctx: commands.Context):
         """Select your fighting style."""
@@ -260,12 +268,11 @@ class Bullshido(commands.Cog):
     @bullshido_group.command(name="reset_stats", description="Resets all Bullshido user data to default values")
     async def reset_stats(self, ctx: commands.Context):
         """Reset the Bullshido Redbot Configuration values to default for all users."""
-        # Send confirmation message
-        await ctx.send("Are you sure you want to reset Bullshido user data? Type 'YES' to confirm.")
-
-        # Check for the user's response
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel and m.content.upper() == "YES"
+
+        # Send confirmation message
+        await ctx.send("Are you sure you want to reset Bullshido user data? Type 'YES' to confirm.")
 
         try:
             # Wait for a response for 30 seconds
@@ -326,7 +333,6 @@ class Bullshido(commands.Cog):
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
         await ctx.send(embed=embed)
 
-    #Get player data from the redbot config 
     async def get_player_data(self, user):
         fighting_style = await self.config.user(user).fighting_style()
         level = await self.config.user(user).level()
@@ -338,7 +344,6 @@ class Bullshido(commands.Cog):
         losses = await self.config.user(user).losses()
         return {"fighting_style": fighting_style, "wins": wins, "losses": losses, "level": level, "training_level": training_level, "nutrition_level": nutrition_level, "morale": morale, "intimidation_level": intimidation_level}
     
-    #Update player win and loss stats post round 
     async def update_player_stats(self, user, win=True):
         try:
             current_wins = await self.config.user(user).wins()
