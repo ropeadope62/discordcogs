@@ -37,12 +37,11 @@ class Bullshido(commands.Cog):
             "last_interaction": None,
             "last_command_used": None,
             "last_train": None,
-            "last_diet": None
+            "last_diet": None,
+            "fight_record": []
         }
-        default_history = {"fight_record": []}
         
         self.config.register_user(**default_user)
-        self.config.register_user(fight_record=default_history["fight_record"])
         
         self.logger = logging.getLogger("red.bullshido")
         self.memory_handler = MemoryLogHandler()
