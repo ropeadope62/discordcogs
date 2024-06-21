@@ -101,6 +101,11 @@ class FightingGame:
                 await self.declare_winner_by_ko(round_message)
                 return True
 
+            # Check for TKO
+            if (self.player1_health < 20 or self.player2_health < 20) and random.random() < 0.5:
+                await self.declare_winner_by_tko(round_message, defender)
+                return True
+
             return False
         except Exception as e:
             # Log detailed error information for debugging
@@ -128,6 +133,18 @@ class FightingGame:
 
         await self.record_result(winner, loser, "KO")
 
+    async def declare_winner_by_tko(self, round_message, loser):
+        winner = self.player1 if loser == self.player2 else self.player2
+
+        final_message = (
+            f"Technical Knock Out! {winner.display_name} wins the fight by TKO!\n"
+            f"{loser.display_name} is unable to continue."
+        )
+        await round_message.edit(content=final_message)
+        await self.channel.send(final_message)
+
+        await self.record_result(winner, loser, "TKO")
+
     async def record_result(self, winner, loser, result_type):
         try:
             await self.bullshido_cog.update_player_stats(winner, win=True, result_type=result_type)
@@ -153,8 +170,8 @@ class FightingGame:
         round_message = await self.channel.send(f"Round {round_number} is starting...")
 
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
-            ko_occurred = await self.play_turn(round_message, round_number)
-            if ko_occurred:
+            ko_or_tko_occurred = await self.play_turn(round_message, round_number)
+            if ko_or_tko_occurred:
                 return
 
             strike_count += 1
@@ -207,30 +224,31 @@ class FightingGame:
             print(f"Round {round_number} is starting...")
             await self.play_round(round_number)
             if self.player1_health <= 0 or self.player2_health <= 0:
-                break
+                return
 
         if self.player1_health > self.player2_health:
             winner = self.player1
             loser = self.player2
+            result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
         elif self.player2_health > self.player1_health:
             winner = self.player2
             loser = self.player1
+            result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
         else:
             if self.player1_score > self.player2_score:
                 winner = self.player1
                 loser = self.player2
-                result_type = "UD"
+                result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
             else:
                 winner = self.player2
                 loser = self.player1
-                result_type = "UD"
+                result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
 
-        if self.player1_health > 0 and self.player2_health > 0:
-            final_message = (
-                f"The fight is over!\n"
-                f"After 3 rounds, we go to the judges' scorecard for a decision.\n"
-                f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, by unanimous decision, {winner.display_name}!\n"
-            )
-            await self.channel.send(final_message)
+        final_message = (
+            f"The fight is over!\n"
+            f"After 3 rounds, we go to the judges' scorecard for a decision.\n"
+            f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, {winner.display_name}, by {result_type}!\n"
+        )
+        await self.channel.send(final_message)
 
         await self.record_result(winner, loser, result_type)
