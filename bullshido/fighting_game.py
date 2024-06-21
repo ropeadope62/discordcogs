@@ -1,3 +1,4 @@
+# fighting_game.py
 import random
 import asyncio
 import discord
@@ -125,9 +126,12 @@ class FightingGame:
         await round_message.edit(content=final_message)
         await self.channel.send(final_message)
 
+        await self.record_result(winner, loser, "KO")
+
+    async def record_result(self, winner, loser, result_type):
         try:
-            await self.bullshido_cog.update_player_stats(winner, win=True)
-            await self.bullshido_cog.update_player_stats(loser, win=False)
+            await self.bullshido_cog.update_player_stats(winner, win=True, result_type=result_type)
+            await self.bullshido_cog.update_player_stats(loser, win=False, result_type=result_type)
             current_loser_morale = await self.bullshido_cog.config.user(loser).morale()
             current_winner_morale = await self.bullshido_cog.config.user(winner).morale()
             new_loser_morale = max(0, current_loser_morale - 20)
@@ -215,9 +219,11 @@ class FightingGame:
             if self.player1_score > self.player2_score:
                 winner = self.player1
                 loser = self.player2
+                result_type = "UD"
             else:
                 winner = self.player2
                 loser = self.player1
+                result_type = "UD"
 
         if self.player1_health > 0 and self.player2_health > 0:
             final_message = (
@@ -227,16 +233,4 @@ class FightingGame:
             )
             await self.channel.send(final_message)
 
-        try:
-            await self.bullshido_cog.update_player_stats(winner, win=True)
-            await self.bullshido_cog.update_player_stats(loser, win=False)
-            current_loser_morale = await self.bullshido_cog.config.user(loser).morale()
-            current_winner_morale = await self.bullshido_cog.config.user(winner).morale()
-            new_loser_morale = max(0, current_loser_morale - 20)
-            new_winner_morale = min(100, current_winner_morale + 20)
-            await self.bullshido_cog.config.user(loser).morale.set(new_loser_morale)
-            await self.bullshido_cog.config.user(winner).morale.set(new_winner_morale)
-            await self.channel.send(f"{loser.display_name}'s morale has been reduced!")
-            await self.channel.send(f"{winner.display_name}'s morale has increased!")
-        except Exception as e:
-            print(f"An error occurred: {e}")
+        await self.record_result(winner, loser, result_type)

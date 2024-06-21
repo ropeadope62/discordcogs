@@ -65,7 +65,7 @@ class Bullshido(commands.Cog):
         last_action = user_data.get(f"last_{last_action_key}")
         if last_action:
             last_action_time = datetime.strptime(last_action, '%Y-%m-%d %H:%M:%S')
-            if current_time - last_action_time > timedelta(days=1):
+            if current_time - last_action_time > timedelta(days=2):
                 # Apply penalty if the user missed a day
                 new_level = max(1, user_data[level_key] - 20)
                 await self.config.user_from_id(user_id)[level_key].set(new_level)
@@ -281,8 +281,8 @@ class Bullshido(commands.Cog):
                 # If confirmed, reset all config values
                 default_user = {
                     "fighting_style": None,
-                    "wins": 0,
-                    "losses": 0,
+                    "wins": {"UD": 0, "SD": 0, "TKO": 0, "KO": 0},
+                    "losses": {"UD": 0, "SD": 0, "TKO": 0, "KO": 0},
                     "level": 1,
                     "training_level": 1,
                     "nutrition_level": 1,
@@ -344,20 +344,23 @@ class Bullshido(commands.Cog):
         losses = await self.config.user(user).losses()
         return {"fighting_style": fighting_style, "wins": wins, "losses": losses, "level": level, "training_level": training_level, "nutrition_level": nutrition_level, "morale": morale, "intimidation_level": intimidation_level}
     
-    async def update_player_stats(self, user, win=True):
+    async def update_player_stats(self, user, win=True, result_type="UD"):
         try:
             current_wins = await self.config.user(user).wins()
             current_losses = await self.config.user(user).losses()
             if win:
-                new_wins = current_wins + 1
+                new_wins = current_wins.copy()
+                new_wins[result_type] += 1
                 await self.config.user(user).wins.set(new_wins)
                 self.logger.debug(f"Updated wins for {user.display_name}: {current_wins} -> {new_wins}")
             else:
-                new_losses = current_losses + 1
+                new_losses = current_losses.copy()
+                new_losses[result_type] += 1
                 await self.config.user(user).losses.set(new_losses)
                 self.logger.debug(f"Updated losses for {user.display_name}: {current_losses} -> {new_losses}")
         except Exception as e:
             self.logger.error(f"Error updating stats for {user.display_name}: {e}")
+
 
 async def setup(bot):
     await bot.add_cog(Bullshido(bot))

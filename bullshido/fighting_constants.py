@@ -279,3 +279,17 @@ CRITICAL_CONCLUDES = [
     "{defender} is left with a bloody forehead.",
     "{defender} is left with a bloody cheek."
 ]
+
+KO_MESSAGES = [
+    "{loser} got knocked the fuck out!",
+    "{loser} got KO'd!",
+    "{loser} is out cold!",
+    "{loser} got knocked out!",
+    "{loser} is seeing glimpses of the afterlife!",
+    "{loser} is unresponsive!",
+    "{loser} is out like a light!"
+]
+
+TKO_MESSAGES = [
+    
+]
