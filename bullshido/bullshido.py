@@ -37,10 +37,13 @@ class Bullshido(commands.Cog):
             "last_interaction": None,
             "last_command_used": None,
             "last_train": None,
-            "last_diet": None,
-            "fight_record": []
+            "last_diet": None
         }
+        default_history = {"fight_record": []}
+        
         self.config.register_user(**default_user)
+        self.config.register_user(fight_record=default_history["fight_record"])
+        
         self.logger = logging.getLogger("red.bullshido")
         self.memory_handler = MemoryLogHandler()
         self.logger.addHandler(self.memory_handler)
@@ -99,7 +102,6 @@ class Bullshido(commands.Cog):
         embed = discord.Embed(title="Bullshido Game Commands", description="Learn how to play and interact with the Bullshido game.", color=0x00ff00)
         embed.add_field(name="/bullshido select_fighting_style", value="Select your fighting style.", inline=False)
         embed.add_field(name="/bullshido list_fighting_styles", value="List all available fighting styles.", inline=False)
-        embed.add_field(name="/bullshido fight_record", value="Displays the results of your last 10 fights.", inline=False)
         embed.add_field(name="/bullshido fight", value="Start a fight with another player.", inline=False)
         embed.add_field(name="/bullshido commands", value="Displays information about the Bullshido game commands.", inline=False)
         embed.add_field(name="/bullshido player_stats", value="Displays your wins and losses.", inline=False)
@@ -295,7 +297,7 @@ class Bullshido(commands.Cog):
                     "last_command_used": None,
                     "last_train": None,
                     "last_diet": None,
-                    "fight_history": []
+                    "fight_record": []
                 }
 
                 async with self.config.all_users() as all_users:
@@ -332,7 +334,7 @@ class Bullshido(commands.Cog):
         embed.add_field(name="Wins (SD)", value=wins["SD"], inline=True)
         embed.add_field(name="Wins (TKO)", value=wins["TKO"], inline=True)
         embed.add_field(name="Wins (KO)", value=wins["KO"], inline=True)
-        embed.add_field(name="Losses (UD)", value=losses["UD"], inline=False)
+        embed.add_field(name="Losses (UD)", value=losses["UD"], inline=True)
         embed.add_field(name="Losses (SD)", value=losses["SD"], inline=True)
         embed.add_field(name="Losses (TKO)", value=losses["TKO"], inline=True)
         embed.add_field(name="Losses (KO)", value=losses["KO"], inline=True)
@@ -377,7 +379,7 @@ class Bullshido(commands.Cog):
         intimidation_level = await self.config.user(user).intimidation_level()
         wins = await self.config.user(user).wins()
         losses = await self.config.user(user).losses()
-        fight_history = await self.config.user(user).fight_history()
+        fight_record = await self.config.user(user).fight_record()
         return {
             "fighting_style": fighting_style,
             "wins": wins,
@@ -387,20 +389,19 @@ class Bullshido(commands.Cog):
             "nutrition_level": nutrition_level,
             "morale": morale,
             "intimidation_level": intimidation_level,
-            "fight_history": fight_history
+            "fight_record": fight_record
         }
     
-    async def update_player_stats(self, user, win=True, result_type="UD"):
+    async def update_player_stats(self, user, win=True, result_type="UD", opponent_name="Unknown"):
         try:
             current_wins = await self.config.user(user).wins()
             current_losses = await self.config.user(user).losses()
-            fight_history = await self.config.user(user).fight_history()
+            fight_record = await self.config.user(user).fight_record()
 
-            opponent = "Unknown"  # This should be updated to the actual opponent's name
             outcome = "Win" if win else "Loss"
 
-            fight_history.append({
-                "opponent": opponent,
+            fight_record.append({
+                "opponent": opponent_name,
                 "outcome": outcome,
                 "result_type": result_type
             })
@@ -417,7 +418,7 @@ class Bullshido(commands.Cog):
                 self.logger.debug(f"Updated losses for {user.display_name}: {current_losses} -> {new_losses}")
 
             # Update the fight history
-            await self.config.user(user).fight_history.set(fight_history)
+            await self.config.user(user).fight_record.set(fight_record)
 
         except Exception as e:
             self.logger.error(f"Error updating stats for {user.display_name}: {e}")
