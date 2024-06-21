@@ -38,7 +38,7 @@ class Bullshido(commands.Cog):
             "last_command_used": None,
             "last_train": None,
             "last_diet": None,
-            "fight_history": []
+            "fight_record": []
         }
         self.config.register_user(**default_user)
         self.logger = logging.getLogger("red.bullshido")
@@ -351,15 +351,15 @@ class Bullshido(commands.Cog):
     async def fight_record(self, ctx: commands.Context):
         """Displays the results of your last 10 fights."""
         user = ctx.author
-        fight_history = await self.config.user(user).fight_history()
+        fight_record = await self.config.user(user).fight_record()
 
-        if not fight_history:
+        if not fight_record:
             await ctx.send("You have no fight history.")
             return
 
         embed = discord.Embed(title=f"{user.display_name}'s Last 10 Fights", color=0x00ff00)
 
-        for fight in fight_history[-10:]:
+        for fight in fight_record[-10:]:
             outcome = fight.get("outcome", "Unknown")
             opponent = fight.get("opponent", "Unknown")
             result_type = fight.get("result_type", "Unknown")
