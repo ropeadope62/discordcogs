@@ -293,3 +293,10 @@ KO_MESSAGES = [
 TKO_MESSAGES = [
     
 ]
+
+FIGHT_RESULT_LONG = {
+    "UD": "Unanimous Decision",
+    "SD": "Split Decision",
+    "KO": "Knock Out",
+    "TKO": "Technical Knock Out"
+}

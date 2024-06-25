@@ -397,7 +397,7 @@ class Bullshido(commands.Cog):
             "fight_history": fight_history
         }
     
-    async def update_player_stats(self, user, win=True, result_type="UD", opponent_name="Unknown"):
+    async def update_player_stats(self, user, win, result_type, opponent_name):
         try:
             current_wins = await self.config.user(user).wins()
             current_losses = await self.config.user(user).losses()
@@ -427,6 +427,7 @@ class Bullshido(commands.Cog):
 
         except Exception as e:
             self.logger.error(f"Error updating stats for {user.display_name}: {e}")
+
 
 
     @bullshido_group.command(name="clear_old_config", description="Clears old configuration to avoid conflicts")

@@ -3,7 +3,7 @@ import random
 import asyncio
 import discord
 import math
-from .fighting_constants import STRIKES, BODY_PARTS, STRIKE_ACTIONS, GRAPPLE_ACTIONS, GRAPPLE_KEYWORDS, CRITICAL_MESSAGES, CRITICAL_CONCLUDES
+from .fighting_constants import STRIKES, BODY_PARTS, STRIKE_ACTIONS, GRAPPLE_ACTIONS, GRAPPLE_KEYWORDS, CRITICAL_MESSAGES, CRITICAL_CONCLUDES, KO_MESSAGES, TKO_MESSAGES, FIGHT_RESULT_LONG
 from PIL import Image, ImageDraw, ImageFont
 
 class FightingGame:
@@ -147,8 +147,8 @@ class FightingGame:
 
     async def record_result(self, winner, loser, result_type):
         try:
-            await self.bullshido_cog.update_player_stats(winner, win=True, result_type=result_type)
-            await self.bullshido_cog.update_player_stats(loser, win=False, result_type=result_type)
+            await self.bullshido_cog.update_player_stats(winner, win=True, result_type=result_type, opponent_name=loser.display_name)
+            await self.bullshido_cog.update_player_stats(loser, win=False, result_type=result_type, opponent_name=winner.display_name)
             current_loser_morale = await self.bullshido_cog.config.user(loser).morale()
             current_winner_morale = await self.bullshido_cog.config.user(winner).morale()
             new_loser_morale = max(0, current_loser_morale - 20)
@@ -218,10 +218,8 @@ class FightingGame:
         await self.channel.send(intro_message)
         await asyncio.sleep(10)
 
-        await self.channel.send("Ready? FIGHT!")
-
         for round_number in range(1, self.rounds + 1):
-            print(f"Round {round_number} is starting...")
+            print(f"Round {round_number},  FIGHT!")
             await self.play_round(round_number)
             if self.player1_health <= 0 or self.player2_health <= 0:
                 return
@@ -230,24 +228,28 @@ class FightingGame:
             winner = self.player1
             loser = self.player2
             result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
+            result_description = FIGHT_RESULT_LONG[result_type]
         elif self.player2_health > self.player1_health:
             winner = self.player2
             loser = self.player1
             result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
+            result_description = FIGHT_RESULT_LONG[result_type]
         else:
             if self.player1_score > self.player2_score:
                 winner = self.player1
                 loser = self.player2
                 result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
+                result_description = FIGHT_RESULT_LONG[result_type]
             else:
                 winner = self.player2
                 loser = self.player1
                 result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
+                result_description = FIGHT_RESULT_LONG[result_type]
 
         final_message = (
             f"The fight is over!\n"
             f"After 3 rounds, we go to the judges' scorecard for a decision.\n"
-            f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, {winner.display_name}, by {result_type}!\n"
+            f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, by {result_description}, {winner.display_name}!"
         )
         await self.channel.send(final_message)
 
