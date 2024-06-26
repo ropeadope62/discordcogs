@@ -335,3 +335,16 @@ TKO_VICTOR_MESSAGE = [
     "sends a message to their challengers",
     "made a statement!"
 ]
+
+KO_VICTOR_MESSAGE = [
+    "Beat them into a living death!",
+    "is an absolute beast!",
+    "is an absolute monster!",
+    "has some heavy hands!",
+    "made a statement!",
+    "put him to sleep!",
+    "sends a message to their challengers",
+    "had bad intentions!",
+    "sent him to sleep!",
+    "turned out the lights!"
+]
