@@ -260,6 +260,9 @@ class Bullshido(commands.Cog):
             if not player1_data['fighting_style'] or not player2_data['fighting_style']:
                 await ctx.send("Both players must have selected a fighting style before starting a fight.")
                 return
+            if player1 == player2:
+                await ctx.send("You cannot fight yourself, only your own demons! Try challenging another fighter.")
+                return
             # Set up an instance of game session
             game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self)
             await game.start_game()
