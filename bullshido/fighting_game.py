@@ -3,7 +3,7 @@ import random
 import asyncio
 import discord
 import math
-from .fighting_constants import STRIKES, BODY_PARTS, STRIKE_ACTIONS, GRAPPLE_ACTIONS, GRAPPLE_KEYWORDS, CRITICAL_MESSAGES, CRITICAL_CONCLUDES, KO_MESSAGES, TKO_MESSAGES, FIGHT_RESULT_LONG
+from .fighting_constants import STRIKES, BODY_PARTS, STRIKE_ACTIONS, GRAPPLE_ACTIONS, GRAPPLE_KEYWORDS, CRITICAL_MESSAGES, CRITICAL_CONCLUDES, KO_MESSAGES, TKO_MESSAGES, FIGHT_RESULT_LONG, REFEREE_STOPS, TKO_VICTOR_MESSAGE
 from PIL import Image, ImageDraw, ImageFont
 
 class FightingGame:
@@ -135,10 +135,12 @@ class FightingGame:
 
     async def declare_winner_by_tko(self, round_message, loser):
         winner = self.player1 if loser == self.player2 else self.player2
+        tko_message_flavor = random.choice(TKO_MESSAGES)
+        referee_stop_flavor = random.choice(REFEREE_STOPS)
 
         final_message = (
-            f"Technical Knock Out! {winner.display_name} wins the fight by TKO!\n"
-            f"{loser.display_name} is unable to continue."
+            f"{tko_message_flavor} {referee_stop_flavor}, {winner.display_name} wins the fight by TKO!\n"
+            f"{winner.display_name} {TKO_VICTOR_MESSAGE}, Wow!"
         )
         await round_message.edit(content=final_message)
         await self.channel.send(final_message)

@@ -291,7 +291,20 @@ KO_MESSAGES = [
 ]
 
 TKO_MESSAGES = [
+    "{loser} is out on his feet!",
+    "{loser} is hurt!",
+    "{loser} is just trying to survive!",
+    "{loser} is doing the skanky leg!",
+    "{loser} is in survival mode!",
+    "{loser} is getting hurt in there!"
     
+]
+
+SUBMISSION_MESSAGES = [
+    "{loser} tapped!",
+    "{loser} wants out, they tapped!",
+    "There's the tap, {loser} has had enough!",
+    "{loser} tapped like a bitch!"
 ]
 
 FIGHT_RESULT_LONG = {
@@ -300,3 +313,25 @@ FIGHT_RESULT_LONG = {
     "KO": "Knock Out",
     "TKO": "Technical Knock Out"
 }
+
+REFEREE_STOPS = [
+    "Herb Dean has seen enough!",
+    "The referee has seen enough!",
+    "The referee stops it!",
+    "Yves Lavigne could think its over!",
+    "Big John steps in!",
+    "The ref is stopping this!",
+    "Mario Yamasaki is trying to stop it!",
+    "The ref is about to call this one!"
+]
+
+TKO_VICTOR_MESSAGE = [
+    "bringing the pain!",
+    "ended that brutally!",
+    "is a monster! ",
+    "is a beast! ",
+    "had bad intentions!",
+    "showed some serious power",
+    "sends a message to their challengers",
+    "made a statement!"
+]
