@@ -167,9 +167,8 @@ class FightingGame:
         player1_health_start = self.player1_health
         player2_health_start = self.player2_health
 
-        print(f"Starting Round {round_number}")
 
-        round_message = await self.channel.send(f"Round {round_number} is starting...")
+        round_message = await self.channel.send(f"Round {round_number}... *FIGHT!*")
 
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
             ko_or_tko_occurred = await self.play_turn(round_message, round_number)
@@ -221,7 +220,6 @@ class FightingGame:
         await asyncio.sleep(10)
 
         for round_number in range(1, self.rounds + 1):
-            print(f"Round {round_number},  FIGHT!")
             await self.play_round(round_number)
             if self.player1_health <= 0 or self.player2_health <= 0:
                 return
