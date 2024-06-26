@@ -123,7 +123,7 @@ class FightingGame:
         else:
             winner = self.player1
             loser = self.player2
-        ko_message = random.choice(KO_MESSAGES)
+        ko_message = random.choice(KO_MESSAGES).format(loser=loser.display_name)
         ko_victor_flavor = random.choice(KO_VICTOR_MESSAGE)
         final_message = (
             f"{ko_message} {winner.display_name} {ko_victor_flavor} "
@@ -135,7 +135,7 @@ class FightingGame:
 
     async def declare_winner_by_tko(self, round_message, loser):
         winner = self.player1 if loser == self.player2 else self.player2
-        tko_message_flavor = random.choice(TKO_MESSAGES)
+        tko_message_flavor = random.choice(TKO_MESSAGES).format(loser=loser.display_name)
         referee_stop_flavor = random.choice(REFEREE_STOPS)
 
         final_message = (
