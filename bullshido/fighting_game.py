@@ -46,20 +46,22 @@ class FightingGame:
     async def update_health_bars(self, round_number):
         player1_health_bar = self.create_health_bar(self.player1_health, self.max_health)
         player2_health_bar = self.create_health_bar(self.player2_health, self.max_health)
-
+    
         embed = discord.Embed(
-            title=f"Round {round_number} - {self.player1.display_name}: {self.player1_health} HP vs {self.player2.display_name}: {self.player2_health} HP",
+            title=f"Round {round_number} - {self.player1.display_name}: vs {self.player2.display_name}",
             color=0x00ff00
         )
-        embed.add_field(name=f"{self.player1.display_name}'s Health", value=player1_health_bar, inline=False)
-        embed.add_field(name=f"{self.player2.display_name}'s Health", value=player2_health_bar, inline=False)
-        embed.set_image(url="https://i.ibb.co/7KK90YH/bullshido.png")
-
+        embed.add_field(name=f"{self.player1.display_name}s Health", value=f"{player1_health_bar} {self.player1_health}", inline=False)
         if self.player1_critical_message:
             embed.add_field(name=f"{self.player1.display_name} Critical Injury", value=self.player1_critical_message, inline=False)
+        embed.add_field(name=f"{self.player2.display_name}s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
         if self.player2_critical_message:
             embed.add_field(name=f"{self.player2.display_name} Critical Injury", value=self.player2_critical_message, inline=False)
-
+    
+        embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
+    
+        
+        
         await self.channel.send(embed=embed)
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
