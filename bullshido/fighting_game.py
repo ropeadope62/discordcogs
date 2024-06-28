@@ -28,6 +28,27 @@ class FightingGame:
             self.current_turn = player1
         else:
             self.current_turn = player2
+            
+    def create_health_bar(self, current_health, max_health):
+        progress = current_health / max_health
+        progress_bar_length = 30  # Length of the progress bar
+        progress_bar_filled = int(progress * progress_bar_length)
+        progress_bar = "[" + ("=" * progress_bar_filled)
+        progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
+        if progress_bar_filled < progress_bar_length:  # Only add marker if there is room
+            marker = "🔴"
+            progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
+        return progress_bar
+    
+    async def update_health_bars(self):
+        player1_health_bar = self.create_health_bar(self.player1_health, self.max_health)
+        player2_health_bar = self.create_health_bar(self.player2_health, self.max_health)
+
+        embed = discord.Embed(title="Health Bars", color=0x00ff00)
+        embed.add_field(name=f"{self.player1.display_name}'s Health", value=player1_health_bar, inline=False)
+        embed.add_field(name=f"{self.player2.display_name}'s Health", value=player2_health_bar, inline=False)
+
+        await self.channel.send(embed=embed)
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
         training_bonus = math.log10(training_level + 1) * self.training_weight
@@ -221,6 +242,7 @@ class FightingGame:
 
         for round_number in range(1, self.rounds + 1):
             await self.play_round(round_number)
+            await self.update_health_bars()
             if self.player1_health <= 0 or self.player2_health <= 0:
                 return
 

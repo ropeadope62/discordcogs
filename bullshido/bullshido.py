@@ -257,6 +257,14 @@ class Bullshido(commands.Cog):
             player1_data = await self.config.user(player1).all()
             player2_data = await self.config.user(player2).all()
             
+            if not await self.has_sufficient_stamina(player1):
+                await ctx.send(f"You are too tired to fight,  {player1.mention}.\n Try waiting some time for your stamina to recover, or buy some supplements to speed up your recovery.")
+                return
+            if not await self.has_sufficient_stamina(player2):
+                await ctx.send("Your opponent does not have enough stamina to start the fight.")
+                return
+            
+            
             if not player1_data['fighting_style'] or not player2_data['fighting_style']:
                 await ctx.send("Both players must have selected a fighting style before starting a fight.")
                 return
@@ -431,6 +439,17 @@ class Bullshido(commands.Cog):
         except Exception as e:
             self.logger.error(f"Error updating stats for {user.display_name}: {e}")
 
+
+    def create_health_bar(self, current_health, max_health):
+        progress = current_health / max_health
+        progress_bar_length = 50  
+        progress_bar_filled = int(progress * progress_bar_length)
+        progress_bar = "[" + ("=" * progress_bar_filled)
+        progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
+        if progress_bar_filled < progress_bar_length:  
+            marker = "🔴"
+            progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
+        return progress_bar
 
 
     @bullshido_group.command(name="clear_old_config", description="Clears old configuration to avoid conflicts")
