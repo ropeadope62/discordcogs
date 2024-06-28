@@ -23,6 +23,7 @@ class FightingGame:
         self.bullshido_cog = bullshido_cog
         self.training_weight = 0.15  # 15% contribution
         self.diet_weight = 0.15  # 15% contribution
+        self.max_health = 100
 
         if player1_data['training_level'] >= player2_data['training_level']:
             self.current_turn = player1
@@ -44,7 +45,7 @@ class FightingGame:
         player1_health_bar = self.create_health_bar(self.player1_health, self.max_health)
         player2_health_bar = self.create_health_bar(self.player2_health, self.max_health)
 
-        embed = discord.Embed(title="Health Bars", color=0x00ff00)
+        embed = discord.Embed(title="Player Health", color=0x00ff00)
         embed.add_field(name=f"{self.player1.display_name}'s Health", value=player1_health_bar, inline=False)
         embed.add_field(name=f"{self.player2.display_name}'s Health", value=player2_health_bar, inline=False)
 
