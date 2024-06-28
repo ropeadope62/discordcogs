@@ -49,7 +49,7 @@ class FightingGame:
     
         embed = discord.Embed(
             title=f"Round {round_number} - {self.player1.display_name}: vs {self.player2.display_name}",
-            color=0x00ff00
+            color=0xFF0000
         )
         embed.add_field(name=f"{self.player1.display_name}s Health", value=f"{player1_health_bar} {self.player1_health}", inline=False)
         if self.player1_critical_message:
@@ -133,7 +133,7 @@ class FightingGame:
 
             # health_status = f"{defender.display_name} now has {self.player2_health if defender == self.player2 else self.player1_health} health left."
             
-            sleep_duration = random.uniform(2, 3) + (2 if critical_message else 0)  # Add 2 extra seconds for critical hits
+            sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)  # Add 2 extra seconds for critical hits
             await asyncio.sleep(sleep_duration)
 
             # Edit the round message with updated content
@@ -223,7 +223,7 @@ class FightingGame:
                 return
 
             strike_count += 1
-            await asyncio.sleep(random.uniform(2, 3))
+            await asyncio.sleep(random.uniform(1, 3))
 
         player1_health_end = self.player1_health
         player2_health_end = self.player2_health
@@ -253,8 +253,6 @@ class FightingGame:
                 round_result = f"{self.player2.display_name} had the edge this round!"
 
         await self.channel.send(round_result)
-        
-        await self.update_health_bars(round_number)
         
         return round_result
 

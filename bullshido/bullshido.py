@@ -103,7 +103,7 @@ class Bullshido(commands.Cog):
     @bullshido_group.command(name="commands", description="Displays the Bullshido game commands")
     async def bullshido_commands(self, ctx: commands.Context):
         """Displays information about the Bullshido game commands."""
-        embed = discord.Embed(title="Bullshido Game Commands", description="Learn how to play and interact with the Bullshido game.", color=0x00ff00)
+        embed = discord.Embed(title="Bullshido Game Commands", description="Learn how to play and interact with the Bullshido game.", color=0xFF0000)
         embed.add_field(name="/bullshido select_fighting_style", value="Select your fighting style.", inline=False)
         embed.add_field(name="/bullshido list_fighting_styles", value="List all available fighting styles.", inline=False)
         embed.add_field(name="/bullshido fight", value="Start a fight with another player.", inline=False)
@@ -121,7 +121,7 @@ class Bullshido(commands.Cog):
         embed = discord.Embed(
             title="About Bullshido",
             description="Welcome to Bullshido, a Discord game of epic combat!",
-            color=0x00ff00
+            color=0xFF0000
         )
         embed.add_field(
             name="Selecting a Fighting Style",
@@ -354,7 +354,7 @@ class Bullshido(commands.Cog):
         total_wins = sum(wins.values())
         total_losses = sum(losses.values())
 
-        embed = discord.Embed(title=f"{user.display_name}'s Fight Record", color=0x00ff00)
+        embed = discord.Embed(title=f"{user.display_name}'s Fight Record", color=0xFF0000)
         embed.add_field(name="Total Wins", value=total_wins, inline=True)
         embed.add_field(name="Total Losses", value=total_losses, inline=True)
         embed.add_field(name="Wins (UD)", value=wins["UD"], inline=True)
@@ -386,7 +386,7 @@ class Bullshido(commands.Cog):
             await ctx.send("You have no fight history.")
             return
 
-        embed = discord.Embed(title=f"{user.display_name}'s Last 10 Fights", color=0x00ff00)
+        embed = discord.Embed(title=f"{user.display_name}'s Last 10 Fights", color=0xFF0000)
 
         for fight in fight_history[-10:]:
             outcome = fight.get("outcome", "Unknown")
