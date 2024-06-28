@@ -58,7 +58,7 @@ class FightingGame:
             embed.add_field(name=f"{self.player1.display_name} Critical Injuries", value=",".join(self.player1_critical_injuries), inline=False)
         embed.add_field(name=f"{self.player2.display_name}s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
         if self.player2_critical_message:
-            embed.add_field(name=f"{self.player2.display_name} Critical Injuries", value=",".join(self.player1_critical_injuries), inline=False)
+            embed.add_field(name=f"{self.player2.display_name} Critical Injuries", value=",".join(self.player2_critical_injuries), inline=False)
     
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
     
