@@ -1,9 +1,13 @@
-# fighting_game.py
 import random
 import asyncio
 import discord
 import math
-from .fighting_constants import STRIKES, BODY_PARTS, STRIKE_ACTIONS, GRAPPLE_ACTIONS, GRAPPLE_KEYWORDS, CRITICAL_MESSAGES, CRITICAL_CONCLUDES, KO_MESSAGES, TKO_MESSAGES, FIGHT_RESULT_LONG, REFEREE_STOPS, TKO_VICTOR_MESSAGE, KO_VICTOR_MESSAGE, CRITICAL_INJURIES
+from .fighting_constants import (
+    STRIKES, BODY_PARTS, STRIKE_ACTIONS, GRAPPLE_ACTIONS, GRAPPLE_KEYWORDS,
+    CRITICAL_MESSAGES, CRITICAL_CONCLUDES, KO_MESSAGES, TKO_MESSAGES,
+    FIGHT_RESULT_LONG, REFEREE_STOPS, TKO_VICTOR_MESSAGE, KO_VICTOR_MESSAGE,
+    CRITICAL_INJURIES
+)
 from PIL import Image, ImageDraw, ImageFont
 
 class FightingGame:
@@ -23,8 +27,6 @@ class FightingGame:
         self.bullshido_cog = bullshido_cog
         self.training_weight = 0.15  # 15% contribution
         self.diet_weight = 0.15  # 15% contribution
-        self.player1_critical_message = ""
-        self.player2_critical_message = ""
         self.player1_critical_injuries = []
         self.player2_critical_injuries = []
         self.max_health = 100
@@ -33,7 +35,7 @@ class FightingGame:
             self.current_turn = player1
         else:
             self.current_turn = player2
-            
+
     def create_health_bar(self, current_health, max_health):
         progress = current_health / max_health
         progress_bar_length = 30  # Length of the progress bar
@@ -44,26 +46,24 @@ class FightingGame:
             marker = "🔴"
             progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
         return progress_bar
-    
+
     async def update_health_bars(self, round_number):
         player1_health_bar = self.create_health_bar(self.player1_health, self.max_health)
         player2_health_bar = self.create_health_bar(self.player2_health, self.max_health)
-    
+
         embed = discord.Embed(
-            title=f"Round {round_number} - {self.player1.display_name}: vs {self.player2.display_name}",
-            color=0xFF0000
+            title=f"Round {round_number} - {self.player1.display_name} vs {self.player2.display_name}",
+            color=0xFF0000  # Set embed color to red
         )
-        embed.add_field(name=f"{self.player1.display_name}s Health", value=f"{player1_health_bar} {self.player1_health}", inline=False)
-        if self.player1_critical_message:
-            embed.add_field(name=f"{self.player1.display_name} Critical Injuries", value=",".join(self.player1_critical_injuries), inline=False)
-        embed.add_field(name=f"{self.player2.display_name}s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
-        if self.player2_critical_message:
-            embed.add_field(name=f"{self.player2.display_name} Critical Injuries", value=",".join(self.player2_critical_injuries), inline=False)
-    
+        embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health}", inline=False)
+        embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
-    
-        
-        
+
+        if self.player1_critical_injuries:
+            embed.add_field(name=f"{self.player1.display_name} Critical Injuries", value="\n".join(self.player1_critical_injuries), inline=False)
+        if self.player2_critical_injuries:
+            embed.add_field(name=f"{self.player2.display_name} Critical Injuries", value="\n".join(self.player2_critical_injuries), inline=False)
+
         await self.channel.send(embed=embed)
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
@@ -77,7 +77,7 @@ class FightingGame:
         base_damage = random.randint(*damage_range)
         modified_damage = self.calculate_adjusted_damage(base_damage, attacker['training_level'], attacker['nutrition_level'])
         modifier = random.uniform(0.8, 1.2)
-        
+
         is_critical_hit = random.random() < 0.1
         critical_injury = ""
         if is_critical_hit:
@@ -90,7 +90,7 @@ class FightingGame:
             modified_damage = round(modified_damage * modifier)
             message = ""
             conclude_message = ""
-        
+
         return strike, modified_damage, message, conclude_message, critical_injury
 
     async def target_bodypart(self):
@@ -113,7 +113,7 @@ class FightingGame:
 
         try:
             strike, damage, critical_message, conclude_message, critical_injury = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender)
-            bodypart = await self.target_bodypart()  
+            bodypart = await self.target_bodypart()
 
             if self.is_grapple_move(strike):
                 action = random.choice(GRAPPLE_ACTIONS)
@@ -131,18 +131,13 @@ class FightingGame:
                 self.player1_health -= damage
                 self.current_turn = self.player1
                 if critical_injury:
-                    self.player2_critical_injuries.append(critical_injury)
+                    self.player1_critical_injuries.append(critical_injury)
 
-            # health_status = f"{defender.display_name} now has {self.player2_health if defender == self.player2 else self.player1_health} health left."
-            
-            sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)  # Add 2 extra seconds for critical hits
+            sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)  # Add 3 extra seconds for critical hits
             await asyncio.sleep(sleep_duration)
 
             # Edit the round message with updated content
             await round_message.edit(content=f"Round {round_number} in progress: {message}\n")
-            
-            # {message}\n{health_status}")
-
 
             # Check for KO
             if self.player1_health <= 0 or self.player2_health <= 0:
@@ -220,6 +215,7 @@ class FightingGame:
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
             ko_or_tko_occurred = await self.play_turn(round_message, round_number)
             if ko_or_tko_occurred:
+                await self.update_health_bars(round_number)
                 return
 
             strike_count += 1
@@ -253,9 +249,9 @@ class FightingGame:
                 round_result = f"{self.player2.display_name} had the edge this round!"
 
         await self.channel.send(round_result)
-        
+
         await self.update_health_bars(round_number)
-        
+
         return round_result
 
     async def start_game(self):
@@ -271,7 +267,6 @@ class FightingGame:
 
         for round_number in range(1, self.rounds + 1):
             await self.play_round(round_number)
-            await self.update_health_bars(round_number)
             if self.player1_health <= 0 or self.player2_health <= 0:
                 return
 
