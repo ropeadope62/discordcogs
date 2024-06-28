@@ -50,6 +50,11 @@ class Bullshido(commands.Cog):
         self.memory_handler.setFormatter(formatter)
         self.logger.setLevel(logging.DEBUG)
         self.bg_task = self.bot.loop.create_task(self.check_inactivity())
+        
+    async def has_sufficient_stamina(self, user):
+        """ Check if the user has sufficient stamina to fight."""
+        stamina = await self.config.user(user).stamina_level()
+        return stamina >= 20
     
     async def check_inactivity(self):
         await self.bot.wait_until_ready()
@@ -207,6 +212,12 @@ class Bullshido(commands.Cog):
         new_training_level = user_data['training_level'] + 10
         await self.config.user(user).training_level.set(new_training_level)
         return new_training_level
+    
+    async def increment_stamina_level(self, user):
+        stamina_level = await self.config.user(user).stamina_level()
+        new_stamina_level = stamina_level + 10
+        await self.config.user(user).training_level.set(new_stamina_level)
+        return new_stamina_level
 
     async def increment_nutrition_level(self, user):
         user_data = await self.config.user(user).all()
