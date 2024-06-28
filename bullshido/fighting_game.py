@@ -141,8 +141,6 @@ class FightingGame:
             
             # {message}\n{health_status}")
 
-            # Update the health bars after each turn
-            await self.update_health_bars(round_number)
 
             # Check for KO
             if self.player1_health <= 0 or self.player2_health <= 0:
@@ -253,6 +251,8 @@ class FightingGame:
                 round_result = f"{self.player2.display_name} had the edge this round!"
 
         await self.channel.send(round_result)
+        
+        await self.update_health_bars(round_number)
         
         return round_result
 
