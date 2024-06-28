@@ -25,6 +25,8 @@ class FightingGame:
         self.diet_weight = 0.15  # 15% contribution
         self.player1_critical_message = ""
         self.player2_critical_message = ""
+        self.player1_critical_injuries = []
+        self.player2_critical_injuries = []
         self.max_health = 100
 
         if player1_data['training_level'] >= player2_data['training_level']:
@@ -53,10 +55,10 @@ class FightingGame:
         )
         embed.add_field(name=f"{self.player1.display_name}s Health", value=f"{player1_health_bar} {self.player1_health}", inline=False)
         if self.player1_critical_message:
-            embed.add_field(name=f"{self.player1.display_name} Critical Injury", value=self.player1_critical_message, inline=False)
+            embed.add_field(name=f"{self.player1.display_name} Critical Injuries", value=",".join(self.player1_critical_injuries), inline=False)
         embed.add_field(name=f"{self.player2.display_name}s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
         if self.player2_critical_message:
-            embed.add_field(name=f"{self.player2.display_name} Critical Injury", value=self.player2_critical_message, inline=False)
+            embed.add_field(name=f"{self.player2.display_name} Critical Injuries", value=",".join(self.player1_critical_injuries), inline=False)
     
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
     
@@ -123,13 +125,13 @@ class FightingGame:
             if self.current_turn == self.player1:
                 self.player2_health -= damage
                 self.current_turn = self.player2
-                if critical_message:
-                    self.player2_critical_message = critical_injury
+                if critical_injury:
+                    self.player2_critical_injuries.append(critical_injury)
             else:
                 self.player1_health -= damage
                 self.current_turn = self.player1
-                if critical_message:
-                    self.player1_critical_message = critical_injury
+                if critical_injury:
+                    self.player2_critical_injuries.append(critical_injury)
 
             # health_status = f"{defender.display_name} now has {self.player2_health if defender == self.player2 else self.player1_health} health left."
             
