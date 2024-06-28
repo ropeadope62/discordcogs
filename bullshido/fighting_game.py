@@ -131,12 +131,15 @@ class FightingGame:
                 if critical_message:
                     self.player1_critical_message = critical_injury
 
-            health_status = f"{defender.display_name} now has {self.player2_health if defender == self.player2 else self.player1_health} health left."
+            # health_status = f"{defender.display_name} now has {self.player2_health if defender == self.player2 else self.player1_health} health left."
+            
             sleep_duration = random.uniform(2, 3) + (2 if critical_message else 0)  # Add 2 extra seconds for critical hits
             await asyncio.sleep(sleep_duration)
 
             # Edit the round message with updated content
-            await round_message.edit(content=f"Round {round_number} in progress: {message}\n{health_status}")
+            await round_message.edit(content=f"Round {round_number} in progress: {message}\n")
+            
+            # {message}\n{health_status}")
 
             # Update the health bars after each turn
             await self.update_health_bars(round_number)
@@ -250,6 +253,9 @@ class FightingGame:
                 round_result = f"{self.player2.display_name} had the edge this round!"
 
         await self.channel.send(round_result)
+        
+        await self.update_health_bars(round_number)
+        
         return round_result
 
     async def start_game(self):
