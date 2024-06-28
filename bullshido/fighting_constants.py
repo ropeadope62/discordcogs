@@ -280,6 +280,37 @@ CRITICAL_CONCLUDES = [
     "{defender} is left with a bloody cheek."
 ]
 
+CRITICAL_INJURIES = [
+    "Knocked Down",
+    "Damaged Lung",
+    "Broken Nose"
+    "Shattered Rib",
+    "Dislocated Shoulder",
+    "Broken Jaw",
+    "Concussion",
+    "Broken Leg",
+    "Broken Arm",
+    "Broken Collarbone",
+    "Broken Wrist",
+    "Broken Ankle",
+    "Broken Finger",
+    "Broken Toe",
+    "Broken Nose",
+    "Broken Rib",
+    "Broken Shin",
+    "Broken Thigh",
+    "Broken Kneecap",
+    "Broken Foot",
+    "Broken Hand",
+    "Cut Eye",
+    "Black Eye",
+    "Bloody Nose",
+    "Bloody Lip",
+    "Bloody Ear",
+    "Bloody Mouth",
+    "Bloody Forehead",
+    "Bloody Cheek"
+]
 KO_MESSAGES = [
     "{loser} got knocked the fuck out!",
     "{loser} got KO'd!",

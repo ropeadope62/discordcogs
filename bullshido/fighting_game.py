@@ -3,7 +3,7 @@ import random
 import asyncio
 import discord
 import math
-from .fighting_constants import STRIKES, BODY_PARTS, STRIKE_ACTIONS, GRAPPLE_ACTIONS, GRAPPLE_KEYWORDS, CRITICAL_MESSAGES, CRITICAL_CONCLUDES, KO_MESSAGES, TKO_MESSAGES, FIGHT_RESULT_LONG, REFEREE_STOPS, TKO_VICTOR_MESSAGE, KO_VICTOR_MESSAGE
+from .fighting_constants import STRIKES, BODY_PARTS, STRIKE_ACTIONS, GRAPPLE_ACTIONS, GRAPPLE_KEYWORDS, CRITICAL_MESSAGES, CRITICAL_CONCLUDES, KO_MESSAGES, TKO_MESSAGES, FIGHT_RESULT_LONG, REFEREE_STOPS, TKO_VICTOR_MESSAGE, KO_VICTOR_MESSAGE, CRITICAL_INJURIES
 from PIL import Image, ImageDraw, ImageFont
 
 class FightingGame:
@@ -44,10 +44,18 @@ class FightingGame:
     async def update_health_bars(self):
         player1_health_bar = self.create_health_bar(self.player1_health, self.max_health)
         player2_health_bar = self.create_health_bar(self.player2_health, self.max_health)
-
-        embed = discord.Embed(title="Player Health", color=0x00ff00)
+        
+        
+        embed = discord.Embed(title="Round {round_number}", color=0x00ff00)
         embed.add_field(name=f"{self.player1.display_name}'s Health", value=player1_health_bar, inline=False)
         embed.add_field(name=f"{self.player2.display_name}'s Health", value=player2_health_bar, inline=False)
+        embed.set_image(url="https://i.ibb.co/7KK90YH/bullshido.png")
+
+        if self.player1_critical_message:
+            embed.add_field(name=f"{self.player1.display_name} Critical Injury", value=self.critical_injury, inline=False)
+        if self.player2_critical_message:
+            embed.add_field(name=f"{self.player2.display_name} Critical Injury", value=self.critical_injury, inline=False)
+
 
         await self.channel.send(embed=embed)
 
@@ -67,13 +75,16 @@ class FightingGame:
         if is_critical_hit:
             modified_damage = base_damage * 2
             message = random.choice(CRITICAL_MESSAGES)
-            conclude_message = random.choice(CRITICAL_CONCLUDES).format(defender=defender.display_name)
+            conclude_index = random.randint(0, len(CRITICAL_CONCLUDES) - 1)
+            conclude_message = CRITICAL_CONCLUDES[conclude_index].format(defender=defender.display_name)
+            critical_injury = CRITICAL_INJURIES[conclude_index]
+            
         else:
             modified_damage = round(modified_damage * modifier)
             message = ""
             conclude_message = ""
         
-        return strike, modified_damage, message, conclude_message
+        return strike, modified_damage, message, conclude_message, critical_injury
 
     async def target_bodypart(self):
         bodypart = random.choice(BODY_PARTS)
