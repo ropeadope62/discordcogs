@@ -85,6 +85,13 @@ class Bullshido(commands.Cog):
     async def set_fighting_style(self, ctx: commands.Context, user: discord.Member, style: str):
         await self.config.user(user).fighting_style.set(style)
         await ctx.send(f"{user.mention} has trained in the style of {style}!")
+        
+    async def update_intimidation_level(self, user: discord.Member):
+        user_data = await self.config.user(user).all()
+        ko_wins = user_data["wins"]["KO"]
+        tko_wins = user_data["wins"]["TKO"]
+        intimidation_level = ko_wins + tko_wins # submission wins to be added
+        await self.config.user(user).intimidation_level.set(intimidation_level)
 
     @commands.hybrid_group(name="bullshido", description="Commands related to the Bullshido game")
     async def bullshido_group(self, ctx: commands.Context):
@@ -446,6 +453,7 @@ class Bullshido(commands.Cog):
 
             # Update the fight history
             await self.config.user(user).fight_history.set(fight_history)
+            await self.update_intimidation_level(user)
 
         except Exception as e:
             self.logger.error(f"Error updating stats for {user.display_name}: {e}")
