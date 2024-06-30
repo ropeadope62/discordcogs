@@ -11,6 +11,7 @@ from .fighting_constants import (
 from PIL import Image, ImageDraw, ImageFont
 
 ACTION_COST = 10  # Unified action cost for all strikes and grapples
+MISS_BASE_PROBABILITY = 0.1  # Base probability of missing a strike, modified by attacker/defender training level
 
 class FightingGame:
     def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog):
@@ -86,10 +87,19 @@ class FightingGame:
         await self.channel.send(embed=embed)
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
-        training_bonus = math.log10(training_level + 1) * self.training_weight
-        diet_bonus = math.log10(diet_level + 1) * self.diet_weight
-        adjusted_damage = base_damage * (1 + training_bonus + diet_bonus)
-        return round(adjusted_damage)
+        training_bonus = math.log10(training_level + 1) * self.training_weight  # Adjusted training level
+        diet_bonus = math.log10(diet_level + 1) * self.diet_weight  # Adjusted diet level
+        adjusted_damage = base_damage * (1 + training_bonus + diet_bonus)  # Adjusted damage
+        return round(adjusted_damage)  # Round to nearest integer
+
+    def calculate_miss_probability(self, attacker_stamina, attacker_training, defender_training):
+        miss_probability = MISS_BASE_PROBABILITY
+        if attacker_stamina < 50:
+            miss_probability += 0.05  # Increase miss chance if stamina is low
+        miss_probability -= 0.01 * math.log10(attacker_training + 1)  # Decrease miss chance with better training
+        miss_probability += 0.01 * math.log10(defender_training + 1)  # Increase miss chance against better trained defender
+        return min(max(miss_probability, 0.05), 0.5)  # Clamp the probability between 5% and 50%
+
 
     def get_strike_damage(self, style, attacker, defender):
         strike, damage_range = random.choice(list(STRIKES[style].items()))
@@ -131,15 +141,32 @@ class FightingGame:
             defender = self.player2
             attacker_stamina = self.player1_stamina
             defender_stamina = self.player2_stamina
+            attacker_training = self.player1_data["training_level"]
+            defender_training = self.player2_data["training_level"]
+            attacker_morale = self.player1_data["morale"]
+            defender_morale = self.player2_data["morale"]
             style = self.player1_data["fighting_style"]
+            
         else:
             attacker = self.player2
             defender = self.player1
             attacker_stamina = self.player2_stamina
             defender_stamina = self.player1_stamina
+            attacker_training = self.player1_data["training_level"]
+            defender_training = self.player2_data["training_level"]
+            attacker_morale = self.player1_data["morale"]
+            defender_morale = self.player2_data["morale"]
             style = self.player2_data["fighting_style"]
 
         try:
+            miss_probability = self.calculate_miss_probability(attacker_stamina, attacker_training, defender_training)
+            if random.random() < miss_probability:
+                # Misses the attack
+                miss_message = f"{attacker.display_name} missed their attack on {defender.display_name}!"
+                await round_message.edit(content=f"Round {round_number} in progress: {miss_message}")
+                self.current_turn = defender
+                return False
+            
             strike, damage, critical_message, conclude_message, critical_injury = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender)
             bodypart = await self.target_bodypart()
 
