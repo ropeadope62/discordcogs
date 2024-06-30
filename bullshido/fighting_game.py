@@ -244,7 +244,7 @@ class FightingGame:
 
         final_message = (
             f"{tko_message_flavor} {referee_stop_flavor}, {winner.display_name} wins the fight by TKO!\n"
-            f"{winner.display_name} {TKO_VICTOR_MESSAGE}, Wow!"
+            f"{winner.display_name} {random.choice(TKO_VICTOR_MESSAGE)}, Wow!"
         )
         await round_message.edit(content=final_message)
         await self.channel.send(final_message)
