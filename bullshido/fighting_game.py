@@ -10,6 +10,8 @@ from .fighting_constants import (
 )
 from PIL import Image, ImageDraw, ImageFont
 
+ACTION_COST = 10  # Unified action cost for all strikes and grapples
+
 class FightingGame:
     def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog):
         self.bot = bot
@@ -20,6 +22,8 @@ class FightingGame:
         self.player2_data = player2_data
         self.player1_health = 100
         self.player2_health = 100
+        self.player1_stamina = 100  # Initial stamina
+        self.player2_stamina = 100  # Initial stamina
         self.rounds = 3
         self.max_strikes_per_round = 5
         self.player1_score = 0
@@ -30,6 +34,7 @@ class FightingGame:
         self.player1_critical_injuries = []
         self.player2_critical_injuries = []
         self.max_health = 100
+        self.max_stamina = 100
 
         if player1_data['training_level'] >= player2_data['training_level']:
             self.current_turn = player1
@@ -47,23 +52,37 @@ class FightingGame:
             progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
         return progress_bar
 
+    def get_stamina_status(self, stamina):
+        if stamina >= 75:
+            return "Fresh"
+        elif stamina >= 50:
+            return "Winded"
+        elif stamina >= 25:
+            return "Gassed"
+        else:
+            return "Exhausted"
+
     async def update_health_bars(self, round_number):
         player1_health_bar = self.create_health_bar(self.player1_health, self.max_health)
         player2_health_bar = self.create_health_bar(self.player2_health, self.max_health)
+
+        player1_stamina_status = self.get_stamina_status(self.player1_stamina)
+        player2_stamina_status = self.get_stamina_status(self.player2_stamina)
 
         embed = discord.Embed(
             title=f"Round {round_number} - {self.player1.display_name} vs {self.player2.display_name}",
             color=0xFF0000  # Set embed color to red
         )
         embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health}", inline=False)
-        embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
-        embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
-
+        embed.add_field(name=f"{self.player1.display_name}'s Stamina", value=player1_stamina_status, inline=False)
         if self.player1_critical_injuries:
             embed.add_field(name=f"{self.player1.display_name} Critical Injuries", value="\n".join(self.player1_critical_injuries), inline=False)
-        if self.player2_critical_injuries:
-            embed.add_field(name=f"{self.player2.display_name} Critical Injuries", value="\n".join(self.player2_critical_injuries), inline=False)
+        embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
+        embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
+        embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
 
+        
+     
         await self.channel.send(embed=embed)
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
@@ -101,19 +120,32 @@ class FightingGame:
         # Check if the strike contains any grapple keywords
         return any(keyword.lower() in strike.lower() for keyword in GRAPPLE_KEYWORDS)
 
+    async def perform_action(self, action_cost, attacker_stamina):
+        if attacker_stamina >= action_cost:
+            return attacker_stamina - action_cost
+        return None
+
     async def play_turn(self, round_message, round_number):
         if self.current_turn == self.player1:
             attacker = self.player1
             defender = self.player2
+            attacker_stamina = self.player1_stamina
+            defender_stamina = self.player2_stamina
             style = self.player1_data["fighting_style"]
         else:
             attacker = self.player2
             defender = self.player1
+            attacker_stamina = self.player2_stamina
+            defender_stamina = self.player1_stamina
             style = self.player2_data["fighting_style"]
 
         try:
             strike, damage, critical_message, conclude_message, critical_injury = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender)
             bodypart = await self.target_bodypart()
+
+            if not await self.perform_action(ACTION_COST, attacker_stamina):
+                await round_message.edit(content=f"{attacker.display_name} is too exhausted to perform an action!")
+                return False
 
             if self.is_grapple_move(strike):
                 action = random.choice(GRAPPLE_ACTIONS)
@@ -124,11 +156,13 @@ class FightingGame:
 
             if self.current_turn == self.player1:
                 self.player2_health -= damage
+                self.player1_stamina = attacker_stamina - ACTION_COST
                 self.current_turn = self.player2
                 if critical_injury:
                     self.player2_critical_injuries.append(critical_injury)
             else:
                 self.player1_health -= damage
+                self.player2_stamina = attacker_stamina - ACTION_COST
                 self.current_turn = self.player1
                 if critical_injury:
                     self.player1_critical_injuries.append(critical_injury)
@@ -205,6 +239,10 @@ class FightingGame:
         except Exception as e:
             print(f"An error occurred: {e}")
 
+    def regenerate_stamina(self, current_stamina, training_level, diet_level):
+        regeneration_rate = (training_level + diet_level) / 20  # Simple formula for regeneration
+        return min(current_stamina + regeneration_rate, self.max_stamina)
+
     async def play_round(self, round_number):
         strike_count = 0
         player1_health_start = self.player1_health
@@ -249,6 +287,10 @@ class FightingGame:
                 round_result = f"{self.player2.display_name} had the edge this round!"
 
         await self.channel.send(round_result)
+
+        # Regenerate stamina for both players
+        self.player1_stamina = self.regenerate_stamina(self.player1_stamina, self.player1_data['training_level'], self.player1_data['nutrition_level'])
+        self.player2_stamina = self.regenerate_stamina(self.player2_stamina, self.player2_data['training_level'], self.player2_data['nutrition_level'])
 
         await self.update_health_bars(round_number)
 

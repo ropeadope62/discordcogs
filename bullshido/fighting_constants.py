@@ -379,3 +379,5 @@ KO_VICTOR_MESSAGE = [
     "sent him to sleep!",
     "turned out the lights!"
 ]
+
+ACTION_COST = 10
