@@ -100,9 +100,9 @@ class Bullshido(commands.Cog):
                     await user.send(f"You've lost 20 points in your {level_key.replace('_', ' ')} due to inactivity.")
                 await self.config.user_from_id(user_id)[f"last_{last_action_key}"].set(current_time.strftime('%Y-%m-%d %H:%M:%S'))
 
-    async def set_fighting_style(self, ctx: commands.Context, new_style):
-        result = await self.change_fighting_style(ctx.author, new_style)
-        await ctx.send(result)
+    async def set_fighting_style(self, ctx: commands.Context, user: discord.Member, style: str):
+        await self.config.user(user).fighting_style.set(style)
+        await ctx.send(f"{user.mention} has trained in the style of {style}!")
         
     async def update_intimidation_level(self, user: discord.Member):
         user_data = await self.config.user(user).all()
@@ -272,48 +272,6 @@ class Bullshido(commands.Cog):
 
     @bullshido_group.command(name="select_fighting_style", description="Select your fighting style")
     async def select_fighting_style(self, ctx: commands.Context):
-        """Select your fighting style."""
-        view = SelectFightingStyleView(self.set_fighting_style, ctx.author, ctx)
-        await ctx.send("Please select your fighting style:\nChoosing a new style will reset your training level.", view=view)
-
-    @bullshido_group.command(name="list_fighting_styles", description="List all available fighting styles")
-    async def list_fighting_styles(self, ctx: commands.Context):
-        """List all available fighting styles."""
-        styles = ["Karate", "Muay-Thai", "Aikido", "Boxing", "Kung-Fu", "Judo", "Taekwondo", "Wrestling", "Sambo", "MMA", "Capoeira", "Kickboxing", "Krav-Maga", "Brazilian Jiu-Jitsu"]
-        await ctx.send(f"Available fighting styles: {', '.join(styles)}")
-    
-    @bullshido_group.command(name="fight", description="Start a fight with another player")
-    async def fight(self, ctx: commands.Context, opponent: discord.Member):
-        """Start a fight with another player."""
-        await ctx.defer()
-        try: 
-            player1 = ctx.author
-            player2 = opponent
-            
-            player1_data = await self.config.user(player1).all()
-            player2_data = await self.config.user(player2).all()
-            
-            if not await self.has_sufficient_stamina(player1):
-                await ctx.send(f"You are too tired to fight,  {player1.mention}.\n Try waiting some time for your stamina to recover, or buy some supplements to speed up your recovery.")
-                return
-            if not await self.has_sufficient_stamina(player2):
-                await ctx.send("Your opponent does not have enough stamina to start the fight.")
-                return
-            
-            
-            if not player1_data['fighting_style'] or not player2_data['fighting_style']:
-                await ctx.send("Both players must have selected a fighting style before starting a fight.")
-                return
-            if player1 == player2:
-                await ctx.send("You cannot fight yourself, only your own demons! Try challenging another fighter.")
-                return
-            # Set up an instance of game session
-            game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self)
-            await game.start_game()
-            
-        except Exception as e:
-            self.logger.error(f"Failed to start fight: {e}")
-            await ctx.send(f"Failed to start the fight due to an error: {e}")
             
     @bullshido_group.command(name="reset_stats", description="Resets all Bullshido user data to default values")
     async def reset_stats(self, ctx: commands.Context):
