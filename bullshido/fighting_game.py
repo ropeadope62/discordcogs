@@ -136,37 +136,24 @@ class FightingGame:
         return None
 
     async def play_turn(self, round_message, round_number):
-        if self.current_turn == self.player1:
-            attacker = self.player1
-            defender = self.player2
-            attacker_stamina = self.player1_stamina
-            defender_stamina = self.player2_stamina
-            attacker_training = self.player1_data["training_level"]
-            defender_training = self.player2_data["training_level"]
-            attacker_morale = self.player1_data["morale"]
-            defender_morale = self.player2_data["morale"]
-            style = self.player1_data["fighting_style"]
-            
-        else:
-            attacker = self.player2
-            defender = self.player1
-            attacker_stamina = self.player2_stamina
-            defender_stamina = self.player1_stamina
-            attacker_training = self.player1_data["training_level"]
-            defender_training = self.player2_data["training_level"]
-            attacker_morale = self.player1_data["morale"]
-            defender_morale = self.player2_data["morale"]
-            style = self.player2_data["fighting_style"]
+        attacker = self.player1 if self.current_turn == self.player1 else self.player2
+        defender = self.player2 if self.current_turn == self.player1 else self.player1
+        attacker_stamina = self.player1_stamina if self.current_turn == self.player1 else self.player2_stamina
+        defender_stamina = self.player2_stamina if self.current_turn == self.player1 else self.player1_stamina
+        attacker_training = self.player1_data["training_level"] if self.current_turn == self.player1 else self.player2_data["training_level"]
+        defender_training = self.player2_data["training_level"] if self.current_turn == self.player1 else self.player1_data["training_level"]
+        style = self.player1_data["fighting_style"] if self.current_turn == self.player1 else self.player2_data["fighting_style"]
 
         try:
             miss_probability = self.calculate_miss_probability(attacker_stamina, attacker_training, defender_training)
             if random.random() < miss_probability:
-                # Misses the attack
-                miss_message = f"{attacker.display_name} missed their attack on {defender.display_name}!"
-                await round_message.edit(content=f"Round {round_number} in progress: {miss_message}")
-                self.current_turn = defender
+                # Attack missed
+                miss_message = f"{attacker.display_name} misses the attack on {defender.display_name}!"
+                await round_message.edit(content=f"Round {round_number} in progress: {miss_message}\n")
+                self.current_turn = defender  # Switch turn to the other player
                 return False
-            
+
+            # Ensure strike and related variables are defined
             strike, damage, critical_message, conclude_message, critical_injury = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender)
             bodypart = await self.target_bodypart()
 
@@ -215,7 +202,7 @@ class FightingGame:
             # Log detailed error information for debugging
             print(f"Error during play_turn: {e}")
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
-            print(f"Strike: {strike}, Damage: {damage}, Bodypart: {bodypart}")
+            print(f"Strike: {strike if 'strike' in locals() else 'N/A'}, Damage: {damage if 'damage' in locals() else 'N/A'}, Bodypart: {bodypart if 'bodypart' in locals() else 'N/A'}")
             print(f"Attacker data: {self.player1_data if attacker == self.player1 else self.player2_data}")
             await round_message.edit(content=f"An error occurred during the turn: {e}")
             return True
