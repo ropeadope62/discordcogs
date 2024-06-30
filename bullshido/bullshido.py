@@ -56,6 +56,24 @@ class Bullshido(commands.Cog):
         stamina = await self.config.user(user).stamina_level()
         return stamina >= 20
     
+    async def change_fighting_style(self, user: discord.Member, new_style: str):
+        # Fetch User data
+        user_data = await self.config.user(user).all()
+
+        # Check if the user changed style 
+        if user_data["fighting_style"] != new_style:
+            # If new style is different, reset training 
+            user_data["fighting_style"] = new_style
+            user_data["training_level"] = 0
+            # Update the config
+            await self.config.user(user).set(user_data)
+            await self.config.user(user).fighting_style.set(new_style)
+            await self.config.user(user).training_level.set(0)
+
+            return f"Fighting style changed to {new_style} and training level reset to 0."
+        else:
+            return "You already have this fighting style."
+    
     async def check_inactivity(self):
         await self.bot.wait_until_ready()
         while not self.bot.is_closed():
@@ -82,9 +100,9 @@ class Bullshido(commands.Cog):
                     await user.send(f"You've lost 20 points in your {level_key.replace('_', ' ')} due to inactivity.")
                 await self.config.user_from_id(user_id)[f"last_{last_action_key}"].set(current_time.strftime('%Y-%m-%d %H:%M:%S'))
 
-    async def set_fighting_style(self, ctx: commands.Context, user: discord.Member, style: str):
-        await self.config.user(user).fighting_style.set(style)
-        await ctx.send(f"{user.mention} has trained in the style of {style}!")
+    async def set_fighting_style(self, ctx: commands.Context, new_style):
+        result = await self.change_fighting_style(ctx.author, new_style)
+        await ctx.send(result)
         
     async def update_intimidation_level(self, user: discord.Member):
         user_data = await self.config.user(user).all()
@@ -132,7 +150,7 @@ class Bullshido(commands.Cog):
         )
         embed.add_field(
             name="Selecting a Fighting Style",
-            value="Use `/bullshido select_fighting_style` to choose your fighting style. Each style has unique strikes and abilities.",
+            value="Use `/bullshido select_fighting_style` to choose your fighting style. Each style has unique strikes and abilities. Warning, if you choose a new style your Training level will be reset!",
             inline=False
         )
         embed.add_field(
@@ -256,7 +274,7 @@ class Bullshido(commands.Cog):
     async def select_fighting_style(self, ctx: commands.Context):
         """Select your fighting style."""
         view = SelectFightingStyleView(self.set_fighting_style, ctx.author, ctx)
-        await ctx.send("Please select your fighting style:", view=view)
+        await ctx.send("Please select your fighting style:\nChoosing a new style will reset your training level.", view=view)
 
     @bullshido_group.command(name="list_fighting_styles", description="List all available fighting styles")
     async def list_fighting_styles(self, ctx: commands.Context):

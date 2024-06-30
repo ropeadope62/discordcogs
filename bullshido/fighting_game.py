@@ -109,19 +109,19 @@ class FightingGame:
 
         is_critical_hit = random.random() < 0.1
         critical_injury = ""
+        critical_message = ""
+        conclude_message = ""
+        
         if is_critical_hit:
             modified_damage = base_damage * 2
-            message = random.choice(CRITICAL_MESSAGES)
             conclude_index = random.randint(0, len(CRITICAL_CONCLUDES) - 1)
+            critical_message = CRITICAL_MESSAGES[conclude_index]
             conclude_message = CRITICAL_CONCLUDES[conclude_index].format(defender=defender.display_name)
             critical_injury = CRITICAL_INJURIES[conclude_index]
         else:
             modified_damage = round(modified_damage * modifier)
-            message = ""
-            conclude_message = ""
 
-        return strike, modified_damage, message, conclude_message, critical_injury
-
+        return strike, modified_damage, critical_message, conclude_message, critical_injury
     async def target_bodypart(self):
         bodypart = random.choice(BODY_PARTS)
         return bodypart
@@ -136,13 +136,22 @@ class FightingGame:
         return None
 
     async def play_turn(self, round_message, round_number):
-        attacker = self.player1 if self.current_turn == self.player1 else self.player2
-        defender = self.player2 if self.current_turn == self.player1 else self.player1
-        attacker_stamina = self.player1_stamina if self.current_turn == self.player1 else self.player2_stamina
-        defender_stamina = self.player2_stamina if self.current_turn == self.player1 else self.player1_stamina
-        attacker_training = self.player1_data["training_level"] if self.current_turn == self.player1 else self.player2_data["training_level"]
-        defender_training = self.player2_data["training_level"] if self.current_turn == self.player1 else self.player1_data["training_level"]
-        style = self.player1_data["fighting_style"] if self.current_turn == self.player1 else self.player2_data["fighting_style"]
+        if self.current_turn == self.player1:
+            attacker = self.player1
+            defender = self.player2
+            attacker_stamina = self.player1_stamina
+            defender_stamina = self.player2_stamina
+            attacker_training = self.player1_data["training_level"]
+            defender_training = self.player2_data["training_level"]
+            style = self.player1_data["fighting_style"]
+        else:
+            attacker = self.player2
+            defender = self.player1
+            attacker_stamina = self.player2_stamina
+            defender_stamina = self.player1_stamina
+            attacker_training = self.player2_data["training_level"]
+            defender_training = self.player1_data["training_level"]
+            style = self.player2_data["fighting_style"]
 
         try:
             miss_probability = self.calculate_miss_probability(attacker_stamina, attacker_training, defender_training)
@@ -206,6 +215,7 @@ class FightingGame:
             print(f"Attacker data: {self.player1_data if attacker == self.player1 else self.player2_data}")
             await round_message.edit(content=f"An error occurred during the turn: {e}")
             return True
+
 
     async def declare_winner_by_ko(self, round_message):
         if self.player1_health <= 0:
