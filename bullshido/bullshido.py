@@ -42,14 +42,14 @@ class Bullshido(commands.Cog):
             "fight_history": []
         }
 
-        self.config.register_user(**default_user)
+        #self.config.register_user(**default_user)
 
-        current_working_directory = os.getcwd()
-        log_directory = os.path.join(current_working_directory, 'logs')
-        if not os.path.exists(log_directory):
-            os.makedirs(log_directory)
+        #current_working_directory = os.getcwd()
+        #log_directory = os.path.join(current_working_directory, 'logs')
+        #f not os.path.exists(log_directory):
+        #    os.makedirs(log_directory)
 
-        log_file_path = os.path.join(log_directory, 'bullshido.log')
+        #log_file_path = os.path.join(log_directory, 'bullshido.log')
 
         self.logger = logging.getLogger("red.bullshido")
         self.logger.setLevel(logging.DEBUG)
@@ -57,10 +57,10 @@ class Bullshido(commands.Cog):
         self.memory_handler = MemoryLogHandler()
         self.logger.addHandler(self.memory_handler)
 
-        self.file_handler = logging.FileHandler(log_file_path)
+        #self.file_handler = logging.FileHandler(log_file_path)
         formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
         self.file_handler.setFormatter(formatter)
-        self.logger.addHandler(self.file_handler)
+        #self.logger.addHandler(self.file_handler)
         self.bg_task = self.bot.loop.create_task(self.check_inactivity())
         self.logger.info("Bullshido cog loaded.")
 
