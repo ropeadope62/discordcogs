@@ -110,10 +110,12 @@ class Bullshido(commands.Cog):
                     await user.send(f"You've lost 20 points in your {level_key.replace('_', ' ')} due to inactivity.")
                 await self.config.user_from_id(user_id)[f"last_{last_action_key}"].set(current_time.strftime('%Y-%m-%d %H:%M:%S'))
 
-    async def set_fighting_style(self, ctx: commands.Context, new_style):
+    async def set_fighting_style(self, ctx: commands.Context, new_style: str):
         self.logger.debug(f"Setting fighting style for {ctx.author.display_name}: {new_style}")
         result = await self.change_fighting_style(ctx.author, new_style)
         await ctx.send(result)
+
+    
 
     async def update_intimidation_level(self, user: discord.Member):
         self.logger.debug(f"Updating intimidation level for {user.display_name}")
@@ -143,3 +145,4 @@ class Bullshido(commands.Cog):
         """Prompts the user to select their fighting style."""
         view = SelectFightingStyleView(self.set_fighting_style, ctx.author, ctx)
         await ctx.send("Please select your fighting style:", view=view)
+
