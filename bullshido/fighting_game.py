@@ -82,8 +82,6 @@ class FightingGame:
         embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
 
-        
-     
         await self.channel.send(embed=embed)
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
@@ -99,7 +97,6 @@ class FightingGame:
         miss_probability -= 0.01 * math.log10(attacker_training + 1)  # Decrease miss chance with better training
         miss_probability += 0.01 * math.log10(defender_training + 1)  # Increase miss chance against better trained defender
         return min(max(miss_probability, 0.05), 0.5)  # Clamp the probability between 5% and 50%
-
 
     def get_strike_damage(self, style, attacker, defender):
         strike, damage_range = random.choice(list(STRIKES[style].items()))
@@ -122,6 +119,7 @@ class FightingGame:
             modified_damage = round(modified_damage * modifier)
 
         return strike, modified_damage, critical_message, conclude_message, critical_injury
+
     async def target_bodypart(self):
         bodypart = random.choice(BODY_PARTS)
         return bodypart
@@ -211,11 +209,10 @@ class FightingGame:
             # Log detailed error information for debugging
             print(f"Error during play_turn: {e}")
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
-            print(f"Strike: {strike if 'strike' in locals() else 'N/A'}, Damage: {damage if 'damage' in locals() else 'N/A'}, Bodypart: {bodypart if 'bodypart' in locals() else 'N/A'}")
+            print(f"Strike: {strike}, Damage: {damage}, Bodypart: {bodypart}")
             print(f"Attacker data: {self.player1_data if attacker == self.player1 else self.player2_data}")
             await round_message.edit(content=f"An error occurred during the turn: {e}")
             return True
-
 
     async def declare_winner_by_ko(self, round_message):
         if self.player1_health <= 0:
@@ -241,12 +238,17 @@ class FightingGame:
 
         final_message = (
             f"{tko_message_flavor} {referee_stop_flavor}, {winner.display_name} wins the fight by TKO!\n"
-            f"{winner.display_name} {random.choice(TKO_VICTOR_MESSAGE)}, Wow!"
+            f"{winner.display_name} {TKO_VICTOR_MESSAGE}, Wow!"
         )
         await round_message.edit(content=final_message)
         await self.channel.send(final_message)
 
         await self.record_result(winner, loser, "TKO")
+
+    async def declare_draw(self, round_message):
+        draw_message = "The fight is declared a draw!"
+        await round_message.edit(content=draw_message)
+        await self.channel.send(draw_message)
 
     async def record_result(self, winner, loser, result_type):
         try:
@@ -263,10 +265,6 @@ class FightingGame:
         except Exception as e:
             print(f"An error occurred: {e}")
 
-    def regenerate_stamina(self, current_stamina, training_level, diet_level):
-        regeneration_rate = (training_level + diet_level) / 20  # Simple formula for regeneration
-        return min(current_stamina + regeneration_rate, self.max_stamina)
-
     async def play_round(self, round_number):
         strike_count = 0
         player1_health_start = self.player1_health
@@ -277,7 +275,6 @@ class FightingGame:
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
             ko_or_tko_occurred = await self.play_turn(round_message, round_number)
             if ko_or_tko_occurred:
-                await self.update_health_bars(round_number)
                 return
 
             strike_count += 1
@@ -311,13 +308,9 @@ class FightingGame:
                 round_result = f"{self.player2.display_name} had the edge this round!"
 
         await self.channel.send(round_result)
-
-        # Regenerate stamina for both players
-        self.player1_stamina = self.regenerate_stamina(self.player1_stamina, self.player1_data['training_level'], self.player1_data['nutrition_level'])
-        self.player2_stamina = self.regenerate_stamina(self.player2_stamina, self.player2_data['training_level'], self.player2_data['nutrition_level'])
-
+        
         await self.update_health_bars(round_number)
-
+        
         return round_result
 
     async def start_game(self):
@@ -352,11 +345,14 @@ class FightingGame:
                 loser = self.player2
                 result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
                 result_description = FIGHT_RESULT_LONG[result_type]
-            else:
+            elif self.player2_score > self.player1_score:
                 winner = self.player2
                 loser = self.player1
                 result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
                 result_description = FIGHT_RESULT_LONG[result_type]
+            else:
+                await self.declare_draw(round_message)
+                return
 
         final_message = (
             f"The fight is over!\n"

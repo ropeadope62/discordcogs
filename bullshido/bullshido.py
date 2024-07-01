@@ -44,26 +44,33 @@ class Bullshido(commands.Cog):
         self.config.register_user(**default_user)
         
         self.logger = logging.getLogger("red.bullshido")
+        self.logger.setLevel(logging.DEBUG)
+        
         self.memory_handler = MemoryLogHandler()
         self.logger.addHandler(self.memory_handler)
+        
+        self.file_handler = logging.FileHandler('bullshido.log')
         formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
-        self.memory_handler.setFormatter(formatter)
-        self.logger.setLevel(logging.DEBUG)
+        self.file_handler.setFormatter(formatter)
+        self.logger.addHandler(self.file_handler)
         self.bg_task = self.bot.loop.create_task(self.check_inactivity())
+        self.logger.info("Bullshido cog loaded.")
         
     async def has_sufficient_stamina(self, user):
         """ Check if the user has sufficient stamina to fight."""
         stamina = await self.config.user(user).stamina_level()
+        self.logger.debug(f"Checking stamina for {user.display_name}: {stamina}")
         return stamina >= 20
     
     async def change_fighting_style(self, user: discord.Member, new_style: str):
         # Fetch User data
         user_data = await self.config.user(user).all()
-
+        self.logger.debug(f"Changing fighting style for {user.display_name}: {user_data}")
         # Check if the user changed style 
         if user_data["fighting_style"] != new_style:
             # If new style is different, reset training 
             user_data["fighting_style"] = new_style
+            self.logger.debug(f"New style detected- Resetting training level for {user.display_name}")
             user_data["training_level"] = 0
             # Update the config
             await self.config.user(user).set(user_data)
@@ -81,9 +88,11 @@ class Bullshido(commands.Cog):
             await asyncio.sleep(3600)  # Check every hour
 
     async def apply_inactivity_penalties(self):
+        self.logger.debug("Applying inactivity penalties...")
         current_time = datetime.utcnow()
         async with self.config.all_users() as users:
             for user_id, user_data in users.items():
+                self.logger.debug(f"Applying inactivity penalties for {user_id}: {user_data}")
                 await self.apply_penalty(user_id, user_data, current_time, "train", "training_level")
                 await self.apply_penalty(user_id, user_data, current_time, "diet", "nutrition_level")
 
@@ -101,14 +110,17 @@ class Bullshido(commands.Cog):
                 await self.config.user_from_id(user_id)[f"last_{last_action_key}"].set(current_time.strftime('%Y-%m-%d %H:%M:%S'))
 
     async def set_fighting_style(self, ctx: commands.Context, new_style):
+        self.logger.debug(f"Setting fighting style for {ctx.author.display_name}: {new_style}")
         result = await self.change_fighting_style(ctx.author, new_style)
         await ctx.send(result)
         
     async def update_intimidation_level(self, user: discord.Member):
+        self.logger.debug(f"Updating intimidation level for {user.display_name}")
         user_data = await self.config.user(user).all()
         ko_wins = user_data["wins"]["KO"]
         tko_wins = user_data["wins"]["TKO"]
         intimidation_level = ko_wins + tko_wins # submission wins to be added
+        self.logger.debug(f"Intimidation level for {user.display_name}: {intimidation_level}")
         await self.config.user(user).intimidation_level.set(intimidation_level)
 
     @commands.hybrid_group(name="bullshido", description="Commands related to the Bullshido game")
