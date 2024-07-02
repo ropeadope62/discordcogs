@@ -30,7 +30,7 @@ class FightingGame:
         self.player2_critical_injuries = []
         self.max_health = 100
         self.ACTION_COST = 10
-        self.MISS_BASE_PROBABILITY = 0.1
+        self.BASE_MISS_PROBABILITY = 0.1
         self.BASE_STAMINA_COST = 10
 
         if player1_data['training_level'] >= player2_data['training_level']:
