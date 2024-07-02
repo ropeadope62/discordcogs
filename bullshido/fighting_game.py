@@ -42,7 +42,7 @@ class FightingGame:
             self.current_turn = player2
     async def generate_fight_image(self):
         # Load the background template
-        template_url = "https://i.ibb.co/7KK90YH/bullshido.png"
+        template_url = self.FIGHT_TEMPLATE_URL
         response = requests.get(template_url)
         background = Image.open(BytesIO(response.content))
 
