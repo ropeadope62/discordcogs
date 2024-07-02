@@ -130,6 +130,7 @@ class Bullshido(commands.Cog):
         pass
 
     @bullshido_group.command(name="log", description="Displays the log")
+    @commands.is_owner()
     async def show_log(self, ctx: commands.Context):
         """Displays the Bullshido log."""
         logs = self.memory_handler.get_logs()
@@ -221,6 +222,54 @@ class Bullshido(commands.Cog):
         # Increment nutrition level
         new_nutrition_level = await self.increment_nutrition_level(user)
         await ctx.send(f"{user.mention} has followed their specialized diet today and gained nutrition level! Your nutrition level is now {new_nutrition_level}.")
+    
+    @bullshido_group.command(name="help", description="Learn how the Bullshido game works")
+    async def bullshido_help(self, ctx: commands.Context):
+        """Provides information about how the Bullshido game works."""
+        embed = discord.Embed(
+            title="About Bullshido",
+            description="Welcome to Bullshido, a Discord game of epic combat!",
+            color=0x00ff00
+        )
+        embed.add_field(
+            name="Selecting a Fighting Style",
+            value="Use `/bullshido select_fighting_style` to choose your fighting style. Each style has unique strikes and abilities.",
+            inline=False
+        )
+        embed.add_field(
+            name="Daily Training and Diet",
+            value="Train and follow a diet each day to improve your stats:\n- `/bullshido train`: Train daily to increase your training level.\n- `/bullshido diet`: Follow a diet to increase your nutrition level.\n*Note: Each can be used once every 24 hours.*\n Your overall nutrition and training level will improve your chances of winning a fight.",
+            inline=False
+        )
+        embed.add_field(
+            name="Starting a Fight",
+            value="Challenge another player to a fight using `/bullshido fight @player`. The fight consists of 3 rounds and will be scored by a panel of judges, unless a KO/TKO/Submission occurs.",
+            inline=False
+        )
+        embed.add_field(
+            name="Winning and Losing",
+            value="Winning a fight increases your wins and morale. Losing decreases your morale. Keep training and dieting to improve your chances in future fights.",
+            inline=False
+        )
+        embed.add_field(
+            name="Penalties for Inactivity",
+            value="If you miss a day of training or diet, your stats will decrease by 20 points.",
+            inline=False
+        )
+        embed.add_field(
+            name="Fighting Styles",
+            value="Each style has unique strikes and abilities. Use `/bullshido list_fighting_styles` to see all available styles.",
+        )
+        embed.add_field(
+            name="Stamina",
+            value="Fighting costs stamina, which will be regained daily, or can be replenished by purchasing stamina recovery items. Use `/bullshido stamina` to see your current stamina level.",
+        )
+        embed.add_field(
+            name="Buy",
+            value="Buy stamina recovery items using `/bullshido buy <item>`.",
+        )
+        embed.set_thumbnail(url="https://i.ibb.co/GWpXztm/bullshido.png")
+        await ctx.send(embed=embed)
 
     async def increment_training_level(self, user):
         self.logger.info(f"Incrementing training level for {user}")
@@ -258,4 +307,13 @@ class Bullshido(commands.Cog):
             if today - last_interaction_date > timedelta(days=1):
                 await self.config.user(user).last_interaction.set(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
                 self.logger.info(f"Reset last {command_used} interaction for {user}.")
+    
 
+    @bullshido_group.command(name="clear_old_config", description="Clears old configuration to avoid conflicts")
+    @commands.is_owner()
+    async def clear_old_config(self, ctx: commands.Context):
+        """Clears old configuration to avoid conflicts."""
+        await self.config.clear_all_users()
+        await ctx.send("Old Bullshido configuration has been cleared.")
+async def setup(bot):
+    await bot.add_cog(Bullshido(bot))
