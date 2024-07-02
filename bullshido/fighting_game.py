@@ -40,43 +40,69 @@ class FightingGame:
             self.current_turn = player1
         else:
             self.current_turn = player2
-    def generate_fight_image(self):
-        player1_avatar_url = self.player1.avatar.url
-        player2_avatar_url = self.player2.avatar.url
+    async def generate_fight_image(self):
+        # Load the background template
+        template_url = "https://i.ibb.co/7KK90YH/bullshido.png"
+        response = requests.get(template_url)
+        background = Image.open(BytesIO(response.content))
 
-        # Load the template image
-        response_template = requests.get(self.FIGHT_TEMPLATE_URL)
-        template = Image.open(BytesIO(response_template.content))
+        # Load player avatars
+        player1_avatar = Image.open(BytesIO(await self.player1.avatar.read()))
+        player2_avatar = Image.open(BytesIO(await self.player2.avatar.read()))
 
-        # Load the profile images
-        response1 = requests.get(player1_avatar_url)
-        player1_avatar = Image.open(BytesIO(response1.content)).convert("RGBA")
+        # Resize avatars to fit the template (assuming size 200x200 for the example)
+        player1_avatar = player1_avatar.resize((200, 200))
+        player2_avatar = player2_avatar.resize((200, 200))
 
-        response2 = requests.get(player2_avatar_url)
-        player2_avatar = Image.open(BytesIO(response2.content)).convert("RGBA")
+        # Rotate avatars 90 degrees clockwise
+        player1_avatar = player1_avatar.rotate(-90, expand=True)
+        player2_avatar = player2_avatar.rotate(-90, expand=True)
 
-        # Resize the avatars using ImageTransform
-        avatar_size = (150, 150)
-        player1_avatar = player1_avatar.transform(avatar_size, ImageTransform.QuadTransform([0, 0, avatar_size[0], 0, avatar_size[0], avatar_size[1], 0, avatar_size[1]]))
-        player2_avatar = player2_avatar.transform(avatar_size, ImageTransform.QuadTransform([0, 0, avatar_size[0], 0, avatar_size[0], avatar_size[1], 0, avatar_size[1]]))
+        # Paste avatars onto the template
+        background.paste(player1_avatar, (50, 150), player1_avatar)
+        background.paste(player2_avatar, (650, 150), player2_avatar)
 
-        # Calculate positions
-        width, height = template.size
-        player1_position = (50, (height - avatar_size[1]) // 2)
-        player2_position = (width - avatar_size[0] - 50, (height - avatar_size[1]) // 2)
+        # Add text to the image
+        draw = ImageDraw.Draw(background)
+        font = ImageFont.load_default()
 
-        # Paste the avatars onto the template
-        template.paste(player1_avatar, player1_position, player1_avatar)
-        template.paste(player2_avatar, player2_position, player2_avatar)
+        # Player details
+        player1_details = (
+            f"{self.player1.display_name}\n"
+            f"Style: {self.player1_data['fighting_style']}\n"
+            f"Record: {self.player1_data['wins']} Wins / {self.player1_data['losses']} Losses"
+        )
+        player2_details = (
+            f"{self.player2.display_name}\n"
+            f"Style: {self.player2_data['fighting_style']}\n"
+            f"Record: {self.player2_data['wins']} Wins / {self.player2_data['losses']} Losses"
+        )
 
+        # Define text positions
+        player1_text_position = (50, 100)
+        player2_text_position = (650, 100)
 
+        # Add player details text to the image
+        draw.multiline_text(player1_text_position, player1_details, fill=(255, 255, 255), font=font)
+        draw.multiline_text(player2_text_position, player2_details, fill=(255, 255, 255), font=font)
 
-        # Save or return the final image
-        output_dir = "/home/slurms/ScrapGPT/ScrapGPT/logs/"
-        os.makedirs(output_dir, exist_ok=True)
-        output_path = os.path.join(output_dir, "fight_image.png")
-        template.save(output_path)
-        return output_path
+        # Intro message
+        intro_message = (
+            "Introducing the fighters!\n"
+            "The match will begin in 10 seconds..."
+        )
+
+        # Define text position for intro message
+        intro_text_position = (50, 400)
+
+        # Add intro message to the image
+        draw.multiline_text(intro_text_position, intro_message, fill=(255, 255, 255), font=font)
+
+        # Save the final image
+        final_image_path = '/home/slurms/ScrapGPT/ScrapGPT/logs/fight_image.png'
+        background.save(final_image_path)
+
+        return final_image_path
             
     def create_health_bar(self, current_health, max_health):
         progress = current_health / max_health
@@ -356,14 +382,6 @@ class FightingGame:
 
 
     async def start_game(self):
-        intro_message = (
-            f"Introducing the fighters!\n"
-            f"{self.player1.display_name} with the fighting style {self.player1_data['fighting_style']}!\n"
-            f"Versus\n"
-            f"{self.player2.display_name} with the fighting style {self.player2_data['fighting_style']}!\n"
-            "The match will begin in 10 seconds..."
-        )
-        await self.channel.send(intro_message)
         fight_image_path = self.generate_fight_image()
         await self.channel.send(file=discord.File(fight_image_path))
         await asyncio.sleep(10)
