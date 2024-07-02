@@ -40,8 +40,8 @@ class FightingGame:
         else:
             self.current_turn = player2
     def generate_fight_image(self):
-        player1_avatar_url = self.player1.avatar_url
-        player2_avatar_url = self.player2.avatar_url
+        player1_avatar_url = self.player1.display_avatar.url
+        player2_avatar_url = self.player2.display_avatar.url
 
         # Load the template image
         response_template = requests.get(self.template_url)
@@ -67,6 +67,7 @@ class FightingGame:
         # Paste the avatars onto the template
         template.paste(player1_avatar, player1_position, player1_avatar)
         template.paste(player2_avatar, player2_position, player2_avatar)
+
 
         # Save or return the final image
         output_path = '~/ScrapGPT/ScrapGPT/logs/fight_image.png'
