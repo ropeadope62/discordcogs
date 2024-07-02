@@ -15,6 +15,8 @@ class FightingGame:
         self.player2_data = player2_data
         self.player1_health = 100
         self.player2_health = 100
+        self.player1_stamina = player1_data.get('stamina_level', 100)
+        self.player2_stamina = player2_data.get('stamina_level', 100)
         self.rounds = 3
         self.max_strikes_per_round = 5
         self.player1_score = 0
