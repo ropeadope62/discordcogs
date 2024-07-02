@@ -69,6 +69,11 @@ class Bullshido(commands.Cog):
         stamina = await self.config.user(user).stamina_level()
         return stamina >= 20
     
+    def is_admin_or_mod():
+        async def predicate(ctx):
+            return ctx.author.guild_permissions.administrator or ctx.author.guild_permissions.manage_guild
+        return commands.check(predicate)
+    
     async def set_fighting_style(self, interaction: discord.Interaction, new_style: str):
         user = interaction.user
         user_data = await self.config.user(user).all()
@@ -130,7 +135,7 @@ class Bullshido(commands.Cog):
         pass
 
     @bullshido_group.command(name="log", description="Displays the log")
-    @commands.check_any(commands.has_permissions(manage_guild=True), commands.is_owner())
+    @is_admin_or_mod()
     async def show_log(self, ctx: commands.Context):
         """Displays the Bullshido log."""
         logs = self.memory_handler.get_logs()
@@ -145,6 +150,14 @@ class Bullshido(commands.Cog):
         """Prompts the user to select their fighting style."""
         view = SelectFightingStyleView(self.set_fighting_style, ctx.author, ctx)
         await ctx.send("Please select your fighting style:", view=view)
+        
+    @bullshido_group.command(name="list_fighting_styles", description="List all available fighting styles")
+    async def list_fighting_styles(self, ctx: commands.Context):
+        """List all available fighting styles."""
+        styles = ["Karate", "Muay-Thai", "Aikido", "Boxing", "Kung-Fu", "Judo", "Taekwondo", "Wrestling", "Sambo", "MMA", "Capoeira", "Kickboxing", "Krav-Maga", "Brazilian Jiu-Jitsu"]
+        embed = discord.Embed(title="Available Fighting Styles", description="\n".join(styles), color=0xFF0000)
+        embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
+        await self.channel.send(embed=embed)
         
     @bullshido_group.command(name="fight", description="Start a fight with another player")
     async def fight(self, ctx: commands.Context, opponent: discord.Member):
@@ -271,6 +284,177 @@ class Bullshido(commands.Cog):
         embed.set_thumbnail(url="https://i.ibb.co/GWpXztm/bullshido.png")
         await ctx.send(embed=embed)
 
+
+    @bullshido_group.command(name="reset_stats", description="Resets all Bullshido user data to default values")
+    @is_admin_or_mod()
+    async def reset_stats(self, ctx: commands.Context):
+        """Reset the Bullshido Redbot Configuration values to default for all users."""
+        def check(m):
+            return m.author == ctx.author and m.channel == ctx.channel and m.content.upper() == "YES"
+
+        # Send confirmation message
+        await ctx.send("Are you sure you want to reset Bullshido user data? Type 'YES' to confirm.")
+
+        try:
+            # Wait for a response for 30 seconds
+            confirmation = await self.bot.wait_for('message', check=check, timeout=30.0)
+            if confirmation:
+                # If confirmed, reset all config values
+                default_user = {
+                    "fighting_style": None,
+                    "wins": {"UD": 0, "SD": 0, "TKO": 0, "KO": 0},
+                    "losses": {"UD": 0, "SD": 0, "TKO": 0, "KO": 0},
+                    "level": 1,
+                    "training_level": 1,
+                    "nutrition_level": 1,
+                    "morale": 100,
+                    "intimidation_level": 0,
+                    "stamina_level": 100,
+                    "last_interaction": None,
+                    "last_command_used": None,
+                    "last_train": None,
+                    "last_diet": None,
+                    "fight_history": []
+                }
+
+                async with self.config.all_users() as all_users:
+                    for user_id in all_users:
+                        user_config = self.config.user_from_id(user_id)
+                        for key, value in default_user.items():
+                            await user_config.set_raw(key, value=value)
+
+                await ctx.send("All config values have been reset to default.")
+        except asyncio.TimeoutError:
+            await ctx.send("Reset operation cancelled due to timeout.")
+
+    @bullshido_group.command(name="reset_config", description="Resets Bullshido configuration to default values")
+    @is_admin_or_mod()
+    async def reset_config(self, ctx: commands.Context):
+        """Resets Bullshido configuration to default values."""
+        await self.config.clear_all_users()
+        await ctx.send("Bullshido configuration has been reset to default values.")
+
+    @bullshido_group.command(name="player_stats", description="Displays your wins and losses", aliases=["stats"])
+    async def player_stats(self, ctx: commands.Context):
+        """Displays your wins and losses."""
+        user = ctx.author
+        wins = await self.config.user(user).wins()
+        losses = await self.config.user(user).losses()
+        level = await self.config.user(user).level()
+        training_level = await self.config.user(user).training_level()
+        nutrition_level = await self.config.user(user).nutrition_level()
+        morale = await self.config.user(user).morale()
+        intimidation_level = await self.config.user(user).intimidation_level()
+        fighting_style = await self.config.user(user).fighting_style()
+        stamina = await self.config.user(user).stamina_level()
+
+        total_wins = sum(wins.values())
+        total_losses = sum(losses.values())
+
+        embed = discord.Embed(title=f"{user.display_name}'s Fight Record", color=0xFF0000)
+        embed.add_field(name="Total Wins", value=total_wins, inline=True)
+        embed.add_field(name="Total Losses", value=total_losses, inline=True)
+        embed.add_field(name="Wins (UD)", value=wins["UD"], inline=True)
+        embed.add_field(name="Wins (SD)", value=wins["SD"], inline=True)
+        embed.add_field(name="Wins (TKO)", value=wins["TKO"], inline=True)
+        embed.add_field(name="Wins (KO)", value=wins["KO"], inline=True)
+        embed.add_field(name="Losses (UD)", value=losses["UD"], inline=True)
+        embed.add_field(name="Losses (SD)", value=losses["SD"], inline=True)
+        embed.add_field(name="Losses (TKO)", value=losses["TKO"], inline=True)
+        embed.add_field(name="Losses (KO)", value=losses["KO"], inline=True)
+        embed.add_field(name=f"{user.display_name}'s Current Stats", value="\u200b", inline=False)
+        embed.add_field(name="Fighting Style", value=fighting_style, inline=True)
+        embed.add_field(name="Level", value=level, inline=True)
+        embed.add_field(name="Training Level", value=training_level, inline=True)
+        embed.add_field(name="Nutrition Level", value=nutrition_level, inline=True)
+        embed.add_field(name="Morale", value=morale, inline=True)
+        embed.add_field(name="Intimidation Level", value=intimidation_level, inline=True)
+        embed.add_field(name="Stamina", value=stamina, inline=True)
+        embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
+        await ctx.send(embed=embed)
+
+    @bullshido_group.command(name="fight_record", description="Displays the results of your last 10 fights")
+    async def fight_record(self, ctx: commands.Context):
+        """Displays the results of your last 10 fights."""
+        user = ctx.author
+        fight_history = await self.config.user(user).fight_history()
+
+        if not fight_history:
+            await ctx.send("You have no fight history.")
+            return
+
+        embed = discord.Embed(title=f"{user.display_name}'s Last 10 Fights", color=0xFF0000)
+
+        for fight in fight_history[-10:]:
+            outcome = fight.get("outcome", "Unknown")
+            opponent = fight.get("opponent", "Unknown")
+            result_type = fight.get("result_type", "Unknown")
+            embed.add_field(name=f"Fight vs {opponent}", value=f"Outcome: {outcome}, Result: {result_type}", inline=False)
+
+        embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
+        await ctx.send(embed=embed)
+
+    async def get_player_data(self, user):
+        fighting_style = await self.config.user(user).fighting_style()
+        level = await self.config.user(user).level()
+        training_level = await self.config.user(user).training_level()
+        nutrition_level = await self.config.user(user).nutrition_level()
+        morale = await self.config.user(user).morale()
+        intimidation_level = await self.config.user(user).intimidation_level()
+        wins = await self.config.user(user).wins()
+        losses = await self.config.user(user).losses()
+        fight_history = await self.config.user(user).fight_history()
+        return {
+            "fighting_style": fighting_style,
+            "wins": wins,
+            "losses": losses,
+            "level": level,
+            "training_level": training_level,
+            "nutrition_level": nutrition_level,
+            "morale": morale,
+            "intimidation_level": intimidation_level,
+            "fight_history": fight_history
+        }
+    
+    async def update_player_stats(self, user, win, result_type, opponent_name):
+        try:
+            current_wins = await self.config.user(user).wins()
+            current_losses = await self.config.user(user).losses()
+            fight_history = await self.config.user(user).fight_history()
+
+            outcome = "Win" if win else "Loss"
+
+            fight_history.append({
+                "opponent": opponent_name,
+                "outcome": outcome,
+                "result_type": result_type
+            })
+
+            if win:
+                new_wins = current_wins.copy()
+                new_wins[result_type] += 1
+                await self.config.user(user).wins.set(new_wins)
+                self.logger.debug(f"Updated wins for {user.display_name}: {current_wins} -> {new_wins}")
+            else:
+                new_losses = current_losses.copy()
+                new_losses[result_type] += 1
+                await self.config.user(user).losses.set(new_losses)
+                self.logger.debug(f"Updated losses for {user.display_name}: {current_losses} -> {new_losses}")
+
+            # Update the fight history
+            await self.config.user(user).fight_history.set(fight_history)
+            await self.update_intimidation_level(user)
+
+        except Exception as e:
+            self.logger.error(f"Error updating stats for {user.display_name}: {e}")
+
+    @bullshido_group.command(name="clear_old_config", description="Clears old configuration to avoid conflicts")
+    @is_admin_or_mod()
+    async def clear_old_config(self, ctx: commands.Context):
+        """Clears old configuration to avoid conflicts."""
+        await self.config.clear_all_users()
+        await ctx.send("Old Bullshido configuration has been cleared.")
+        
     async def increment_training_level(self, user):
         self.logger.info(f"Incrementing training level for {user}")
         user_data = await self.config.user(user).all()
@@ -310,7 +494,7 @@ class Bullshido(commands.Cog):
     
 
     @bullshido_group.command(name="clear_old_config", description="Clears old configuration to avoid conflicts")
-    @commands.check_any(commands.has_permissions(manage_guild=True), commands.is_owner())
+    @is_admin_or_mod()
     async def clear_old_config(self, ctx: commands.Context):
         """Clears old configuration to avoid conflicts."""
         await self.config.clear_all_users()
