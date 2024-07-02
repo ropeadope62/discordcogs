@@ -4,7 +4,7 @@ import discord
 import math
 import requests
 from .fighting_constants import STRIKES, BODY_PARTS, STRIKE_ACTIONS, GRAPPLE_ACTIONS, GRAPPLE_KEYWORDS, CRITICAL_MESSAGES, KO_MESSAGES, TKO_MESSAGES, FIGHT_RESULT_LONG, REFEREE_STOPS, TKO_VICTOR_MESSAGE, KO_VICTOR_MESSAGE, CRITICAL_RESULTS
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageTransform
 from io import BytesIO
 
 class FightingGame:
@@ -40,11 +40,11 @@ class FightingGame:
         else:
             self.current_turn = player2
     def generate_fight_image(self):
-        player1_avatar_url = self.player1.display_avatar.url
-        player2_avatar_url = self.player2.display_avatar.url
+        player1_avatar_url = self.player1.avatar.url
+        player2_avatar_url = self.player2.avatar.url
 
         # Load the template image
-        response_template = requests.get(self.FIGHT_TEMPLATE_URL)
+        response_template = requests.get(self.fight_template_url)
         template = Image.open(BytesIO(response_template.content))
 
         # Load the profile images
@@ -54,10 +54,10 @@ class FightingGame:
         response2 = requests.get(player2_avatar_url)
         player2_avatar = Image.open(BytesIO(response2.content)).convert("RGBA")
 
-        # Resize the avatars
+        # Resize the avatars using ImageTransform
         avatar_size = (150, 150)
-        player1_avatar = player1_avatar.resize(avatar_size, Image.ANTIALIAS)
-        player2_avatar = player2_avatar.resize(avatar_size, Image.ANTIALIAS)
+        player1_avatar = player1_avatar.transform(avatar_size, ImageTransform.QuadTransform([0, 0, avatar_size[0], 0, avatar_size[0], avatar_size[1], 0, avatar_size[1]]))
+        player2_avatar = player2_avatar.transform(avatar_size, ImageTransform.QuadTransform([0, 0, avatar_size[0], 0, avatar_size[0], avatar_size[1], 0, avatar_size[1]]))
 
         # Calculate positions
         width, height = template.size
@@ -67,6 +67,7 @@ class FightingGame:
         # Paste the avatars onto the template
         template.paste(player1_avatar, player1_position, player1_avatar)
         template.paste(player2_avatar, player2_position, player2_avatar)
+
 
 
         # Save or return the final image
