@@ -274,9 +274,6 @@ class FightingGame:
 
         for round_number in range(1, self.rounds + 1):
             await self.play_round(round_number)
-            await self.update_health_bars(round_number)
-            if self.player1_health <= 0 or self.player2_health <= 0:
-                return
 
         if self.player1_health > self.player2_health:
             winner = self.player1
