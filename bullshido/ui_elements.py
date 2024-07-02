@@ -11,14 +11,8 @@ class SelectFightingStyleView(ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return interaction.user == self.user
 
-    async def on_fighting_style_selected(self, interaction: discord.Interaction, style: str):
-        if interaction.user.id != self.user.id:
-            await interaction.response.send_message("You are not allowed to select this fighting style.", ephemeral=True)
-            return
-
-        await self.on_fighting_style_selected(self.ctx, style)
-        await interaction.response.send_message(f"You have selected {style}.", ephemeral=True)
-        self.stop()
+    async def on_fighting_style_selected(self, ctx, style: str):
+        await ctx.bot.get_cog('Bullshido').set_fighting_style(ctx, style)
 
     @ui.button(label="Karate", style=ButtonStyle.primary)
     async def handle_karate(self, interaction: discord.Interaction, button: ui.Button):
