@@ -492,12 +492,5 @@ class Bullshido(commands.Cog):
                 await self.config.user(user).last_interaction.set(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
                 self.logger.info(f"Reset last {command_used} interaction for {user}.")
     
-
-    @bullshido_group.command(name="clear_old_config", description="Clears old configuration to avoid conflicts")
-    @is_admin_or_mod()
-    async def clear_old_config(self, ctx: commands.Context):
-        """Clears old configuration to avoid conflicts."""
-        await self.config.clear_all_users()
-        await ctx.send("Old Bullshido configuration has been cleared.")
 async def setup(bot):
     await bot.add_cog(Bullshido(bot))
