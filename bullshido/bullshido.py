@@ -53,6 +53,8 @@ class Bullshido(commands.Cog):
         log_dir = os.path.expanduser("~/ScrapGPT/ScrapGPT/logs")
         os.makedirs(log_dir, exist_ok=True)
         log_file_path = os.path.join(log_dir, "bullshido.log")
+
+        self.file_handler = logging.FileHandler(log_file_path)
         formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
         self.file_handler.setFormatter(formatter)
         self.logger.addHandler(self.file_handler)
