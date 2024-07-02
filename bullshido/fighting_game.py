@@ -64,23 +64,24 @@ class FightingGame:
         player2_health_bar = self.create_health_bar(self.player2_health, self.max_health)
         player1_stamina_status = self.get_stamina_status(self.player1_stamina)
         player2_stamina_status = self.get_stamina_status(self.player2_stamina)
-    
+
         embed = discord.Embed(
-            title=f"Round {round_number} - {self.player1.display_name}: vs {self.player2.display_name}",
+            title=f"Round {round_number} - {self.player1.display_name} vs {self.player2.display_name}",
             color=0xFF0000
         )
-        embed.add_field(name=f"{self.player1.display_name}s Health", value=f"{player1_health_bar} {self.player1_health}", inline=False)
+        embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health}", inline=False)
         embed.add_field(name=f"{self.player1.display_name}'s Stamina", value=player1_stamina_status, inline=False)
         if self.player1_critical_injuries:
-            embed.add_field(name=f"{self.player1.display_name} Critical Injuries", value=",".join(self.player1_critical_injuries), inline=False)
-        embed.add_field(name=f"{self.player2.display_name}s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
+            embed.add_field(name=f"{self.player1.display_name} Injuries", value=", ".join(self.player1_critical_injuries), inline=False)
+        embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
         embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
         if self.player2_critical_injuries:
-            embed.add_field(name=f"{self.player2.display_name} Critical Injuries", value=",".join(self.player2_critical_injuries), inline=False)
-    
+            embed.add_field(name=f"{self.player2.display_name} Injuries", value=", ".join(self.player2_critical_injuries), inline=False)
+
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
-    
+
         await self.channel.send(embed=embed)
+
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
         training_bonus = math.log10(training_level + 1) * self.training_weight
@@ -301,10 +302,11 @@ class FightingGame:
                 round_result = f"{self.player2.display_name} had the edge this round!"
 
         await self.channel.send(round_result)
-        
+
         await self.update_health_bars(round_number)
-        
+
         return round_result
+
 
     async def start_game(self):
         intro_message = (
