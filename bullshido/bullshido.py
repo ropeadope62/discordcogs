@@ -5,6 +5,7 @@ from .ui_elements import SelectFightingStyleView
 from .fighting_game import FightingGame
 from datetime import datetime, timedelta
 import logging
+import os
 
 class MemoryLogHandler(logging.Handler):
     def __init__(self):
@@ -49,7 +50,9 @@ class Bullshido(commands.Cog):
         self.memory_handler = MemoryLogHandler()
         self.logger.addHandler(self.memory_handler)
         
-        self.file_handler = logging.FileHandler('bullshido.log')
+        log_dir = "data/bullshido"
+        os.makedirs(log_dir, exist_ok=True)
+        log_file_path = os.path.join(log_dir, "bullshido.log")
         formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
         self.file_handler.setFormatter(formatter)
         self.logger.addHandler(self.file_handler)
