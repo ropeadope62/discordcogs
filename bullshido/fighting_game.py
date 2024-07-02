@@ -188,6 +188,7 @@ class FightingGame:
         return min(current_stamina + regeneration_rate, self.max_stamina)
 
     async def play_turn(self, round_message, round_number):
+        fight_ended = False
         attacker = self.player1 if self.current_turn == self.player1 else self.player2
         defender = self.player2 if self.current_turn == self.player1 else self.player1
         attacker_stamina = self.player1_stamina if self.current_turn == self.player1 else self.player2_stamina
@@ -279,10 +280,11 @@ class FightingGame:
         winner = self.player1 if loser == self.player2 else self.player2
         tko_message_flavor = random.choice(TKO_MESSAGES).format(loser=loser.display_name)
         referee_stop_flavor = random.choice(REFEREE_STOPS)
+        tko_victor_message = random.choice(TKO_VICTOR_MESSAGE)
 
         final_message = (
             f"{tko_message_flavor} {referee_stop_flavor}, {winner.display_name} wins the fight by TKO!\n"
-            f"{winner.display_name} {TKO_VICTOR_MESSAGE}, Wow!"
+            f"{winner.display_name} {tko_victor_message}, Wow!"
         )
         await round_message.edit(content=final_message)
         await self.channel.send(final_message)
@@ -365,37 +367,42 @@ class FightingGame:
         fight_image_path = self.generate_fight_image()
         await self.channel.send(file=discord.File(fight_image_path))
         await asyncio.sleep(10)
+        fight_ended = False
 
         for round_number in range(1, self.rounds + 1):
             await self.play_round(round_number)
-
-        if self.player1_health > self.player2_health:
-            winner = self.player1
-            loser = self.player2
-            result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
-            result_description = FIGHT_RESULT_LONG[result_type]
-        elif self.player2_health > self.player1_health:
-            winner = self.player2
-            loser = self.player1
-            result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
-            result_description = FIGHT_RESULT_LONG[result_type]
-        else:
-            if self.player1_score > self.player2_score:
+            if self.player1_health <= 0 or self.player2_health <= 0:
+                fight_ended = True
+                break
+        
+        if not fight_ended:
+            if self.player1_health > self.player2_health:
                 winner = self.player1
                 loser = self.player2
                 result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
                 result_description = FIGHT_RESULT_LONG[result_type]
-            else:
+            elif self.player2_health > self.player1_health:
                 winner = self.player2
                 loser = self.player1
                 result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
                 result_description = FIGHT_RESULT_LONG[result_type]
+            else:
+                if self.player1_score > self.player2_score:
+                    winner = self.player1
+                    loser = self.player2
+                    result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
+                    result_description = FIGHT_RESULT_LONG[result_type]
+                else:
+                    winner = self.player2
+                    loser = self.player1
+                    result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
+                    result_description = FIGHT_RESULT_LONG[result_type]
 
-        final_message = (
-            f"The fight is over!\n"
-            f"After 3 rounds, we go to the judges' scorecard for a decision.\n"
-            f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, by {result_description}, {winner.display_name}!"
-        )
-        await self.channel.send(final_message)
+            final_message = (
+                f"The fight is over!\n"
+                f"After 3 rounds, we go to the judges' scorecard for a decision.\n"
+                f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, by {result_description}, {winner.display_name}!"
+            )
+            await self.channel.send(final_message)
 
-        await self.record_result(winner, loser, result_type)
+            await self.record_result(winner, loser, result_type)
