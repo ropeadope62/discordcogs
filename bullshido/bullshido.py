@@ -130,7 +130,7 @@ class Bullshido(commands.Cog):
         pass
 
     @bullshido_group.command(name="log", description="Displays the log")
-    @commands.is_owner()
+    @commands.check_any(commands.has_permissions(manage_guild=True), commands.is_owner())
     async def show_log(self, ctx: commands.Context):
         """Displays the Bullshido log."""
         logs = self.memory_handler.get_logs()
@@ -310,7 +310,7 @@ class Bullshido(commands.Cog):
     
 
     @bullshido_group.command(name="clear_old_config", description="Clears old configuration to avoid conflicts")
-    @commands.is_owner()
+    @commands.check_any(commands.has_permissions(manage_guild=True), commands.is_owner())
     async def clear_old_config(self, ctx: commands.Context):
         """Clears old configuration to avoid conflicts."""
         await self.config.clear_all_users()
