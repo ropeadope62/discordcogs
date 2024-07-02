@@ -53,27 +53,30 @@ class FightingGame:
         player2_avatar = Image.open(BytesIO(player2_avatar_bytes))
 
         # Resize avatars to fit the template (assuming size 200x200 for the example)
-        player1_avatar = player1_avatar.resize((200, 200))
-        player2_avatar = player2_avatar.resize((200, 200))
+        player1_avatar = player1_avatar.resize((150, 150))
+        player2_avatar = player2_avatar.resize((150, 150))
 
         # Rotate avatars 90 degrees clockwise
-        player1_avatar = player1_avatar.rotate(-90, expand=True)
-        player2_avatar = player2_avatar.rotate(-90, expand=True)
+        player1_avatar = player1_avatar.rotate(-45, expand=True)
+        player2_avatar = player2_avatar.rotate(-45, expand=True)
 
         # Paste avatars onto the template
-        background.paste(player1_avatar, (50, 150), player1_avatar)
-        background.paste(player2_avatar, (650, 150), player2_avatar)
+        background.paste(player1_avatar, (100, 100), player1_avatar)
+        background.paste(player2_avatar, (100, 425), player2_avatar)
 
         # Add text to the image
         draw = ImageDraw.Draw(background)
         font = ImageFont.load_default()
 
         # Player details
+        player1__name = (
+            f"*{self.player1.display_name}*\n")
         player1_details = (
-            f"{self.player1.display_name}\n"
             f"Style: {self.player1_data['fighting_style']}\n"
             f"Record: {self.player1_data['wins']} Wins / {self.player1_data['losses']} Losses"
         )
+        player2__name = (
+            f"*{self.player2.display_name}*\n")
         player2_details = (
             f"{self.player2.display_name}\n"
             f"Style: {self.player2_data['fighting_style']}\n"
@@ -81,10 +84,14 @@ class FightingGame:
         )
 
         # Define text positions
-        player1_text_position = (50, 100)
-        player2_text_position = (650, 100)
+        player1_name_text_position = (50, 150)
+        player2_name_text_position = (650, 150)
+        player1_text_position = (50, 300)
+        player2_text_position = (650, 450)
 
         # Add player details text to the image
+        draw.multiline_text(player1_name_text_position, player1_details, fill=(255, 255, 255), font=font)
+        draw.multiline_text(player2_name_text_position, player2_details, fill=(255, 255, 255), font=font)
         draw.multiline_text(player1_text_position, player1_details, fill=(255, 255, 255), font=font)
         draw.multiline_text(player2_text_position, player2_details, fill=(255, 255, 255), font=font)
 
@@ -95,7 +102,7 @@ class FightingGame:
         )
 
         # Define text position for intro message
-        intro_text_position = (50, 400)
+        intro_text_position = (175, 25)
 
         # Add intro message to the image
         draw.multiline_text(intro_text_position, intro_message, fill=(255, 255, 255), font=font)
