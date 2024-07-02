@@ -48,18 +48,32 @@ class FightingGame:
             progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
         return progress_bar
     
+    def get_stamina_status(self, stamina):
+        if stamina >= 75:
+            return "Fresh"
+        elif stamina >= 50:
+            return "Winded"
+        elif stamina >= 25:
+            return "Gassed"
+        else:
+            return "Exhausted"
+    
     async def update_health_bars(self, round_number):
         player1_health_bar = self.create_health_bar(self.player1_health, self.max_health)
         player2_health_bar = self.create_health_bar(self.player2_health, self.max_health)
+        player1_stamina_status = self.get_stamina_status(self.player1_stamina)
+        player2_stamina_status = self.get_stamina_status(self.player2_stamina)
     
         embed = discord.Embed(
             title=f"Round {round_number} - {self.player1.display_name}: vs {self.player2.display_name}",
             color=0xFF0000
         )
         embed.add_field(name=f"{self.player1.display_name}s Health", value=f"{player1_health_bar} {self.player1_health}", inline=False)
+        embed.add_field(name=f"{self.player1.display_name}'s Stamina", value=player1_stamina_status, inline=False)
         if self.player1_critical_injuries:
             embed.add_field(name=f"{self.player1.display_name} Critical Injuries", value=",".join(self.player1_critical_injuries), inline=False)
         embed.add_field(name=f"{self.player2.display_name}s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
+        embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
         if self.player2_critical_injuries:
             embed.add_field(name=f"{self.player2.display_name} Critical Injuries", value=",".join(self.player2_critical_injuries), inline=False)
     
@@ -127,6 +141,9 @@ class FightingGame:
         
         return min(max(miss_probability, 0.05), 0.5)  # Clamp the probability between 5% and 50%
 
+    def regenerate_stamina(self, current_stamina, training_level, diet_level):
+        regeneration_rate = (training_level + diet_level) / 20  # Simple formula for regeneration
+        return min(current_stamina + regeneration_rate, self.max_stamina)
 
     async def play_turn(self, round_message, round_number):
         attacker = self.player1 if self.current_turn == self.player1 else self.player2
