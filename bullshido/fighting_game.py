@@ -44,7 +44,7 @@ class FightingGame:
         player2_avatar_url = self.player2.display_avatar.url
 
         # Load the template image
-        response_template = requests.get(self.template_url)
+        response_template = requests.get(self.FIGHT_TEMPLATE_URL)
         template = Image.open(BytesIO(response_template.content))
 
         # Load the profile images
