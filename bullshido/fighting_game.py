@@ -47,8 +47,10 @@ class FightingGame:
         background = Image.open(BytesIO(response.content))
 
         # Load player avatars
-        player1_avatar = Image.open(BytesIO(await self.player1.avatar.read()))
-        player2_avatar = Image.open(BytesIO(await self.player2.avatar.read()))
+        player1_avatar_bytes = await self.player1.avatar.read()
+        player2_avatar_bytes = await self.player2.avatar.read()
+        player1_avatar = Image.open(BytesIO(player1_avatar_bytes))
+        player2_avatar = Image.open(BytesIO(player2_avatar_bytes))
 
         # Resize avatars to fit the template (assuming size 200x200 for the example)
         player1_avatar = player1_avatar.resize((200, 200))
@@ -382,7 +384,7 @@ class FightingGame:
 
 
     async def start_game(self):
-        fight_image_path = self.generate_fight_image()
+        fight_image_path = await self.generate_fight_image()
         await self.channel.send(file=discord.File(fight_image_path))
         await asyncio.sleep(10)
         fight_ended = False
