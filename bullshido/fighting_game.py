@@ -40,7 +40,7 @@ class FightingGame:
             
     def create_health_bar(self, current_health, max_health):
         progress = current_health / max_health
-        progress_bar_length = 30  # Length of the progress bar
+        progress_bar_length = 50  # Length of the progress bar
         progress_bar_filled = int(progress * progress_bar_length)
         progress_bar = "[" + ("=" * progress_bar_filled)
         progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
