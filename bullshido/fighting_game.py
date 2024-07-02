@@ -27,6 +27,8 @@ class FightingGame:
         self.player1_critical_injuries = []
         self.player2_critical_injuries = []
         self.max_health = 100
+        self.ACTION_COST = 10
+        self.MISS_BASE_PROBABILITY = 0.1
 
         if player1_data['training_level'] >= player2_data['training_level']:
             self.current_turn = player1
@@ -108,20 +110,52 @@ class FightingGame:
     def is_grapple_move(self, strike):
         # Check if the strike contains any grapple keywords
         return any(keyword.lower() in strike.lower() for keyword in GRAPPLE_KEYWORDS)
+    
+    def calculate_miss_probability(self, attacker_stamina, attacker_training, defender_training, defender_stamina):
+        miss_probability = self.MISS_BASE_PROBABILITY
+        if attacker_stamina < 50:
+            miss_probability += 0.05  # Increase miss chance if attacker's stamina is low
+        if defender_stamina > 50:
+            miss_probability += 0.05  # Increase miss chance if defender's stamina is high
+        elif defender_stamina < 50:
+            miss_probability -= 0.05  # Decrease miss chance if defender's stamina is low
+        
+        miss_probability -= 0.01 * math.log10(attacker_training + 1)  # Decrease miss chance with better training
+        miss_probability += 0.01 * math.log10(defender_training + 1)  # Increase miss chance against better trained defender
+        
+        return min(max(miss_probability, 0.05), 0.5)  # Clamp the probability between 5% and 50%
+
 
     async def play_turn(self, round_message, round_number):
-        if self.current_turn == self.player1:
-            attacker = self.player1
-            defender = self.player2
-            style = self.player1_data["fighting_style"]
-        else:
-            attacker = self.player2
-            defender = self.player1
-            style = self.player2_data["fighting_style"]
+        attacker = self.player1 if self.current_turn == self.player1 else self.player2
+        defender = self.player2 if self.current_turn == self.player1 else self.player1
+        attacker_stamina = self.player1_stamina if self.current_turn == self.player1 else self.player2_stamina
+        defender_stamina = self.player2_stamina if self.current_turn == self.player1 else self.player1_stamina
+        attacker_training = self.player1_data["training_level"] if self.current_turn == self.player1 else self.player2_data["training_level"]
+        defender_training = self.player2_data["training_level"] if self.current_turn == self.player1 else self.player1_data["training_level"]
+        style = self.player1_data["fighting_style"] if self.current_turn == self.player1 else self.player2_data["fighting_style"]
 
         try:
+            miss_probability = self.calculate_miss_probability(attacker_stamina, attacker_training, defender_training)
+            if random.random() < miss_probability:
+                # Misses the attack
+                miss_message = f"{attacker.display_name} missed their attack on {defender.display_name}!"
+                await round_message.edit(content=f"Round {round_number} in progress: {miss_message}")
+                self.current_turn = defender
+                # Attack missed
+                miss_message = f"{attacker.display_name} misses the attack on {defender.display_name}!"
+                await round_message.edit(content=f"Round {round_number} in progress: {miss_message}\n")
+                self.current_turn = defender  # Switch turn to the other player
+                return False
+            
+
+            # Ensure strike and related variables are defined
             strike, damage, critical_message, conclude_message, critical_injury = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender)
-            bodypart = await self.target_bodypart()  
+            bodypart = await self.target_bodypart()
+
+            if not await self.perform_action(self.ACTION_COST, attacker_stamina):
+                await round_message.edit(content=f"{attacker.display_name} is too exhausted to perform an action!")
+                return False
 
             if self.is_grapple_move(strike):
                 action = random.choice(GRAPPLE_ACTIONS)
@@ -132,16 +166,18 @@ class FightingGame:
 
             if self.current_turn == self.player1:
                 self.player2_health -= damage
+                self.player1_stamina = attacker_stamina - ACTION_COST
                 self.current_turn = self.player2
                 if critical_injury:
                     self.player2_critical_injuries.append(critical_injury)
             else:
                 self.player1_health -= damage
+                self.player2_stamina = attacker_stamina - ACTION_COST
                 self.current_turn = self.player1
                 if critical_injury:
                     self.player1_critical_injuries.append(critical_injury)
 
-            sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)  # Add 2 extra seconds for critical hits
+            sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)  # Add 3 extra seconds for critical hits
             await asyncio.sleep(sleep_duration)
 
             # Edit the round message with updated content
@@ -163,6 +199,7 @@ class FightingGame:
             print(f"Error during play_turn: {e}")
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
             print(f"Strike: {strike}, Damage: {damage}, Bodypart: {bodypart}")
+            print(f"Strike: {strike if 'strike' in locals() else 'N/A'}, Damage: {damage if 'damage' in locals() else 'N/A'}, Bodypart: {bodypart if 'bodypart' in locals() else 'N/A'}")
             print(f"Attacker data: {self.player1_data if attacker == self.player1 else self.player2_data}")
             await round_message.edit(content=f"An error occurred during the turn: {e}")
             return True
