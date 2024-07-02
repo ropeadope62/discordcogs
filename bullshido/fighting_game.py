@@ -89,7 +89,7 @@ class FightingGame:
         return round(adjusted_damage)
 
     def get_strike_damage(self, style, attacker, defender):
-        # Initialize all variables to prevent reference errors
+    # Initialize all variables to prevent reference errors
         strike = ""
         damage_range = (0, 0)
         base_damage = 0
@@ -107,18 +107,16 @@ class FightingGame:
             is_critical_hit = random.random() < 0.1
             if is_critical_hit:
                 modified_damage = base_damage * 2
+                conclude_message, critical_injury = random.choice(list(CRITICAL_RESULTS.items()))
+                conclude_message = conclude_message.format(defender=defender.display_name)
                 message = random.choice(CRITICAL_MESSAGES)
-                conclude_index = random.randint(0, len(CRITICAL_CONCLUDES) - 1)
-                conclude_message = CRITICAL_CONCLUDES[conclude_index].format(defender=defender.display_name)
-                critical_injury = CRITICAL_INJURIES[conclude_index]
             else:
                 modified_damage = round(modified_damage * modifier)
+            return strike, modified_damage, message, conclude_message, critical_injury
         except Exception as e:
-            # Log detailed error information for debugging
             print(f"Error during get_strike_damage: {e}")
             print(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
-
-        return strike, modified_damage, message, conclude_message, critical_injury
+            return strike, modified_damage, message, conclude_message, critical_injury
 
     async def target_bodypart(self):
         bodypart = random.choice(BODY_PARTS)
