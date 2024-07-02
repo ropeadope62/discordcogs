@@ -48,6 +48,7 @@ class FightingGame:
             marker = "🔴"
             progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
         return progress_bar
+
     
     def get_stamina_status(self, stamina):
         if stamina >= 75:
@@ -81,6 +82,7 @@ class FightingGame:
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
 
         await self.channel.send(embed=embed)
+
 
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
@@ -176,15 +178,17 @@ class FightingGame:
                 message = f"{critical_message} {attacker.display_name} {action} a {strike} causing {damage} damage! {conclude_message}"
             else:
                 action = random.choice(STRIKE_ACTIONS)
-                message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"  # Set a common stamina cost for both grapples and strikes
+                message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"
 
-            # Reduce attacker's stamina
+            # Reduce defender's health and attacker's stamina
             if self.current_turn == self.player1:
+                self.player2_health -= damage
                 self.player1_stamina -= self.BASE_STAMINA_COST
                 self.current_turn = self.player2
                 if critical_injury:
                     self.player2_critical_injuries.append(critical_injury)
             else:
+                self.player1_health -= damage
                 self.player2_stamina -= self.BASE_STAMINA_COST
                 self.current_turn = self.player1
                 if critical_injury:
@@ -212,6 +216,7 @@ class FightingGame:
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
             await round_message.edit(content=f"An error occurred during the turn: {e}")
             return True
+
 
     async def declare_winner_by_ko(self, round_message):
         if self.player1_health <= 0:
