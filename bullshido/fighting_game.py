@@ -2,8 +2,10 @@ import random
 import asyncio
 import discord
 import math
+import requests
 from .fighting_constants import STRIKES, BODY_PARTS, STRIKE_ACTIONS, GRAPPLE_ACTIONS, GRAPPLE_KEYWORDS, CRITICAL_MESSAGES, KO_MESSAGES, TKO_MESSAGES, FIGHT_RESULT_LONG, REFEREE_STOPS, TKO_VICTOR_MESSAGE, KO_VICTOR_MESSAGE, CRITICAL_RESULTS
 from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
 
 class FightingGame:
     def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog):
@@ -32,11 +34,44 @@ class FightingGame:
         self.ACTION_COST = 10
         self.BASE_MISS_PROBABILITY = 0.1
         self.BASE_STAMINA_COST = 10
-
+        self.FIGHT_TEMPLATE_URL = "https://i.ibb.co/MSprvBG/bullshido-template.png"
         if player1_data['training_level'] >= player2_data['training_level']:
             self.current_turn = player1
         else:
             self.current_turn = player2
+    def generate_fight_image(self):
+        player1_avatar_url = self.player1.avatar_url
+        player2_avatar_url = self.player2.avatar_url
+
+        # Load the template image
+        response_template = requests.get(self.template_url)
+        template = Image.open(BytesIO(response_template.content))
+
+        # Load the profile images
+        response1 = requests.get(player1_avatar_url)
+        player1_avatar = Image.open(BytesIO(response1.content)).convert("RGBA")
+
+        response2 = requests.get(player2_avatar_url)
+        player2_avatar = Image.open(BytesIO(response2.content)).convert("RGBA")
+
+        # Resize the avatars
+        avatar_size = (150, 150)
+        player1_avatar = player1_avatar.resize(avatar_size, Image.ANTIALIAS)
+        player2_avatar = player2_avatar.resize(avatar_size, Image.ANTIALIAS)
+
+        # Calculate positions
+        width, height = template.size
+        player1_position = (50, (height - avatar_size[1]) // 2)
+        player2_position = (width - avatar_size[0] - 50, (height - avatar_size[1]) // 2)
+
+        # Paste the avatars onto the template
+        template.paste(player1_avatar, player1_position, player1_avatar)
+        template.paste(player2_avatar, player2_position, player2_avatar)
+
+        # Save or return the final image
+        output_path = '~/ScrapGPT/ScrapGPT/logs/fight_image.png'
+        template.save(output_path)
+        return output_path
             
     def create_health_bar(self, current_health, max_health):
         progress = current_health / max_health
@@ -322,6 +357,8 @@ class FightingGame:
             "The match will begin in 10 seconds..."
         )
         await self.channel.send(intro_message)
+        fight_image_path = self.generate_fight_image()
+        await self.channel.send(file=discord.File(fight_image_path))
         await asyncio.sleep(10)
 
         for round_number in range(1, self.rounds + 1):
