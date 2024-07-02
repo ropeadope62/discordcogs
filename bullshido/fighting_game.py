@@ -6,6 +6,7 @@ import requests
 from .fighting_constants import STRIKES, BODY_PARTS, STRIKE_ACTIONS, GRAPPLE_ACTIONS, GRAPPLE_KEYWORDS, CRITICAL_MESSAGES, KO_MESSAGES, TKO_MESSAGES, FIGHT_RESULT_LONG, REFEREE_STOPS, TKO_VICTOR_MESSAGE, KO_VICTOR_MESSAGE, CRITICAL_RESULTS
 from PIL import Image, ImageDraw, ImageFont, ImageTransform
 from io import BytesIO
+import os
 
 class FightingGame:
     def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog):
@@ -71,7 +72,9 @@ class FightingGame:
 
 
         # Save or return the final image
-        output_path = '~/ScrapGPT/ScrapGPT/logs/fight_image.png'
+        output_dir = "/home/slurms/ScrapGPT/ScrapGPT/logs/"
+        os.makedirs(output_dir, exist_ok=True)
+        output_path = os.path.join(output_dir, "fight_image.png")
         template.save(output_path)
         return output_path
             
