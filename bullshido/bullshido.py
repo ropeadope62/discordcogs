@@ -50,7 +50,7 @@ class Bullshido(commands.Cog):
         self.memory_handler = MemoryLogHandler()
         self.logger.addHandler(self.memory_handler)
         
-        log_dir = "data/bullshido"
+        log_dir = os.path.expanduser("~/ScrapGPT/ScrapGPT/logs")
         os.makedirs(log_dir, exist_ok=True)
         log_file_path = os.path.join(log_dir, "bullshido.log")
         formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
