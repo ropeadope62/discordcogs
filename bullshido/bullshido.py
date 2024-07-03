@@ -263,8 +263,16 @@ class Bullshido(commands.Cog):
         )
         embed.add_field(
             name="Winning and Losing",
-            value="Winning a fight increases your wins and morale. Losing decreases your morale. Keep training and dieting to improve your chances in future fights.",
+            value="Winning a fight increases your wins and morale and may also increase your intimidation level. Losing decreases your morale. Keep training and dieting to improve your chances in future fights.",
             inline=False
+        )
+        embed.add_field(
+            name="How Damage is Calculated",
+        value="Damage is calculated using your fighting style, stats and stamina. Training level and nutrition level affect damage by 15%.",
+        )
+        embed.add_field(
+            name="How Misses and Blocks are Calculated", 
+            value="Misses and blocks are calculated using the attacker and defender's training level and stamina. Training level and nutrition level affect misses and blocks by up to50%.",
         )
         embed.add_field(
             name="Penalties for Inactivity",
