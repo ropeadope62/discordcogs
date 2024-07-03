@@ -69,7 +69,6 @@ class FightingGame:
 
         # Add text to the image
         draw = ImageDraw.Draw(background)
-        font = ImageFont.load_default()
 
         # Player details
         player1_name = (
@@ -99,15 +98,18 @@ class FightingGame:
 
         # Intro message
         intro_message = (
-            "**Introducing the fighters!**"
-            "- The match will begin in 10 seconds..."
+            "Introducing the fighters!\n"
         )
+        # Intro subtitle
+        intro_subtitle = ("The match will begin in 10 seconds...")
 
         # Define text position for intro message
-        intro_text_position = (150, 20)
-
+        intro_text_position = (20, 20)
+        intro_subtitle_position = (20,40)
         # Add intro message to the image
         draw.multiline_text(intro_text_position, intro_message, fill=(255, 255, 255), font=header_font)
+        draw.multiline_text(intro_subtitle_position, intro_subtitle, fill=(255, 255, 255), font=font)
+
 
         # Save the final image
         final_image_path = '/home/slurms/ScrapGPT/ScrapGPT/logs/fight_image.png'
