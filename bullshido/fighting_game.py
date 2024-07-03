@@ -91,8 +91,8 @@ class FightingGame:
         # Define text positions
         player1_name_text_position = (100, 55)
         player2_name_text_position = (375, 55)
-        player1_text_position = (375, 175)
-        player2_text_position = (100, 175)
+        player1_text_position = (100, 175)
+        player2_text_position = (375, 175)
 
         def draw_text_with_shadow(draw, position, text, font, shadow_color, text_color, offset=(2, 2)):
             x, y = position
