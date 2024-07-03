@@ -54,6 +54,11 @@ class FightingGame:
         player2_avatar_bytes = await self.player2.avatar.read()
         player1_avatar = Image.open(BytesIO(player1_avatar_bytes))
         player2_avatar = Image.open(BytesIO(player2_avatar_bytes))
+        
+        player1_total_wins = sum(self.player1_data['wins'].values())
+        player1_total_losses = sum(self.player1_data['losses'].values())
+        player2_total_wins = sum(self.player2_data['wins'].values())
+        player2_total_losses = sum(self.player2_data['losses'].values())
 
         # Resize avatars to fit the template (assuming size 200x200 for the example)
         player1_avatar = player1_avatar.resize((110, 110))
@@ -75,40 +80,40 @@ class FightingGame:
             f"{self.player1.display_name}\n")
         player1_details = (
             f"Style: {self.player1_data['fighting_style']}\n"
-            f"Record: {self.player1_data['wins']} Wins \n {self.player1_data['losses']} Losses"
+            f"Record: {player1_total_wins} Wins \n {player1_total_losses} Losses"
         )
         player2_name = (
             f"{self.player2.display_name}\n")
         player2_details = (
             f"Style: {self.player2_data['fighting_style']}\n"
-            f"Record: {self.player2_data['wins']} Wins \n {self.player2_data['losses']} Losses"
+            f"Record: {player2_total_wins} Wins \n {player2_total_losses} Losses"
         )
 
         # Define text positions
         player1_name_text_position = (100, 85)
         player2_name_text_position = (400, 85)
-        player1_text_position = (100, 200)
-        player2_text_position = (400, 200)
+        player1_text_position = (50, 200)
+        player2_text_position = (350, 200)
 
         # Add player details text to the image
-        draw.multiline_text(player1_name_text_position, player1_name, fill=(255, 255, 255), font=font)
-        draw.multiline_text(player2_name_text_position, player2_name, fill=(255, 255, 255), font=font)
-        draw.multiline_text(player1_text_position, player1_details, fill=(255, 255, 255), font=font)
-        draw.multiline_text(player2_text_position, player2_details, fill=(255, 255, 255), font=font)
+        draw.multiline_text(player1_name_text_position, player1_name, fill=(249,4,43), font=font)
+        draw.multiline_text(player2_name_text_position, player2_name, fill=(249,4,43), font=font)
+        draw.multiline_text(player1_text_position, player1_details, fill=(249,4,43), font=font)
+        draw.multiline_text(player2_text_position, player2_details, fill=(249,4,435), font=font)
 
         # Intro message
         intro_message = (
             "Introducing the fighters!\n"
         )
         # Intro subtitle
-        intro_subtitle = ("The match will begin in 10 seconds...")
+        intro_subtitle = ("")
 
         # Define text position for intro message
         intro_text_position = (20, 20)
         intro_subtitle_position = (20,40)
         # Add intro message to the image
-        draw.multiline_text(intro_text_position, intro_message, fill=(255, 255, 255), font=header_font)
-        draw.multiline_text(intro_subtitle_position, intro_subtitle, fill=(255, 255, 255), font=font)
+        draw.multiline_text(intro_text_position, intro_message, fill=(249,4,43), font=header_font)
+        draw.multiline_text(intro_subtitle_position, intro_subtitle, fill=(249,4,43), font=font)
 
 
         # Save the final image
