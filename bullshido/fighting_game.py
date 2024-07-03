@@ -45,7 +45,9 @@ class FightingGame:
         template_url = self.FIGHT_TEMPLATE_URL
         response = requests.get(template_url)
         background = Image.open(BytesIO(response.content))
-
+        font_path ='/home/slurms/ScrapGPT/scrapgpt_data/cogs/CogManager/cogs/bullshido/osaka.ttf'
+        font = ImageFont.truetype(font_path, size=24)
+        
         # Load player avatars
         player1_avatar_bytes = await self.player1.avatar.read()
         player2_avatar_bytes = await self.player2.avatar.read()
@@ -351,7 +353,7 @@ class FightingGame:
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
             ko_or_tko_occurred = await self.play_turn(round_message, round_number)
             if ko_or_tko_occurred:
-                return
+                return True  # End the round early if a KO or TKO occurs
 
             strike_count += 1
             await asyncio.sleep(random.uniform(1, 3))
@@ -384,53 +386,48 @@ class FightingGame:
                 round_result = f"{self.player2.display_name} had the edge this round!"
 
         await self.channel.send(round_result)
-
         await self.update_health_bars(round_number)
-
-        return round_result
+        
+        return False
 
 
     async def start_game(self):
         fight_image_path = await self.generate_fight_image()
         await self.channel.send(file=discord.File(fight_image_path))
         await asyncio.sleep(10)
+
         fight_ended = False
 
         for round_number in range(1, self.rounds + 1):
-            ko_or_tko_occurred = await self.play_round(round_number)
-            if ko_or_tko_occurred:
-                fight_ended = True
-                break
+            fight_ended = await self.play_round(round_number)
+            if fight_ended:
+                break  # End the fight early if a KO or TKO occurs
 
         if not fight_ended:
             if self.player1_health > self.player2_health:
                 winner = self.player1
                 loser = self.player2
-                result_type = "UD" if abs(self.player1_score - self.player2_score) >= 2 else "SD"
-                result_description = FIGHT_RESULT_LONG[result_type]
+                result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
             elif self.player2_health > self.player1_health:
                 winner = self.player2
                 loser = self.player1
-                result_type = "UD" if abs(self.player2_score - self.player1_score) >= 2 else "SD"
-                result_description = FIGHT_RESULT_LONG[result_type]
+                result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
             else:
                 if self.player1_score > self.player2_score:
                     winner = self.player1
                     loser = self.player2
-                    result_type = "UD" if abs(self.player1_score - self.player2_score) >= 2 else "SD"
-                    result_description = FIGHT_RESULT_LONG[result_type]
+                    result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
                 else:
                     winner = self.player2
                     loser = self.player1
-                    result_type = "UD" if abs(self.player2_score - self.player1_score) >= 2 else "SD"
-                    result_description = FIGHT_RESULT_LONG[result_type]
+                    result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
 
+            result_description = FIGHT_RESULT_LONG[result_type]
             final_message = (
                 f"The fight is over!\n"
                 f"After 3 rounds, we go to the judges' scorecard for a decision.\n"
-                f"The judges scored the fight {self.player1_score} - {self.player2_score} for the winner, by {result_description}, {winner.display_name}!"
+                f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, by {result_description}, {winner.display_name}!"
             )
             await self.channel.send(final_message)
-
             await self.record_result(winner, loser, result_type)
 
