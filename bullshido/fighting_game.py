@@ -322,7 +322,7 @@ class FightingGame:
             f"{winner.display_name} {tko_victor_message}, Wow!"
         )
         await round_message.edit(content=final_message)
-        await self.channel.send(final_message)
+        #await self.channel.send(final_message)
 
         await self.record_result(winner, loser, "TKO")
 
@@ -397,8 +397,8 @@ class FightingGame:
         fight_ended = False
 
         for round_number in range(1, self.rounds + 1):
-            await self.play_round(round_number)
-            if self.player1_health <= 0 or self.player2_health <= 0:
+            ko_or_tko_occurred = await self.play_round(round_number)
+            if ko_or_tko_occurred:
                 fight_ended = True
                 break
 
