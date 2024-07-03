@@ -95,11 +95,21 @@ class FightingGame:
         player1_text_position = (50, 200)
         player2_text_position = (350, 200)
 
+        def draw_text_with_shadow(draw, position, text, font, shadow_color, text_color, offset=(2, 2)):
+            x, y = position
+            # Draw shadow
+            draw.text((x + offset[0], y + offset[1]), text, font=font, fill=shadow_color)
+            # Draw text
+            draw.text(position, text, font=font, fill=text_color)
+
+        shadow_color = (0, 0, 0)
+        text_color = (249,4,43)
+
         # Add player details text to the image
-        draw.multiline_text(player1_name_text_position, player1_name, fill=(249,4,43), font=font)
-        draw.multiline_text(player2_name_text_position, player2_name, fill=(249,4,43), font=font)
-        draw.multiline_text(player1_text_position, player1_details, fill=(249,4,43), font=font)
-        draw.multiline_text(player2_text_position, player2_details, fill=(249,4,435), font=font)
+        draw_text_with_shadow(player1_name_text_position, player1_name, font, shadow_color, text_color)
+        draw_text_with_shadow(player2_name_text_position, player2_name, font, shadow_color, text_color)
+        draw_text_with_shadow(player1_text_position, player1_details, font, shadow_color, text_color)
+        draw_text_with_shadow(player2_text_position, player2_details, font, shadow_color, text_color)
 
         # Intro message
         intro_message = (
@@ -112,8 +122,8 @@ class FightingGame:
         intro_text_position = (20, 20)
         intro_subtitle_position = (20,40)
         # Add intro message to the image
-        draw.multiline_text(intro_text_position, intro_message, fill=(249,4,43), font=header_font)
-        draw.multiline_text(intro_subtitle_position, intro_subtitle, fill=(249,4,43), font=font)
+        draw_text_with_shadow(intro_text_position, intro_message, header_font, shadow_color, text_color)
+        draw.multiline_text(intro_subtitle_position, intro_subtitle, header_font, shadow_color, text_color)
 
 
         # Save the final image
