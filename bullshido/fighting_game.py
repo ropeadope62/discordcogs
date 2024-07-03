@@ -53,29 +53,29 @@ class FightingGame:
         player2_avatar = Image.open(BytesIO(player2_avatar_bytes))
 
         # Resize avatars to fit the template (assuming size 200x200 for the example)
-        player1_avatar = player1_avatar.resize((150, 150))
-        player2_avatar = player2_avatar.resize((150, 150))
+        player1_avatar = player1_avatar.resize((110, 110))
+        player2_avatar = player2_avatar.resize((110, 110))
 
         # Rotate avatars 90 degrees clockwise
-        player1_avatar = player1_avatar.rotate(-45, expand=True)
-        player2_avatar = player2_avatar.rotate(-45, expand=True)
+        player1_avatar = player1_avatar.rotate(-0, expand=True)
+        player2_avatar = player2_avatar.rotate(-0, expand=True)
 
         # Paste avatars onto the template
-        background.paste(player1_avatar, (100, 100), player1_avatar)
-        background.paste(player2_avatar, (100, 425), player2_avatar)
+        background.paste(player1_avatar, (100, 75), player1_avatar)
+        background.paste(player2_avatar, (400, 75), player2_avatar)
 
         # Add text to the image
         draw = ImageDraw.Draw(background)
         font = ImageFont.load_default()
 
         # Player details
-        player1__name = (
+        player1_name = (
             f"*{self.player1.display_name}*\n")
         player1_details = (
             f"Style: {self.player1_data['fighting_style']}\n"
             f"Record: {self.player1_data['wins']} Wins / {self.player1_data['losses']} Losses"
         )
-        player2__name = (
+        player2_name = (
             f"*{self.player2.display_name}*\n")
         player2_details = (
             f"{self.player2.display_name}\n"
@@ -84,25 +84,25 @@ class FightingGame:
         )
 
         # Define text positions
-        player1_name_text_position = (50, 150)
-        player2_name_text_position = (650, 150)
-        player1_text_position = (50, 300)
-        player2_text_position = (650, 450)
+        player1_name_text_position = (100, 85)
+        player2_name_text_position = (400, 85)
+        player1_text_position = (100, 200)
+        player2_text_position = (400, 200)
 
         # Add player details text to the image
-        draw.multiline_text(player1_name_text_position, player1_details, fill=(255, 255, 255), font=font)
-        draw.multiline_text(player2_name_text_position, player2_details, fill=(255, 255, 255), font=font)
+        draw.multiline_text(player1_name_text_position, player1_name, fill=(255, 255, 255), font=font)
+        draw.multiline_text(player2_name_text_position, player2_name, fill=(255, 255, 255), font=font)
         draw.multiline_text(player1_text_position, player1_details, fill=(255, 255, 255), font=font)
         draw.multiline_text(player2_text_position, player2_details, fill=(255, 255, 255), font=font)
 
         # Intro message
         intro_message = (
-            "Introducing the fighters!\n"
-            "The match will begin in 10 seconds..."
+            "**Introducing the fighters!**"
+            "- The match will begin in 10 seconds..."
         )
 
         # Define text position for intro message
-        intro_text_position = (175, 25)
+        intro_text_position = (125, 20)
 
         # Add intro message to the image
         draw.multiline_text(intro_text_position, intro_message, fill=(255, 255, 255), font=font)
@@ -115,12 +115,12 @@ class FightingGame:
             
     def create_health_bar(self, current_health, max_health):
         progress = current_health / max_health
-        progress_bar_length = 50  # Length of the progress bar
+        progress_bar_length = 30  # Length of the progress bar
         progress_bar_filled = int(progress * progress_bar_length)
         progress_bar = "[" + ("=" * progress_bar_filled)
         progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
         if progress_bar_filled < progress_bar_length:  # Only add marker if there is room
-            marker = "🔴"
+            marker = "ðŸ”´"
             progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
         return progress_bar
 
@@ -401,35 +401,36 @@ class FightingGame:
             if self.player1_health <= 0 or self.player2_health <= 0:
                 fight_ended = True
                 break
-        
+
         if not fight_ended:
             if self.player1_health > self.player2_health:
                 winner = self.player1
                 loser = self.player2
-                result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
+                result_type = "UD" if abs(self.player1_score - self.player2_score) >= 2 else "SD"
                 result_description = FIGHT_RESULT_LONG[result_type]
             elif self.player2_health > self.player1_health:
                 winner = self.player2
                 loser = self.player1
-                result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
+                result_type = "UD" if abs(self.player2_score - self.player1_score) >= 2 else "SD"
                 result_description = FIGHT_RESULT_LONG[result_type]
             else:
                 if self.player1_score > self.player2_score:
                     winner = self.player1
                     loser = self.player2
-                    result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
+                    result_type = "UD" if abs(self.player1_score - self.player2_score) >= 2 else "SD"
                     result_description = FIGHT_RESULT_LONG[result_type]
                 else:
                     winner = self.player2
                     loser = self.player1
-                    result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
+                    result_type = "UD" if abs(self.player2_score - self.player1_score) >= 2 else "SD"
                     result_description = FIGHT_RESULT_LONG[result_type]
 
             final_message = (
                 f"The fight is over!\n"
                 f"After 3 rounds, we go to the judges' scorecard for a decision.\n"
-                f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, by {result_description}, {winner.display_name}!"
+                f"The judges scored the fight {self.player1_score} - {self.player2_score} for the winner, by {result_description}, {winner.display_name}!"
             )
             await self.channel.send(final_message)
 
             await self.record_result(winner, loser, result_type)
+
