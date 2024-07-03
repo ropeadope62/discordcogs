@@ -106,10 +106,10 @@ class FightingGame:
         text_color = (249,4,43)
 
         # Add player details text to the image
-        draw_text_with_shadow(player1_name_text_position, player1_name, font, shadow_color, text_color)
-        draw_text_with_shadow(player2_name_text_position, player2_name, font, shadow_color, text_color)
-        draw_text_with_shadow(player1_text_position, player1_details, font, shadow_color, text_color)
-        draw_text_with_shadow(player2_text_position, player2_details, font, shadow_color, text_color)
+        draw_text_with_shadow(draw, player1_name_text_position, player1_name, font, shadow_color, text_color)
+        draw_text_with_shadow(draw, player2_name_text_position, player2_name, font, shadow_color, text_color)
+        draw_text_with_shadow(draw, player1_text_position, player1_details, font, shadow_color, text_color)
+        draw_text_with_shadow(draw, player2_text_position, player2_details, font, shadow_color, text_color)
 
         # Intro message
         intro_message = (
@@ -122,8 +122,8 @@ class FightingGame:
         intro_text_position = (20, 20)
         intro_subtitle_position = (20,40)
         # Add intro message to the image
-        draw_text_with_shadow(intro_text_position, intro_message, header_font, shadow_color, text_color)
-        draw.multiline_text(intro_subtitle_position, intro_subtitle, header_font, shadow_color, text_color)
+        draw_text_with_shadow(draw, intro_text_position, intro_message, header_font, shadow_color, text_color)
+        draw_text_with_shadow(draw, intro_subtitle_position, intro_subtitle, header_font, shadow_color, text_color)
 
 
         # Save the final image
