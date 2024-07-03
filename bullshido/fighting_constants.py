@@ -232,11 +232,12 @@ BODY_PARTS = [
     "head", "chest", "left arm", "right arm", "nose", "neck", "left ear", "right ear",
     "teeth", "left leg", "right leg", "right foot", "left foot", "liver", "kidneys",
     "spine", "clavical", "left hip", "right hip", "left knee", "right knee", "solar plexus",
-    "cranium", "kisser", "chin", "left shoulder", "right shoulder", "ass", "crotch", "spine", "ribs", "spinal column"
+    "cranium", "kisser", "chin", "left shoulder", "right shoulder", "ass", "crotch", "spine", "ribs", "spinal column",
+    "left ankle", "right ankle", "jaw", "left eye", "right eye", "stomach", "temple", "forehead", "mid-section"
 ]
 
 GRAPPLE_ACTIONS = [
-    "completes", "nails", "executes", "finishes", "performs"]
+    "completes", "nails", "executes", "finishes", "performs", "grabs", "attains", "pulls off"]
 
 GRAPPLE_KEYWORDS = [
     "Choke", "Mount", "Triangle", "Kimura", "Omoplata", "Crucifix", "Guillotine", "Lock", "Bar", "Hold", "Submission", "Crank", "Takedown", "Suplex", "Slam", "Throw", "Drag", "Take", "Redirect", "Chokehold", "Single Leg", "Double Leg"
@@ -244,7 +245,9 @@ GRAPPLE_KEYWORDS = [
 
 STRIKE_ACTIONS = [
     "throws", "slams", "nails", "whacks", "connects", "rips", "thuds", "crushes", "snaps", "smashes", 
-    "pounds", "cracks", "hits", "drives", "lands"
+    "pounds", "cracks", "hits", "drives", "lands", "bashes", "clobbers", "wallops", "hammers",
+    "strikes", "belts", "mashes", "pummels", "slugs", "batters", "blasts", "bludgeons", "thumps", "thwacks",
+    "wacks", "whams", "socks", "smacks", "beats", "whomps", "whips", "thwumps", "clangs", "claps", "donks"
 ]
 
 CRITICAL_MESSAGES = [
@@ -252,6 +255,35 @@ CRITICAL_MESSAGES = [
     "Harnessing the technique bestowed upon them by the Black Dragon Fighting Society,",
     "Channeling the Grand Master Ashida Kim,",
     "Summoning the power of Count Dante,"
+    "Channeling the power of the Black Dragon,",
+    "Feeling the power of the Black Cobra,",
+    "Feeling the power of the Black Dragon,",
+    "Harnessing the strength of Master Yoshi,",
+    "Unleashing the Chi energy of The Red Tiger,",
+    "Summoning the spirit of The White Crane,",
+    "Calling upon the secrets of the Shadow Serpent,",
+    "Harnessing the precision of Master Liu Kang,",
+    "Channeling the ferocity of the Jade Dragon,",
+    "Invoking the techniques of the Phoenix Warrior,",
+    "Invoking the force of the Midnight Panther,",
+    "Channeling the might of the Storm Dragon,",
+    "Drawing from the power of the Fire Phoenix,",
+    "Summoning the power of the Tiger's Claw,",
+    "Drawing from the legendary moves of the Tai Chi Tortoise,",
+    "Unleashing the might of the Combat Corgi,",
+    "Unleashing the fury of the Mighty Mongoose,",
+    "Drawing from the legendary moves of the Tai Chi Terrier,",
+    "Ivoking the techniques of Steven Segal,",
+    "Recalling the power of Master Ti Ni Peen,",
+    "Drawing from the legendary moves of Yung Ho,",
+    "Channeling the power of Grand Master Chew Kok,",
+    "Unleashing he power of Lo Hung Dong,",
+    "Lifting the power of Phat Ho"
+    
+    
+    
+    
+     
 ]
 
 CRITICAL_RESULTS = {
