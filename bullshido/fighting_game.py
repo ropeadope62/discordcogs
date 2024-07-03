@@ -46,23 +46,22 @@ class FightingGame:
         response = requests.get(template_url)
         background = Image.open(BytesIO(response.content))
         font_path ='/home/slurms/ScrapGPT/scrapgpt_data/cogs/CogManager/cogs/bullshido/osaka.ttf'
-        font = ImageFont.truetype(font_path, size=32)
-        header_font = ImageFont.truetype(font_path, size=48)
+        font = ImageFont.truetype(font_path, size=18)
+        header_font = ImageFont.truetype(font_path, size=32)
         
         # Load player avatars
         player1_avatar_bytes = await self.player1.avatar.read()
         player2_avatar_bytes = await self.player2.avatar.read()
-        player1_avatar = Image.open(BytesIO(player1_avatar_bytes))
-        player2_avatar = Image.open(BytesIO(player2_avatar_bytes))
-        
+        player1_avatar = Image.open(BytesIO(player1_avatar_bytes)).convert("RGBA")
+        player2_avatar = Image.open(BytesIO(player2_avatar_bytes)).convert("RGBA")        
         player1_total_wins = sum(self.player1_data['wins'].values())
         player1_total_losses = sum(self.player1_data['losses'].values())
         player2_total_wins = sum(self.player2_data['wins'].values())
         player2_total_losses = sum(self.player2_data['losses'].values())
 
         # Resize avatars to fit the template (assuming size 200x200 for the example)
-        player1_avatar = player1_avatar.resize((110, 110))
-        player2_avatar = player2_avatar.resize((110, 110))
+        player1_avatar = player1_avatar.resize((150, 150))
+        player2_avatar = player2_avatar.resize((150, 150))
 
         # Rotate avatars 90 degrees clockwise
         player1_avatar = player1_avatar.rotate(-0, expand=True)
@@ -70,7 +69,7 @@ class FightingGame:
 
         # Paste avatars onto the template
         background.paste(player1_avatar, (100, 75), player1_avatar)
-        background.paste(player2_avatar, (400, 75), player2_avatar)
+        background.paste(player2_avatar, (375, 75), player2_avatar)
 
         # Add text to the image
         draw = ImageDraw.Draw(background)
@@ -90,10 +89,10 @@ class FightingGame:
         )
 
         # Define text positions
-        player1_name_text_position = (100, 85)
-        player2_name_text_position = (400, 85)
-        player1_text_position = (50, 200)
-        player2_text_position = (350, 200)
+        player1_name_text_position = (100, 55)
+        player2_name_text_position = (375, 55)
+        player1_text_position = (375, 175)
+        player2_text_position = (100, 175)
 
         def draw_text_with_shadow(draw, position, text, font, shadow_color, text_color, offset=(2, 2)):
             x, y = position
@@ -119,7 +118,7 @@ class FightingGame:
         intro_subtitle = ("")
 
         # Define text position for intro message
-        intro_text_position = (20, 20)
+        intro_text_position = (80, 10)
         intro_subtitle_position = (20,40)
         # Add intro message to the image
         draw_text_with_shadow(draw, intro_text_position, intro_message, header_font, shadow_color, text_color)
@@ -131,6 +130,7 @@ class FightingGame:
         background.save(final_image_path)
 
         return final_image_path
+
             
     def create_health_bar(self, current_health, max_health):
         progress = current_health / max_health
