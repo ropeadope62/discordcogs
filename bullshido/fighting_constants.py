@@ -25,18 +25,23 @@ STRIKES = {
             },
             "Muay-Thai": {
                 "Elbow": (6, 8),
-                "Knee": (5, 7),
+                "Khao Chiang – Diagonal Knee Strike": (5, 7),
                 "Clinch": (4, 6),
                 "Teep": (4, 6),
+                "Khao Trong - Straight Knee Strike": (5, 7),
+                "Thip Top – Slapping Foot Jab": (5, 6),
                 "Low Kick": (5, 7),
                 "High Kick": (6, 8),
                 "Body Kick": (5, 7),
                 "Uppercut": (5, 7),
+                "Thip Khang – Side Foot Thrust": (5, 7),
                 "Spinning Elbow": (7, 9),
                 "Spinning Back Elbow": (7, 9),
                 "Spinning Back Kick": (7, 9),
-                "Flying Knee": (7, 9),
-                "Flying Elbow": (7, 9),
+                "Te Klap Lang – Reverse Roundhouse Kick": (7, 9),
+                "Te Kot – Downward Roundhouse Kick": (7, 9),
+                "Khao Loi - Flying Knee": (9, 10),
+                "Flying Elbow": (9, 10),
                 "Flying Kick": (7, 9),
                 "Superman Punch": (7, 9),
                 "Jumping Knee": (7, 9),
@@ -65,7 +70,7 @@ STRIKES = {
                 "Left Straight": (5, 7),
                 "Right Straight": (6, 8),
                 "Overhand": (6, 8),
-                "Counter": (5, 7)
+                "Counter": (8, 10)
             },
             "Kung-Fu": {
                 "Palm Strike": (5, 7),
@@ -77,11 +82,12 @@ STRIKES = {
                 "Iron Fist": (6, 8),
                 "Phoenix Eye Fist": (5, 7),
                 "Monkey Strike": (5, 7),
-                "Dragon Fist": (5, 7),
-                "Tiger Fist": (5, 7),
-                "Crane Fist": (5, 7),
+                "Dragon Fist": (8, 10),
+                "Tiger Fist": (7, 10),
+                "Crane Fist": (6, 10),
                 "Mantis Fist": (5, 7),
-                "Monkey Fist": (5, 7)
+                "Monkey Fist": (5, 7),
+                "Panda Fist": (5, 7),
             },
             "Judo": {
                 "Throw": (5, 7),
@@ -110,7 +116,7 @@ STRIKES = {
                 "Push Kick": (4, 6)
             },
             "Wrestling": {
-                "Wild Punch": (5, 7),
+                "Wild Punch": (6, 8),
                 "Kick": (6, 8),
                 "Slam": (6, 8),
                 "Grapple": (5, 7),
@@ -193,7 +199,7 @@ STRIKES = {
                 "Kick": (6, 8),
                 "Submission": (4, 6),
                 "Ground and Pound": (7, 9),
-                "Rear Naked Choke": (5, 7)
+            "Rear Naked Choke": (9, 10)
             },
             "Brazilian Jiu-Jitsu": {
                 "Armbar": (6, 8),
