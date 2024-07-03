@@ -46,7 +46,8 @@ class FightingGame:
         response = requests.get(template_url)
         background = Image.open(BytesIO(response.content))
         font_path ='/home/slurms/ScrapGPT/scrapgpt_data/cogs/CogManager/cogs/bullshido/osaka.ttf'
-        font = ImageFont.truetype(font_path, size=24)
+        font = ImageFont.truetype(font_path, size=32)
+        header_font = ImageFont.truetype(font_path, size=48)
         
         # Load player avatars
         player1_avatar_bytes = await self.player1.avatar.read()
@@ -72,17 +73,16 @@ class FightingGame:
 
         # Player details
         player1_name = (
-            f"*{self.player1.display_name}*\n")
+            f"{self.player1.display_name}\n")
         player1_details = (
             f"Style: {self.player1_data['fighting_style']}\n"
-            f"Record: {self.player1_data['wins']} Wins / {self.player1_data['losses']} Losses"
+            f"Record: {self.player1_data['wins']} Wins \n {self.player1_data['losses']} Losses"
         )
         player2_name = (
-            f"*{self.player2.display_name}*\n")
+            f"{self.player2.display_name}\n")
         player2_details = (
-            f"{self.player2.display_name}\n"
             f"Style: {self.player2_data['fighting_style']}\n"
-            f"Record: {self.player2_data['wins']} Wins / {self.player2_data['losses']} Losses"
+            f"Record: {self.player2_data['wins']} Wins \n {self.player2_data['losses']} Losses"
         )
 
         # Define text positions
@@ -104,10 +104,10 @@ class FightingGame:
         )
 
         # Define text position for intro message
-        intro_text_position = (125, 20)
+        intro_text_position = (150, 20)
 
         # Add intro message to the image
-        draw.multiline_text(intro_text_position, intro_message, fill=(255, 255, 255), font=font)
+        draw.multiline_text(intro_text_position, intro_message, fill=(255, 255, 255), font=header_font)
 
         # Save the final image
         final_image_path = '/home/slurms/ScrapGPT/ScrapGPT/logs/fight_image.png'
