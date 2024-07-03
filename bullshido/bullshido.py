@@ -5,6 +5,8 @@ from redbot.core import commands, Config
 from .ui_elements import SelectFightingStyleView
 from .fighting_game import FightingGame
 from datetime import datetime, timedelta
+from io import BytesIO
+from PIL import Image, ImageDraw, ImageFont, ImageTransform
 import logging
 import os
 
@@ -454,6 +456,50 @@ class Bullshido(commands.Cog):
         """Clears old configuration to avoid conflicts."""
         await self.config.clear_all_users()
         await ctx.send("Old Bullshido configuration has been cleared.")
+        
+    @bullshido_group.command(name="test_fight_image")
+    async def display_fight_image(self, ctx: commands.Context, player1: discord.Member, player2: discord.Member):
+        try:
+            # Create a dummy player data for testing
+            player1_data = {
+                "fighting_style": "Karate",
+                "wins": {"UD": 5, "SD": 3, "TKO": 2, "KO": 1},
+                "losses": {"UD": 2, "SD": 1, "TKO": 3, "KO": 4},
+                "training_level": 3,
+                "nutrition_level": 2,
+                "morale": 80,
+                "intimidation_level": 1,
+                "stamina_level": 100,
+                "last_interaction": None,
+                "last_command_used": None,
+                "last_train": None,
+                "last_diet": None,
+                "fight_history": []
+            }
+            
+            player2_data = {
+                "fighting_style": "Muay Thai",
+                "wins": {"UD": 4, "SD": 5, "TKO": 3, "KO": 2},
+                "losses": {"UD": 1, "SD": 2, "TKO": 2, "KO": 3},
+                "training_level": 4,
+                "nutrition_level": 3,
+                "morale": 85,
+                "intimidation_level": 2,
+                "stamina_level": 100,
+                "last_interaction": None,
+                "last_command_used": None,
+                "last_train": None,
+                "last_diet": None,
+                "fight_history": []
+            }
+
+            # Initialize the FightingGame instance with dummy data for testing
+            game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self)
+
+            fight_image_path = await game.generate_fight_image()
+            await ctx.send(file=discord.File(fight_image_path))
+        except Exception as e:
+            await ctx.send(f"An error occurred: {e}")
         
     async def increment_training_level(self, user):
         self.logger.info(f"Incrementing training level for {user}")
