@@ -122,7 +122,7 @@ class FightingGame:
         progress_bar = "[" + ("=" * progress_bar_filled)
         progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
         if progress_bar_filled < progress_bar_length:  # Only add marker if there is room
-            marker = "ðŸ”´"
+            marker = "🔴"
             progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
         return progress_bar
 
