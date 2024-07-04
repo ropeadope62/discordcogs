@@ -259,7 +259,7 @@ class FightingGame:
         defender_stamina = self.player2_stamina if self.current_turn == self.player1 else self.player1_stamina
         attacker_training = self.player1_data["training_level"] if self.current_turn == self.player1 else self.player2_data["training_level"]
         defender_training = self.player2_data["training_level"] if self.current_turn == self.player1 else self.player1_data["training_level"]
-        defender_diet = self.player2_data["diet_level"] if self.current_turn == self.player1 else self.player1_data["diet_level"]
+        defender_diet = self.player2_data.get("diet_level", 1) if self.current_turn == self.player1 else self.player1_data.get("diet_level", 1)
         defender_morale = await self.bullshido_cog.config.user(defender).morale()
         style = self.player1_data["fighting_style"] if self.current_turn == self.player1 else self.player2_data["fighting_style"]
 
