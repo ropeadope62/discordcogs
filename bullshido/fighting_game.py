@@ -9,6 +9,7 @@ from io import BytesIO
 import os
 
 class FightingGame:
+    active_games = {}
     def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog):
         self.bot = bot
         self.channel = channel
@@ -40,6 +41,15 @@ class FightingGame:
             self.current_turn = player1
         else:
             self.current_turn = player2
+            
+    @staticmethod
+    def is_game_active(channel_id):
+        return FightingGame.active_games.get(channel_id, False)
+    
+    @staticmethod
+    def set_game_active(channel_id, status):
+        FightingGame.active_games[channel_id] = status
+    
     async def generate_fight_image(self):
         # Load the background template
         template_url = self.FIGHT_TEMPLATE_URL
@@ -365,7 +375,7 @@ class FightingGame:
         player1_health_start = self.player1_health
         player2_health_start = self.player2_health
 
-        round_message = await self.channel.send(f"Round {round_number}... *FIGHT!*")
+        round_message = await self.channel.send(f"Round {round_number}... ***FIGHT!***")
 
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
             ko_or_tko_occurred = await self.play_turn(round_message, round_number)
@@ -378,25 +388,25 @@ class FightingGame:
         player1_health_end = self.player1_health
         player2_health_end = self.player2_health
 
-        health_diff_player1 = player1_health_start - player1_health_end
-        health_diff_player2 = player2_health_start - player2_health_end
+        damage_player1 = player2_health_start - player2_health_end
+        damage_player2 = player1_health_start - player1_health_end
 
         print(f"Ending Round {round_number} - Player1 Health: {player1_health_end}, Player2 Health: {player2_health_end}")
 
-        if abs(health_diff_player1 - health_diff_player2) > 20:
-            if health_diff_player1 < health_diff_player2:
+        if damage_player1 > damage_player2:
+            if damage_player1 - damage_player2 > 20:
                 self.player1_score += 10
                 self.player2_score += 8
                 round_result = f"{self.player1.display_name} won the round handily!"
             else:
-                self.player1_score += 8
-                self.player2_score += 10
-                round_result = f"{self.player2.display_name} won the round handily!"
-        else:
-            if health_diff_player1 < health_diff_player2:
                 self.player1_score += 10
                 self.player2_score += 9
                 round_result = f"{self.player1.display_name} had the edge this round!"
+        else:
+            if damage_player2 - damage_player1 > 20:
+                self.player1_score += 8
+                self.player2_score += 10
+                round_result = f"{self.player2.display_name} won the round handily!"
             else:
                 self.player1_score += 9
                 self.player2_score += 10
@@ -404,11 +414,18 @@ class FightingGame:
 
         await self.channel.send(round_result)
         await self.update_health_bars(round_number)
-        
+
         return False
 
 
     async def start_game(self):
+        channel_id = self.channel.id
+        
+        if FightingGame.is_game_active(channel_id):
+            await self.channel.send("Another fight is already in progress in this channel!")
+            return
+        
+        FightingGame.set_game_active(channel_id, True)
         fight_image_path = await self.generate_fight_image()
         await self.channel.send(file=discord.File(fight_image_path))
         await asyncio.sleep(10)
@@ -447,4 +464,5 @@ class FightingGame:
             )
             await self.channel.send(final_message)
             await self.record_result(winner, loser, result_type)
+        FightingGame.set_game_active(channel_id, False)
 
