@@ -402,7 +402,7 @@ class FightingGame:
                 return True  # End the round early if a KO or TKO occurs
 
             strike_count += 1
-            await asyncio.sleep(random.uniform(3))
+            await asyncio.sleep(random.uniform(3,4))
 
         player1_health_end = self.player1_health
         player2_health_end = self.player2_health
