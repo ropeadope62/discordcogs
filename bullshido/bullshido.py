@@ -148,36 +148,41 @@ class Bullshido(commands.Cog):
         for chunk in [logs[i:i+10] for i in range(0, len(logs), 10)]:
             await ctx.send("```\n{}\n```".format("\n".join(chunk)))
             
-    @bullshido_group.command(name="ranking", description="Displays the Bullshido ranking table")
-    async def bullshido_ranking(self, ctx: commands.Context):
-        """Displays the Bullshido rankings for the server."""
-        all_users = await self.config.all_users()
-        ranking = []
-        guild_name = ctx.guild.name
-        
-        for user_id, data in all_users.items():
-            user = self.bot.get_user(user_id)
-            if not user:
-                continue
-            total_wins = sum(data["wins"].values())
-            total_losses = sum(data["losses"].values())
-            if total_losses == 0:
-                win_loss_ratio = total_wins  # avoid division by zero
-            else:
-                win_loss_ratio = total_wins / total_losses
-            ranking.append((user.display_name, win_loss_ratio, total_wins, total_losses))
-        
-        # Sort the ranking by win-loss ratio
-        ranking.sort(key=lambda x: x[1], reverse=True)
-        
-        # Create the embed
-        embed = discord.Embed(title=f"{guild_name} Bullshido Rankings", description="Top fighters in the Kumatae.", color=0xFFD700)
-        embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
-        
-        for i, (name, ratio, wins, losses) in enumerate(ranking, start=1):
-            embed.add_field(name=f"{i}. {name}", value=f"Wins: {wins}\nLosses: {losses}", inline=False)
-        
-        await ctx.send(embed=embed)
+    @bullshido_group.command(name="rankings", description="Top fighters in the Bullshido Kumatae.", aliases = ["rank", "leaderboard", "lb"])
+    async def rankings(self, ctx: commands.Context):
+        """Displays the top 25 players based on win-loss ratio and their fight record."""
+        server_name = ctx.guild.name
+        async with self.config.all_users() as users:
+            ranking_list = []
+            
+            for user_id, user_data in users.items():
+                wins = sum(user_data["wins"].values())
+                losses = sum(user_data["losses"].values())
+                if wins == 0 and losses == 0:
+                    continue  # Skip players with no fights
+                if losses == 0:
+                    win_loss_ratio = wins  # Avoid division by zero
+                else:
+                    win_loss_ratio = wins / losses
+                ranking_list.append((user_id, wins, losses, win_loss_ratio))
+            
+            # Sort the list by win-loss ratio in descending order and take the top 25
+            ranking_list = sorted(ranking_list, key=lambda x: x[3], reverse=True)[:25]
+
+            embed = discord.Embed(title=f"{server_name} Bullshido Rankings", color=0xFF0000)
+            embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
+            
+            for i, (user_id, wins, losses, ratio) in enumerate(ranking_list, 1):
+                user = self.bot.get_user(user_id)
+                if user:
+                    embed.add_field(
+                        name=f"{i}. {user.display_name}",
+                        value=f"Wins: {wins}, Losses: {losses}",
+                        inline=False
+                    )
+
+            await ctx.send(embed=embed)
+
 
     @bullshido_group.command(name="setstyle", description="Select your fighting style")
     async def select_fighting_style(self, ctx: commands.Context):
@@ -284,7 +289,7 @@ class Bullshido(commands.Cog):
         embed = discord.Embed(
             title="About Bullshido",
             description="Welcome to Bullshido, a Discord game of epic combat!",
-            color=0x00ff00
+            color=0xFF0000
         )
         embed.add_field(
             name="Selecting a Fighting Style",
