@@ -319,7 +319,7 @@ class FightingGame:
                 if critical_injury:
                     self.player1_critical_injuries.append(critical_injury)
 
-            sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)  # Add extra seconds for critical hits
+            sleep_duration = random.uniform(2, 3) + (4 if critical_message else 0)  # Add extra seconds for critical hits
             await asyncio.sleep(sleep_duration)
 
             # Update the embed with the latest message and health bars
@@ -388,8 +388,6 @@ class FightingGame:
             new_winner_morale = min(100, current_winner_morale + 20)
             await self.bullshido_cog.config.user(loser).morale.set(new_loser_morale)
             await self.bullshido_cog.config.user(winner).morale.set(new_winner_morale)
-            await self.channel.send(f"{loser.display_name}'s morale has been reduced!")
-            await self.channel.send(f"{winner.display_name}'s morale has increased!")
         except Exception as e:
             print(f"An error occurred: {e}")
 
@@ -404,7 +402,7 @@ class FightingGame:
                 return True  # End the round early if a KO or TKO occurs
 
             strike_count += 1
-            await asyncio.sleep(random.uniform(1, 3))
+            await asyncio.sleep(random.uniform(3))
 
         player1_health_end = self.player1_health
         player2_health_end = self.player2_health

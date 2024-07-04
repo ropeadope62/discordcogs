@@ -323,7 +323,14 @@ KO_MESSAGES = [
     "{loser} got knocked out!",
     "{loser} is seeing glimpses of the afterlife!",
     "{loser} is unresponsive!",
-    "{loser} is out like a light!"
+    "{loser} is out like a light!",
+    "{loser} got flattened!",
+    "{loser} got their lights turned off!",
+    "{loser} is unconscious!",
+    "{loser} got put to sleep!",
+    "{loser} got sent to the shadow realm!",
+    "{loser} got laid out!",
+    "{loser} is out of commission!"
 ]
 
 TKO_MESSAGES = [
@@ -332,7 +339,15 @@ TKO_MESSAGES = [
     "{loser} is just trying to survive!",
     "{loser} is doing the skanky leg!",
     "{loser} is in survival mode!",
-    "{loser} is getting hurt in there!"
+    "{loser} is getting hurt in there!",
+    "{loser} is wobbled!",
+    "{loser} is wobbling!",
+    "{loser} is in dire straits!",
+    "{loser} is in deep trouble!",
+    "{loser} is struggling to stay up!",
+    "{loser} is struggling to stay on their feet!",
+    "{loser} is barely standing!",
+    "{loser} is on shaky legs!"
     
 ]
 
@@ -354,11 +369,20 @@ REFEREE_STOPS = [
     "Herb Dean has seen enough!",
     "The referee has seen enough!",
     "The referee stops it!",
-    "Yves Lavigne could think its over!",
+    "Yves Lavigne is thinking of stopping it, its over!",
     "Big John steps in!",
     "The ref is stopping this!",
     "Mario Yamasaki is trying to stop it!",
-    "The ref is about to call this one!"
+    "The ref is about to call this one!",
+    "The ref has called a halt to the fight!",
+    "The referee waves it off!",
+    "The ref signals the end!",
+    "Yves Lavigne has seen enough, he stops it!",
+    "Big John puts an end to it!",
+    "The ref jumps in, it's over!",
+    "Big John calls a stop to the action!",
+    "Herb Dean has seen enough, it's over folks!",
+    "The ref calls it, fight's over!"
 ]
 
 TKO_VICTOR_MESSAGE = [
@@ -369,7 +393,18 @@ TKO_VICTOR_MESSAGE = [
     "had bad intentions!",
     "showed some serious power",
     "sends a message to their challengers",
-    "made a statement!"
+    "made a statement!",
+    "was relentless!",
+    "was a force of nature!",
+    "overwhelmed their opponent!",
+    "brought the hammer down!",
+    "brought the pain!",
+    "proved their might!",
+    "is unstoppable!",
+    "showed no mercy!",
+    "struck with precision and power!",
+    "proved their dominance!",
+    "crushed their foe!"
 ]
 
 KO_VICTOR_MESSAGE = [
@@ -382,7 +417,14 @@ KO_VICTOR_MESSAGE = [
     "sends a message to their challengers",
     "had bad intentions!",
     "sent him to sleep!",
-    "turned out the lights!"
+    "turned out the lights!",
+    "delivered a knockout blow!",
+    "sent shockwaves through the arena!",
+    "brought the hammer down!",
+    "dropped them with authority!",
+    "left them seeing stars!",
+    "is a savage!",
+    "put them out with a barrage of power!"
 ]
 
 ACTION_COST = 10
