@@ -152,34 +152,31 @@ class Bullshido(commands.Cog):
     async def rankings(self, ctx: commands.Context):
         """Displays the top 25 players based on win-loss ratio and their fight record."""
         server_name = ctx.guild.name
-        async with self.config.all_users() as users:
-            ranking_list = []
+        users = await self.config.all_users()
+        ranking_list = []
             
-            for user_id, user_data in users.items():
-                wins = sum(user_data["wins"].values())
-                losses = sum(user_data["losses"].values())
-                if wins == 0 and losses == 0:
-                    continue  # Skip players with no fights
-                if losses == 0:
-                    win_loss_ratio = wins  # Avoid division by zero
-                else:
-                    win_loss_ratio = wins / losses
-                ranking_list.append((user_id, wins, losses, win_loss_ratio))
+        for user_id, user_data in users.items():
+            wins = sum(user_data["wins"].values())
+            losses = sum(user_data["losses"].values())
+            if wins == 0 and losses == 0:
+                continue  # Skip players with no fights
+            if losses == 0:
+                win_loss_ratio = wins  # Avoid division by zero
+            else:
+                win_loss_ratio = wins / losses
+            
+            ranking_list.append((user_id, wins, losses, win_loss_ratio))
             
             # Sort the list by win-loss ratio in descending order and take the top 25
-            ranking_list = sorted(ranking_list, key=lambda x: x[3], reverse=True)[:25]
+        ranking_list = sorted(ranking_list, key=lambda x: x[3], reverse=True)[:25]
 
-            embed = discord.Embed(title=f"{server_name} Bullshido Rankings", color=0xFF0000)
-            embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
-            
-            for i, (user_id, wins, losses, ratio) in enumerate(ranking_list, 1):
-                user = self.bot.get_user(user_id)
-                if user:
-                    embed.add_field(
-                        name=f"{i}. {user.display_name}",
-                        value=f"Wins: {wins}, Losses: {losses}",
-                        inline=False
-                    )
+        embed = discord.Embed(title=f"{server_name} Bullshido Rankings", color=0xFF0000)
+        embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
+           
+        for i, (user_id, wins, losses, ratio) in enumerate(ranking_list, 1):
+            user = self.bot.get_user(user_id)
+            if user:
+                embed.add_field(name=f"{i}. {user.display_name}",value=f"Wins: {wins}, Losses: {losses}",inline=False)
 
             await ctx.send(embed=embed)
 
