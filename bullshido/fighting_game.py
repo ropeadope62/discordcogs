@@ -191,6 +191,7 @@ class FightingGame:
 
         await self.embed_message.edit(embed=embed)
 
+
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
         training_bonus = math.log10(training_level + 1) * self.training_weight
         diet_bonus = math.log10(diet_level + 1) * self.diet_weight
@@ -343,6 +344,7 @@ class FightingGame:
             return True
 
 
+
     async def declare_winner_by_ko(self, round_message):
         if self.player1_health <= 0:
             winner = self.player2
@@ -394,7 +396,6 @@ class FightingGame:
         strike_count = 0
         player1_health_start = self.player1_health
         player2_health_start = self.player2_health
-        round_messages = []
 
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
             ko_or_tko_occurred = await self.play_turn(round_number)
@@ -431,9 +432,10 @@ class FightingGame:
                 self.player2_score += 10
                 round_result = f"{self.player2.display_name} had the edge this round!"
 
-        await self.update_health_bars(round_number, round_result, round_result)
+        await self.update_health_bars(round_number, "End of Round", round_result)
 
         return False
+
 
 
 
