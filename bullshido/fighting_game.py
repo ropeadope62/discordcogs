@@ -164,7 +164,7 @@ class FightingGame:
         else:
             return "Exhausted" 
     
-    async def update_health_bars(self, round_number):
+    async def update_health_bars(self, round_number, round_messages):
         player1_health_bar = self.create_health_bar(self.player1_health, self.max_health)
         player2_health_bar = self.create_health_bar(self.player2_health, self.max_health)
         player1_stamina_status = self.get_stamina_status(self.player1_stamina)
@@ -182,6 +182,8 @@ class FightingGame:
         embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
         if self.player2_critical_injuries:
             embed.add_field(name=f"{self.player2.display_name} Injuries", value=", ".join(self.player2_critical_injuries), inline=False)
+        
+        embed.add_field(name="Round Messages", value="\n".join(round_messages), inline=False)
 
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
 
@@ -319,6 +321,7 @@ class FightingGame:
 
             # Edit the round message with updated content
             await round_message.edit(content=f"Round {round_number} in progress: {message}\n")
+            await self.update_health_bars(round_number)
 
             # Check for KO
             if self.player1_health <= 0 or self.player2_health <= 0:
