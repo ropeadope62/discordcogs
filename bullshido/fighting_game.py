@@ -190,6 +190,7 @@ class FightingGame:
         await self.embed_message.edit(embed=embed)
 
 
+
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
         training_bonus = math.log10(training_level + 1) * self.training_weight
         diet_bonus = math.log10(diet_level + 1) * self.diet_weight
@@ -341,10 +342,6 @@ class FightingGame:
             await self.update_health_bars(round_number, latest_message)  # Update health bars with error message
             return True
 
-
-
-
-
     async def declare_winner_by_ko(self, round_message):
         if self.player1_health <= 0:
             winner = self.player2
@@ -398,10 +395,8 @@ class FightingGame:
         player2_health_start = self.player2_health
         round_messages = []
 
-        round_message = await self.channel.send(f"Round {round_number}... ***FIGHT!***")
-
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
-            ko_or_tko_occurred = await self.play_turn(round_message, round_number, round_messages)
+            ko_or_tko_occurred = await self.play_turn(round_number)
             if ko_or_tko_occurred:
                 return True  # End the round early if a KO or TKO occurs
 
@@ -426,7 +421,7 @@ class FightingGame:
                 self.player2_score += 9
                 round_result = f"{self.player1.display_name} had the edge this round!"
         else:
-            if damage_player2 - damage_player1 > 20:
+            if damage_player2 > damage_player1 and damage_player2 - damage_player1 > 20:
                 self.player1_score += 8
                 self.player2_score += 10
                 round_result = f"{self.player2.display_name} won the round handily!"
@@ -436,9 +431,10 @@ class FightingGame:
                 round_result = f"{self.player2.display_name} had the edge this round!"
 
         await self.channel.send(round_result)
-        await self.update_health_bars(round_number, round_messages)
+        await self.update_health_bars(round_number, round_result)
 
         return False
+
 
 
     async def start_game(self):
