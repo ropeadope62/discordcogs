@@ -185,7 +185,7 @@ class FightingGame:
 
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
 
-        await self.channel.send(embed=embed)
+        await self.embed_message.edit(embed=embed)
 
 
 
@@ -444,6 +444,19 @@ class FightingGame:
         fight_image_path = await self.generate_fight_image()
         await self.channel.send(file=discord.File(fight_image_path))
         await asyncio.sleep(10)
+
+        embed = discord.Embed(
+            title=f"{self.player1.display_name} vs {self.player2.display_name}",
+            description="The fight is about to begin!",
+            color=0xFF0000
+        )
+        embed.add_field(name=f"{self.player1.display_name}'s Health", value=self.create_health_bar(self.player1_health, self.max_health), inline=False)
+        embed.add_field(name=f"{self.player1.display_name}'s Stamina", value=self.get_stamina_status(self.player1_stamina), inline=False)
+        embed.add_field(name=f"{self.player2.display_name}'s Health", value=self.create_health_bar(self.player2_health, self.max_health), inline=False)
+        embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=self.get_stamina_status(self.player2_stamina), inline=False)
+        embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
+
+        self.embed_message = await self.channel.send(embed=embed)
 
         fight_ended = False
 
