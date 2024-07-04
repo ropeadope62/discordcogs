@@ -178,7 +178,7 @@ class Bullshido(commands.Cog):
             if user:
                 embed.add_field(name=f"{i}. {user.display_name}",value=f"Wins: {wins}, Losses: {losses}",inline=False)
 
-            await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
 
     @bullshido_group.command(name="setstyle", description="Select your fighting style")
