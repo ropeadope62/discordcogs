@@ -134,7 +134,8 @@ class Bullshido(commands.Cog):
 
     @commands.hybrid_group(name="bullshido", description="Commands related to the Bullshido game")
     async def bullshido_group(self, ctx: commands.Context):
-        pass
+        if ctx.invoked_subcommand is None:
+            await ctx.invoke(self.bullshido_help)
 
     @bullshido_group.command(name="log", description="Displays the log")
     @is_admin_or_mod()
@@ -205,8 +206,12 @@ class Bullshido(commands.Cog):
         last_train = await self.config.user(user).last_train()
         if last_train:
             last_train_time = datetime.strptime(last_train, '%Y-%m-%d %H:%M:%S')
-            if datetime.utcnow() - last_train_time < timedelta(hours=24):
-                await ctx.send(f"{user.mention}, you can only use the train command once every 24 hours.")
+            time_since_last_train = datetime.utcnow() - last_train_time
+            if time_since_last_train < timedelta(hours=24):
+                time_left = timedelta(hours=24) - time_since_last_train
+                hours, remainder = divmod(time_left.seconds, 3600)
+                minutes, _ = divmod(remainder, 60)
+                await ctx.send(f"{user.mention}, you can only use the train command once every 24 hours. Time left: {time_left.days} days, {hours} hours, and {minutes} minutes.")
                 return
 
         # Update the last train time before executing the command to avoid timing issues
@@ -227,8 +232,12 @@ class Bullshido(commands.Cog):
         last_diet = await self.config.user(user).last_diet()
         if last_diet:
             last_diet_time = datetime.strptime(last_diet, '%Y-%m-%d %H:%M:%S')
-            if datetime.utcnow() - last_diet_time < timedelta(hours=24):
-                await ctx.send(f"{user.mention}, you can only use the diet command once every 24 hours.")
+            time_since_last_diet = datetime.utcnow() - last_diet_time
+            if time_since_last_diet < timedelta(hours=24):
+                time_left = timedelta(hours=24) - time_since_last_diet
+                hours, remainder = divmod(time_left.seconds, 3600)
+                minutes, _ = divmod(remainder, 60)
+                await ctx.send(f"{user.mention}, you can only use the diet command once every 24 hours. Time left: {time_left.days} days, {hours} hours, and {minutes} minutes.")
                 return
 
         # Update the last diet time before executing the command to avoid timing issues
@@ -546,5 +555,9 @@ class Bullshido(commands.Cog):
                 await self.config.user(user).last_interaction.set(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
                 self.logger.info(f"Reset last {command_used} interaction for {user}.")
     
-async def setup(bot):
-    await bot.add_cog(Bullshido(bot))
+    
+    
+    async def setup(bot):
+        cog = Bullshido(bot)
+        await bot.add_cog(Bullshido(cog))
+        await bot.tree.sync()
