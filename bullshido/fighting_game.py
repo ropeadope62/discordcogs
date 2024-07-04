@@ -259,6 +259,8 @@ class FightingGame:
         defender_stamina = self.player2_stamina if self.current_turn == self.player1 else self.player1_stamina
         attacker_training = self.player1_data["training_level"] if self.current_turn == self.player1 else self.player2_data["training_level"]
         defender_training = self.player2_data["training_level"] if self.current_turn == self.player1 else self.player1_data["training_level"]
+        defender_diet = self.player2_data["diet_level"] if self.current_turn == self.player1 else self.player1_data["diet_level"]
+        defender_morale = await self.bullshido_cog.config.user(defender).morale()
         style = self.player1_data["fighting_style"] if self.current_turn == self.player1 else self.player2_data["fighting_style"]
 
         try:
@@ -267,6 +269,19 @@ class FightingGame:
                 # Misses the attack
                 miss_message = f"{attacker.display_name} missed their attack on {defender.display_name}!"
                 await round_message.edit(content=f"Round {round_number} in progress: {miss_message}")
+                self.current_turn = defender  # Switch turn to the other player
+                return False
+            # Calculate block chance influenced by training, diet, and morale
+            base_block_chance = 0.15  # 15% base block chance
+            block_bonus_training = 0.01 * math.log10(defender_training + 1)  # Block bonus from training level
+            block_bonus_diet = 0.01 * math.log10(defender_diet + 1)  # Block bonus from diet level
+            block_bonus_morale = 0.01 * (defender_morale / 100)  # Block bonus from morale (scaled to 0-1 range)
+            block_chance = base_block_chance + block_bonus_training + block_bonus_diet + block_bonus_morale
+            
+            if random.random() < block_chance:
+                # Blocks the attack
+                block_message = f"{defender.display_name} blocked {attacker.display_name}'s attack!"
+                await round_message.edit(content=f"Round {round_number} in progress: {block_message}")
                 self.current_turn = defender  # Switch turn to the other player
                 return False
 
@@ -420,11 +435,11 @@ class FightingGame:
 
     async def start_game(self):
         channel_id = self.channel.id
-        
+
         if FightingGame.is_game_active(channel_id):
-            await self.channel.send("Another fight is already in progress in this channel!")
+            await self.channel.send("A game is already in progress in this channel.")
             return
-        
+
         FightingGame.set_game_active(channel_id, True)
         fight_image_path = await self.generate_fight_image()
         await self.channel.send(file=discord.File(fight_image_path))
@@ -451,10 +466,19 @@ class FightingGame:
                     winner = self.player1
                     loser = self.player2
                     result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
-                else:
+                elif self.player2_score > self.player1_score:
                     winner = self.player2
                     loser = self.player1
                     result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
+                else:
+                    result_type = "DRAW"
+                    final_message = (
+                        f"The fight is over!\n"
+                        f"After 3 rounds, the fight is declared a draw!\n"
+                    )
+                    await self.channel.send(final_message)
+                    FightingGame.set_game_active(channel_id, False)
+                    return
 
             result_description = FIGHT_RESULT_LONG[result_type]
             final_message = (
@@ -464,5 +488,6 @@ class FightingGame:
             )
             await self.channel.send(final_message)
             await self.record_result(winner, loser, result_type)
+
         FightingGame.set_game_active(channel_id, False)
 
