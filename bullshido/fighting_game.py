@@ -271,7 +271,7 @@ class FightingGame:
             if random.random() < miss_probability:
                 # Misses the attack
                 latest_message = f"{attacker.display_name} missed their attack on {defender.display_name}!"
-                await self.update_health_bars(round_number, latest_message, None)  # Update health bars after each strike
+                await self.update_health_bars(round_number, latest_message, "No significant events")  # Update health bars after each strike
                 self.current_turn = defender  # Switch turn to the other player
                 return False
 
@@ -285,7 +285,7 @@ class FightingGame:
             if random.random() < block_chance:
                 # Attack is blocked
                 latest_message = f"{defender.display_name} blocked the attack from {attacker.display_name}!"
-                await self.update_health_bars(round_number, latest_message, None)  # Update health bars after each strike
+                await self.update_health_bars(round_number, latest_message, "No significant events")  # Update health bars after each strike
                 self.current_turn = defender  # Switch turn to the other player
                 return False
 
@@ -293,7 +293,7 @@ class FightingGame:
             strike, damage, critical_message, conclude_message, critical_injury = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender)
             if not strike:
                 latest_message = f"An error occurred during the turn: Failed to determine strike."
-                await self.update_health_bars(round_number, latest_message, None)
+                await self.update_health_bars(round_number, latest_message, "No significant events")
                 return True
 
             bodypart = await self.target_bodypart()
@@ -323,7 +323,7 @@ class FightingGame:
             await asyncio.sleep(sleep_duration)
 
             # Update the embed with the latest message and health bars
-            await self.update_health_bars(round_number, latest_message, None)  # Update health bars after each strike
+            await self.update_health_bars(round_number, latest_message, "No significant events")  # Update health bars after each strike
 
             # Check for KO
             if self.player1_health <= 0 or self.player2_health <= 0:
@@ -340,8 +340,9 @@ class FightingGame:
             latest_message = f"An error occurred during the turn: {e}"
             print(f"Error during play_turn: {e}")
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
-            await self.update_health_bars(round_number, latest_message, None)  # Update health bars with error message
+            await self.update_health_bars(round_number, latest_message, "No significant events")  # Update health bars with error message
             return True
+
 
 
 
@@ -358,9 +359,9 @@ class FightingGame:
             f"{ko_message} {winner.display_name} {ko_victor_flavor} "
         )
         await round_message.edit(content=final_message)
-        await self.channel.send(final_message)
-
+        await self.update_health_bars(0, final_message, "KO Victory!")  # Update embed with KO result
         await self.record_result(winner, loser, "KO")
+
 
     async def declare_winner_by_tko(self, round_message, loser):
         winner = self.player1 if loser == self.player2 else self.player2
@@ -373,9 +374,9 @@ class FightingGame:
             f"{winner.display_name} {tko_victor_message}, Wow!"
         )
         await round_message.edit(content=final_message)
-        #await self.channel.send(final_message)
-
+        await self.update_health_bars(0, final_message, "TKO Victory!")  # Update embed with TKO result
         await self.record_result(winner, loser, "TKO")
+
 
     async def record_result(self, winner, loser, result_type):
         try:
@@ -437,9 +438,6 @@ class FightingGame:
         return False
 
 
-
-
-
     async def start_game(self):
         channel_id = self.channel.id
 
@@ -461,7 +459,7 @@ class FightingGame:
         self.embed_message = await self.channel.send(file=file, embed=embed)
         await asyncio.sleep(10)
 
-        await self.update_health_bars(0, "The fight is about to begin!")  # Initial health bar update before the first round
+        await self.update_health_bars(0, "The fight is about to begin!", "Initial Health")  # Initial health bar update before the first round
 
         fight_ended = False
 
@@ -487,14 +485,14 @@ class FightingGame:
                 elif self.player2_score > self.player1_score:
                     winner = self.player2
                     loser = self.player1
-                    result_type = "UD" if abs(self.player2_score - theplayer1_score) > 2 else "SD"
+                    result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
                 else:
                     result_type = "DRAW"
                     final_message = (
                         f"The fight is over!\n"
                         f"After 3 rounds, the fight is declared a draw!\n"
                     )
-                    await self.update_health_bars(round_number, final_message)  # Update embed with final result
+                    await self.update_health_bars(round_number, final_message, "Draw")  # Update embed with final result
                     FightingGame.set_game_active(channel_id, False)
                     return
 
@@ -504,8 +502,9 @@ class FightingGame:
                 f"After 3 rounds, we go to the judges' scorecard for a decision.\n"
                 f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, by {result_description}, {winner.display_name}!"
             )
-            await self.update_health_bars(round_number, final_message)  # Update embed with final result
+            await self.update_health_bars(round_number, final_message, "Decision Victory")  # Update embed with final result
             await self.record_result(winner, loser, result_type)
+
 
         FightingGame.set_game_active(channel_id, False)
 
