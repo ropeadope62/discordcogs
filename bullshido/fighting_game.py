@@ -164,7 +164,7 @@ class FightingGame:
         else:
             return "Exhausted" 
     
-    async def update_health_bars(self, round_number, latest_message):
+    async def update_health_bars(self, round_number, latest_message, round_result):
         player1_health_bar = self.create_health_bar(self.player1_health, self.max_health)
         player2_health_bar = self.create_health_bar(self.player2_health, self.max_health)
         player1_stamina_status = self.get_stamina_status(self.player1_stamina)
@@ -183,13 +183,13 @@ class FightingGame:
         if self.player2_critical_injuries:
             embed.add_field(name=f"{self.player2.display_name} Injuries", value=", ".join(self.player2_critical_injuries), inline=False)
         
+        if round_result:
+            embed.add_field(name="Round Result", value=round_result, inline=False)
         embed.add_field(name="Latest Strike", value=latest_message, inline=False)
 
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
 
         await self.embed_message.edit(embed=embed)
-
-
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
         training_bonus = math.log10(training_level + 1) * self.training_weight
@@ -270,7 +270,7 @@ class FightingGame:
             if random.random() < miss_probability:
                 # Misses the attack
                 latest_message = f"{attacker.display_name} missed their attack on {defender.display_name}!"
-                await self.update_health_bars(round_number, latest_message)  # Update health bars after each strike
+                await self.update_health_bars(round_number, latest_message, None)  # Update health bars after each strike
                 self.current_turn = defender  # Switch turn to the other player
                 return False
 
@@ -284,7 +284,7 @@ class FightingGame:
             if random.random() < block_chance:
                 # Attack is blocked
                 latest_message = f"{defender.display_name} blocked the attack from {attacker.display_name}!"
-                await self.update_health_bars(round_number, latest_message)  # Update health bars after each strike
+                await self.update_health_bars(round_number, latest_message, None)  # Update health bars after each strike
                 self.current_turn = defender  # Switch turn to the other player
                 return False
 
@@ -292,7 +292,7 @@ class FightingGame:
             strike, damage, critical_message, conclude_message, critical_injury = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender)
             if not strike:
                 latest_message = f"An error occurred during the turn: Failed to determine strike."
-                await self.update_health_bars(round_number, latest_message)
+                await self.update_health_bars(round_number, latest_message, None)
                 return True
 
             bodypart = await self.target_bodypart()
@@ -322,7 +322,7 @@ class FightingGame:
             await asyncio.sleep(sleep_duration)
 
             # Update the embed with the latest message and health bars
-            await self.update_health_bars(round_number, latest_message)  # Update health bars after each strike
+            await self.update_health_bars(round_number, latest_message, None)  # Update health bars after each strike
 
             # Check for KO
             if self.player1_health <= 0 or self.player2_health <= 0:
@@ -339,8 +339,9 @@ class FightingGame:
             latest_message = f"An error occurred during the turn: {e}"
             print(f"Error during play_turn: {e}")
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
-            await self.update_health_bars(round_number, latest_message)  # Update health bars with error message
+            await self.update_health_bars(round_number, latest_message, None)  # Update health bars with error message
             return True
+
 
     async def declare_winner_by_ko(self, round_message):
         if self.player1_health <= 0:
@@ -430,10 +431,10 @@ class FightingGame:
                 self.player2_score += 10
                 round_result = f"{self.player2.display_name} had the edge this round!"
 
-        await self.channel.send(round_result)
-        await self.update_health_bars(round_number, round_result)
+        await self.update_health_bars(round_number, round_result, round_result)
 
         return False
+
 
 
 
