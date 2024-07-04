@@ -191,6 +191,7 @@ class FightingGame:
 
 
 
+
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
         training_bonus = math.log10(training_level + 1) * self.training_weight
         diet_bonus = math.log10(diet_level + 1) * self.diet_weight
@@ -253,7 +254,7 @@ class FightingGame:
         regeneration_rate = (training_level + diet_level) / 20  # Simple formula for regeneration
         return min(current_stamina + regeneration_rate, self.max_stamina)
 
-    async def play_turn(self, round_message, round_number):
+    async def play_turn(self, round_message, round_number, round_messages):
         fight_ended = False
         attacker = self.player1 if self.current_turn == self.player1 else self.player2
         defender = self.player2 if self.current_turn == self.player1 else self.player1
@@ -270,27 +271,34 @@ class FightingGame:
             if random.random() < miss_probability:
                 # Misses the attack
                 miss_message = f"{attacker.display_name} missed their attack on {defender.display_name}!"
+                round_messages.append(miss_message)
                 await round_message.edit(content=f"Round {round_number} in progress: {miss_message}")
+                await self.update_health_bars(round_number, round_messages)  # Update health bars after each strike
                 self.current_turn = defender  # Switch turn to the other player
                 return False
+
             # Calculate block chance influenced by training, diet, and morale
             base_block_chance = 0.15  # 15% base block chance
             block_bonus_training = 0.01 * math.log10(defender_training + 1)  # Block bonus from training level
             block_bonus_diet = 0.01 * math.log10(defender_diet + 1)  # Block bonus from diet level
             block_bonus_morale = 0.01 * (defender_morale / 100)  # Block bonus from morale (scaled to 0-1 range)
             block_chance = base_block_chance + block_bonus_training + block_bonus_diet + block_bonus_morale
-            
+
             if random.random() < block_chance:
-                # Blocks the attack
-                block_message = f"{defender.display_name} blocked {attacker.display_name}'s attack!"
+                # Attack is blocked
+                block_message = f"{defender.display_name} blocked the attack from {attacker.display_name}!"
+                round_messages.append(block_message)
                 await round_message.edit(content=f"Round {round_number} in progress: {block_message}")
+                await self.update_health_bars(round_number, round_messages)  # Update health bars after each strike
                 self.current_turn = defender  # Switch turn to the other player
                 return False
 
-            # Proceed with calculating damage if the attack is not missed
+            # Proceed with calculating damage if the attack is not missed or blocked
             strike, damage, critical_message, conclude_message, critical_injury = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender)
             if not strike:
-                await round_message.edit(content=f"An error occurred during the turn: Failed to determine strike.")
+                error_message = f"An error occurred during the turn: Failed to determine strike."
+                round_messages.append(error_message)
+                await round_message.edit(content=error_message)
                 return True
 
             bodypart = await self.target_bodypart()
@@ -301,6 +309,8 @@ class FightingGame:
             else:
                 action = random.choice(STRIKE_ACTIONS)
                 message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"
+
+            round_messages.append(message)
 
             # Reduce defender's health and attacker's stamina
             if self.current_turn == self.player1:
@@ -321,7 +331,7 @@ class FightingGame:
 
             # Edit the round message with updated content
             await round_message.edit(content=f"Round {round_number} in progress: {message}\n")
-            await self.update_health_bars(round_number)
+            await self.update_health_bars(round_number, round_messages)  # Update health bars after each strike
 
             # Check for KO
             if self.player1_health <= 0 or self.player2_health <= 0:
@@ -335,10 +345,13 @@ class FightingGame:
 
             return False
         except Exception as e:
+            error_message = f"An error occurred during the turn: {e}"
+            round_messages.append(error_message)
             print(f"Error during play_turn: {e}")
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
-            await round_message.edit(content=f"An error occurred during the turn: {e}")
+            await round_message.edit(content=error_message)
             return True
+
 
 
     async def declare_winner_by_ko(self, round_message):
@@ -392,11 +405,12 @@ class FightingGame:
         strike_count = 0
         player1_health_start = self.player1_health
         player2_health_start = self.player2_health
+        round_messages = []
 
         round_message = await self.channel.send(f"Round {round_number}... ***FIGHT!***")
 
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
-            ko_or_tko_occurred = await self.play_turn(round_message, round_number)
+            ko_or_tko_occurred = await self.play_turn(round_message, round_number, round_messages)
             if ko_or_tko_occurred:
                 return True  # End the round early if a KO or TKO occurs
 
@@ -431,7 +445,7 @@ class FightingGame:
                 round_result = f"{self.player2.display_name} had the edge this round!"
 
         await self.channel.send(round_result)
-        await self.update_health_bars(round_number)
+        await self.update_health_bars(round_number, round_messages)
 
         return False
 
