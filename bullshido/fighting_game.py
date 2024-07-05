@@ -198,6 +198,7 @@ class FightingGame:
         adjusted_damage = base_damage * (1 + training_bonus + diet_bonus)
         return round(adjusted_damage)
 
+    
     def get_strike_damage(self, style, attacker, defender):
     # Initialize all variables to prevent reference errors
         strike = ""
@@ -220,6 +221,11 @@ class FightingGame:
                 conclude_message, critical_injury = random.choice(list(CRITICAL_RESULTS.items()))
                 conclude_message = conclude_message.format(defender=defender.display_name)
                 message = random.choice(CRITICAL_MESSAGES)
+                
+                if random.random() < 0.02: 
+                    asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, critical_injury))
+                    critical_injury = f"**Permanent Injury:** {critical_injury}" # mark injury as permenent 
+                
             else:
                 modified_damage = round(modified_damage * modifier)
             return strike, modified_damage, message, conclude_message, critical_injury
@@ -254,7 +260,7 @@ class FightingGame:
         regeneration_rate = (training_level + diet_level) / 20  # Simple formula for regeneration
         return min(current_stamina + regeneration_rate, self.max_stamina)
 
-    async def play_turn(self, round_number):
+    async def play_turn(self, round_message, round_number):
         fight_ended = False
         attacker = self.player1 if self.current_turn == self.player1 else self.player2
         defender = self.player2 if self.current_turn == self.player1 else self.player1
@@ -262,50 +268,30 @@ class FightingGame:
         defender_stamina = self.player2_stamina if self.current_turn == self.player1 else self.player1_stamina
         attacker_training = self.player1_data["training_level"] if self.current_turn == self.player1 else self.player2_data["training_level"]
         defender_training = self.player2_data["training_level"] if self.current_turn == self.player1 else self.player1_data["training_level"]
-        defender_diet = self.player2_data.get("diet_level", 1) if self.current_turn == self.player1 else self.player1_data.get("diet_level", 1)
-        defender_morale = await self.bullshido_cog.config.user(defender).morale()
         style = self.player1_data["fighting_style"] if self.current_turn == self.player1 else self.player2_data["fighting_style"]
 
         try:
             miss_probability = self.calculate_miss_probability(attacker_stamina, attacker_training, defender_training, defender_stamina)
             if random.random() < miss_probability:
-                # Misses the attack
-                latest_message = f"{attacker.display_name} missed their attack on {defender.display_name}!"
-                await self.update_health_bars(round_number, latest_message, "No significant events")  # Update health bars after each strike
-                self.current_turn = defender  # Switch turn to the other player
+                miss_message = f"{attacker.display_name} missed their attack on {defender.display_name}!"
+                await round_message.edit(content=f"Round {round_number} in progress: {miss_message}")
+                self.current_turn = defender
                 return False
 
-            # Calculate block chance influenced by training, diet, and morale
-            base_block_chance = 0.15  # 15% base block chance
-            block_bonus_training = 0.01 * math.log10(defender_training + 1)  # Block bonus from training level
-            block_bonus_diet = 0.01 * math.log10(defender_diet + 1)  # Block bonus from diet level
-            block_bonus_morale = 0.01 * (defender_morale / 100)  # Block bonus from morale (scaled to 0-1 range)
-            block_chance = base_block_chance + block_bonus_training + block_bonus_diet + block_bonus_morale
-
-            if random.random() < block_chance:
-                # Attack is blocked
-                latest_message = f"{defender.display_name} blocked the attack from {attacker.display_name}!"
-                await self.update_health_bars(round_number, latest_message, "No significant events")  # Update health bars after each strike
-                self.current_turn = defender  # Switch turn to the other player
-                return False
-
-            # Proceed with calculating damage if the attack is not missed or blocked
             strike, damage, critical_message, conclude_message, critical_injury = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender)
             if not strike:
-                latest_message = f"An error occurred during the turn: Failed to determine strike."
-                await self.update_health_bars(round_number, latest_message, "No significant events")
+                await round_message.edit(content=f"An error occurred during the turn: Failed to determine strike.")
                 return True
 
             bodypart = await self.target_bodypart()
 
             if self.is_grapple_move(strike):
                 action = random.choice(GRAPPLE_ACTIONS)
-                latest_message = f"{critical_message} {attacker.display_name} {action} a {strike} causing {damage} damage! {conclude_message}"
+                message = f"{critical_message} {attacker.display_name} {action} a {strike} causing {damage} damage! {conclude_message}"
             else:
                 action = random.choice(STRIKE_ACTIONS)
-                latest_message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"
+                message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"
 
-            # Reduce defender's health and attacker's stamina
             if self.current_turn == self.player1:
                 self.player2_health -= damage
                 self.player1_stamina -= self.BASE_STAMINA_COST
@@ -319,29 +305,30 @@ class FightingGame:
                 if critical_injury:
                     self.player1_critical_injuries.append(critical_injury)
 
-            sleep_duration = random.uniform(2, 3) + (4 if critical_message else 0)  # Add extra seconds for critical hits
+            sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)
             await asyncio.sleep(sleep_duration)
 
-            # Update the embed with the latest message and health bars
-            await self.update_health_bars(round_number, latest_message, "No significant events")  # Update health bars after each strike
+            # Update embed with turn results and permanent injuries in red
+            if "Permanent Injury:" in critical_injury:
+                message += f"\n**Permanent Injury:** {critical_injury.split(': ')[1]}"
 
-            # Check for KO
+            await round_message.edit(content=f"Round {round_number} in progress: {message}\n")
+
             if self.player1_health <= 0 or self.player2_health <= 0:
-                await self.declare_winner_by_ko(round_number, latest_message)
+                await self.declare_winner_by_ko(round_message)
                 return True
 
-            # Check for TKO
             if (self.player1_health < 20 or self.player2_health < 20) and random.random() < 0.5:
-                await self.declare_winner_by_tko(round_number, latest_message, defender)
+                await self.declare_winner_by_tko(round_message, defender)
                 return True
 
             return False
         except Exception as e:
-            latest_message = f"An error occurred during the turn: {e}"
             print(f"Error during play_turn: {e}")
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
-            await self.update_health_bars(round_number, latest_message, "No significant events")  # Update health bars with error message
+            await round_message.edit(content=f"An error occurred during the turn: {e}")
             return True
+
 
 
 

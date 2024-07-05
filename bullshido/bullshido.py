@@ -1,12 +1,13 @@
 # bullshido.py
 import discord
 import asyncio
-from redbot.core import commands, Config
+from redbot.core import commands, Config, bank
 from .ui_elements import SelectFightingStyleView
 from .fighting_game import FightingGame
 from datetime import datetime, timedelta
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont, ImageTransform
+from .fighting_constants import INJURY_TREATMENT_COST
 import logging
 import os
 
@@ -70,6 +71,21 @@ class Bullshido(commands.Cog):
         self.logger.info(f"Checking if {user} has sufficient stamina...")
         stamina = await self.config.user(user).stamina_level()
         return stamina >= 20
+    
+    async def add_permanent_injury(self, user: discord.Member, injury: str):
+        """Add a permanent injury to a user."""
+        async with self.config.user(user).permanent_injuries() as injuries:
+            injuries.append(injury)
+
+    async def get_permanent_injuries(self, user: discord.Member):
+        """Get the list of permanent injuries for a user."""
+        return await self.config.user(user).permanent_injuries()
+
+    async def remove_permanent_injury(self, user: discord.Member, injury: str):
+        """Remove a permanent injury from a user."""
+        async with self.config.user(user).permanent_injuries() as injuries:
+            if injury in injuries:
+                injuries.remove(injury)
     
     def is_admin_or_mod():
         async def predicate(ctx):
@@ -148,6 +164,51 @@ class Bullshido(commands.Cog):
         for chunk in [logs[i:i+10] for i in range(0, len(logs), 10)]:
             await ctx.send("```\n{}\n```".format("\n".join(chunk)))
             
+    @bullshido_group.command(name="injuries", description="View your permanent injuries that require treatment.", aliases = ["injury", "inj"])
+    async def permanent_injuries(self, ctx: commands.Context):
+        """View your permanent injuries that require treatment."""
+        user = ctx.author
+        user_data = await self.config.user(user).all()
+        permanent_injuries = user_data.get("permanent_injuries", [])
+
+        if not permanent_injuries:
+            await ctx.send("You have no permanent injuries.")
+            return
+
+        embed = discord.Embed(title=f"{user.display_name}'s Permanent Injuries", color=0xFF0000)
+        for injury in permanent_injuries:
+            embed.add_field(name="Injury", value=injury, inline=False)
+
+        embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
+        await ctx.send(embed=embed)
+
+    @bullshido_group.command(name="treat", description="Treat a permanent injury")
+    async def treat(self, ctx: commands.Context, *, injury: str):
+        """Treat a permanent injury."""
+        user = ctx.author
+        user_data = await self.config.user(user).all()
+        permanent_injuries = user_data.get("permanent_injuries", [])
+        
+        if injury not in permanent_injuries:
+            await ctx.send("You do not have this injury.")
+            return
+
+        cost = INJURY_TREATMENT_COST.get(injury)
+        if cost is None:
+            await ctx.send("This injury cannot be treated.")
+            return
+
+        balance = await bank.get_balance(user)
+        if balance < cost:
+            await ctx.send(f"You do not have enough credits to treat this injury. You need {cost} credits.")
+            return
+
+        await bank.withdraw_credits(user, cost)
+        permanent_injuries.remove(injury)
+        await self.config.user(user).permanent_injuries.set(permanent_injuries)
+
+        await ctx.send(f"Successfully treated {injury}. Your new balance is {balance - cost} credits.")
+    
     @bullshido_group.command(name="rankings", description="Top fighters in the Bullshido Kumatae.", aliases = ["rank", "leaderboard", "lb"])
     async def rankings(self, ctx: commands.Context):
         """Displays the top 25 players based on win-loss ratio and their fight record."""
