@@ -34,7 +34,7 @@ class FightingGame:
         self.player2_critical_injuries = []
         self.max_health = 100
         self.ACTION_COST = 10
-        self.BASE_MISS_PROBABILITY = 0.1
+        self.BASE_MISS_PROBABILITY = 0.15
         self.BASE_STAMINA_COST = 10
         self.FIGHT_TEMPLATE_URL = "https://i.ibb.co/MSprvBG/bullshido-template.png"
         if player1_data['training_level'] >= player2_data['training_level']:
@@ -222,7 +222,7 @@ class FightingGame:
                 conclude_message = conclude_message.format(defender=defender.display_name)
                 message = random.choice(CRITICAL_MESSAGES)
                 
-                if random.random() < 0.02: 
+                if random.random() < 0.1: 
                     asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, critical_injury))
                     critical_injury = f"**Permanent Injury:** {critical_injury}" # mark injury as permenent 
                 
@@ -308,7 +308,6 @@ class FightingGame:
             sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)
             await asyncio.sleep(sleep_duration)
 
-            # Update embed with turn results and permanent injuries in red
             if "Permanent Injury:" in critical_injury:
                 message += f"\n**Permanent Injury:** {critical_injury.split(': ')[1]}"
 
@@ -384,12 +383,13 @@ class FightingGame:
         player2_health_start = self.player2_health
 
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
-            ko_or_tko_occurred = await self.play_turn(round_number)
+            round_message = await self.channel.send(content=f"Round {round_number} in progress...")
+            ko_or_tko_occurred = await self.play_turn(round_message, round_number)
             if ko_or_tko_occurred:
-                return True  # End the round early if a KO or TKO occurs
+                return True
 
             strike_count += 1
-            await asyncio.sleep(random.uniform(3,4))
+            await asyncio.sleep(random.uniform(3, 4))
 
         player1_health_end = self.player1_health
         player2_health_end = self.player2_health
