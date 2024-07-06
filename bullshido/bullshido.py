@@ -612,10 +612,12 @@ class Bullshido(commands.Cog):
         except Exception as e:
             await ctx.send(f"An error occurred: {e}")
         
-    async def increment_training_level(self, user):
+    async def increment_training_level(ctx, self, user):
         self.logger.info(f"Incrementing training level for {user}")
         user_data = await self.config.user(user).all()
-        new_training_level = user_data['training_level'] + 10
+        new_training_level = min(100,user_data['training_level'] + 10)
+        if new_training_level >= 100:
+            await ctx.send(f"{user.mention} has reached maximum training level for the next 24 hours!")
         await self.config.user(user).training_level.set(new_training_level)
         self.logger.info(f"Training level for {user} is now {new_training_level}")
         return new_training_level
@@ -628,10 +630,12 @@ class Bullshido(commands.Cog):
         self.logger.info(f"Stamina level for {user} is now {new_stamina_level}")
         return new_stamina_level
 
-    async def increment_nutrition_level(self, user):
+    async def increment_nutrition_level(ctx, self, user):
         self.logger.info(f"Incrementing nutrition level for {user}")
         user_data = await self.config.user(user).all()
-        new_nutrition_level = user_data['nutrition_level'] + 10
+        new_nutrition_level = min(100,user_data['nutrition_level'] + 10)
+        if new_nutrition_level >= 100:
+            await ctx.send(f"{user.mention} has reached optimal nutrition for the next 24 hours!")
         await self.config.user(user).nutrition_level.set(new_nutrition_level)
         self.logger.info(f"Nutrition level for {user} is now {new_nutrition_level}")
         return new_nutrition_level

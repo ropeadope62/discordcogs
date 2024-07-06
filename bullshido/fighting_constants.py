@@ -1,5 +1,3 @@
-# fighting_constants.py
-
 STRIKES = {
     "Karate": {
                 "Straight Right": (5, 7),
@@ -367,7 +365,7 @@ INJURY_TREATMENT_COST = {
     "Broken Right Wrist": 1130,
     "Broken Ankle": 1140,
     "Broken Finger": 1150,
-    "Broken Toe": 140,
+    "Broken Toe": 1140,
     "Broken Rib": 1250,
     "Broken Shin": 1120,
     "Broken Thigh": 1230,
