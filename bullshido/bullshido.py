@@ -351,7 +351,7 @@ class Bullshido(commands.Cog):
             await ctx.send(f"Failed to start the fight due to an error: {e}")
 
     @bullshido_group.command(name="train", description="Train daily to increase your Bullshido training level")
-    async def train(self, ctx: commands.Context):
+    async def train(self, ctx: commands.Context, user):
         """Train daily to increase your Bullshido training level."""
         self.logger.info(f"{ctx.author} used the train command.")
         user = ctx.author
@@ -378,7 +378,7 @@ class Bullshido(commands.Cog):
         await ctx.send(f"{user.mention} has successfully trained in {style}! Your training level is now {new_training_level}.")
 
     @bullshido_group.command(name="diet", description="Focus on your diet to increase your nutrition level")
-    async def diet(self, ctx: commands.Context):
+    async def diet(self, ctx: commands.Context, user):
         """Focus on your diet to increase your nutrition level."""
         self.logger.info(f"{ctx.author} used the diet command.")
         user = ctx.author
