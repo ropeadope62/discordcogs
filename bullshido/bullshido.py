@@ -351,7 +351,7 @@ class Bullshido(commands.Cog):
             await ctx.send(f"Failed to start the fight due to an error: {e}")
 
     @bullshido_group.command(name="train", description="Train daily to increase your Bullshido training level")
-    async def train(self, ctx: commands.Context, user):
+    async def train(self, ctx: commands.Context):
         """Train daily to increase your Bullshido training level."""
         self.logger.info(f"{ctx.author} used the train command.")
         user = ctx.author
@@ -373,7 +373,7 @@ class Bullshido(commands.Cog):
         await self.config.user(user).last_train.set(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
         
         # Increment training level
-        new_training_level = await self.increment_training_level(user)
+        new_training_level = await self.increment_training_level(ctx)
         self.logger.info(f"{user} has successfully trained in {style}! Their training level is now {new_training_level}.")
         await ctx.send(f"{user.mention} has successfully trained in {style}! Your training level is now {new_training_level}.")
 
@@ -673,7 +673,8 @@ class Bullshido(commands.Cog):
         except Exception as e:
             await ctx.send(f"An error occurred: {e}")
         
-    async def increment_training_level(self, ctx, user):
+    async def increment_training_level(self, ctx):
+        user = ctx.author
         self.logger.info(f"Incrementing training level for {user}")
         user_data = await self.config.user(user).all()
         new_training_level = min(100,user_data['training_level'] + 10)
@@ -691,7 +692,8 @@ class Bullshido(commands.Cog):
         self.logger.info(f"Stamina level for {user} is now {new_stamina_level}")
         return new_stamina_level
 
-    async def increment_nutrition_level(self, ctx, user):
+    async def increment_nutrition_level(self, ctx):
+        user = ctx.author
         self.logger.info(f"Incrementing nutrition level for {user}")
         user_data = await self.config.user(user).all()
         new_nutrition_level = min(100,user_data['nutrition_level'] + 10)
