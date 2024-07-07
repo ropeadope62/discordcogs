@@ -46,7 +46,19 @@ class Bullshido(commands.Cog):
             "fight_history": []
         }
         
+        default_guild = {
+            "rounds": 3,
+            "max_strikes_per_round": 5,
+            "training_weight": 0.15,
+            "diet_weight": 0.15,
+            "max_health": 100,
+            "action_cost": 10,
+            "base_miss_probability": 0.15,
+            "base_stamina_cost": 10
+        }
+        
         self.config.register_user(**default_user)
+        self.config.register_guild(**default_guild)
         
         self.logger = logging.getLogger("red.bullshido")
         self.logger.setLevel(logging.DEBUG)
@@ -153,6 +165,55 @@ class Bullshido(commands.Cog):
         if ctx.invoked_subcommand is None:
             await ctx.invoke(self.bullshido_help)
 
+    @bullshido_group.command(name="set_rounds", description="Set the number of rounds in a fight.")
+    @is_admin_or_mod()
+    async def set_rounds(self, ctx: commands.Context, rounds: int):
+        await self.config.guild(ctx.guild).rounds.set(rounds)
+        await ctx.send(f"Number of rounds set to {rounds}.")
+        
+    @bullshido_group.command(name="set_max_strikes_per_round", description="Set the maximum number of strikes per round.")
+    @is_admin_or_mod()
+    async def set_max_strikes_per_round(self, ctx: commands.Context, max_strikes_per_round: int):
+        await self.config.guild(ctx.guild).max_strikes_per_round.set(max_strikes_per_round)
+        await ctx.send(f"Maximum number of strikes per round set to {max_strikes_per_round}.")
+        
+    @bullshido_group.command(name="set_training_weight", description="Set the training weight.")
+    @is_admin_or_mod()
+    async def set_training_weight(self, ctx: commands.Context, training_weight: float):
+        await self.config.guild(ctx.guild).training_weight.set(training_weight)
+        await ctx.send(f"Training weight set to {training_weight}.")
+        
+    @bullshido_group.command(name="set_diet_weight", description="Set the diet weight.")
+    @is_admin_or_mod()
+    async def set_diet_weight(self, ctx: commands.Context, diet_weight: float):
+        await self.config.guild(ctx.guild).diet_weight.set(diet_weight)
+        await ctx.send(f"Diet weight set to {diet_weight}.")
+        
+    @bullshido_group.command(name="set_max_health", description="Set the maximum health.")
+    @is_admin_or_mod()
+    async def set_max_health(self, ctx: commands.Context, max_health: int):
+        await self.config.guild(ctx.guild).max_health.set(max_health)
+        await ctx.send(f"Maximum health set to {max_health}.")
+        
+    @bullshido_group.command(name="set_action_cost", description="Set the action cost.")
+    @is_admin_or_mod()
+    async def set_action_cost(self, ctx: commands.Context, action_cost: int):
+        await self.config.guild(ctx.guild).action_cost.set(action_cost)
+        await ctx.send(f"Action cost set to {action_cost}.")
+    
+    @bullshido_group.command(name="set_base_miss_probability", description="Set the base miss probability.")
+    @is_admin_or_mod()
+    async def set_base_miss_probability(self, ctx: commands.Context, base_miss_probability: float):
+        await self.config.guild(ctx.guild).base_miss_probability.set(base_miss_probability)
+        await ctx.send(f"Base miss probability set to {base_miss_probability}.")
+        
+    
+    @bullshido_group.command(name="set_base_stamina_cost", description="Set the base stamina cost.")
+    @is_admin_or_mod()
+    async def set_base_stamina_cost(self, ctx: commands.Context, base_stamina_cost: int):
+        await self.config.guild(ctx.guild).base_stamina_cost.set(base_stamina_cost)
+        await ctx.send(f"Base stamina cost set to {base_stamina_cost}.")
+        
     @bullshido_group.command(name="log", description="Displays the log")
     @is_admin_or_mod()
     async def show_log(self, ctx: commands.Context):
@@ -612,7 +673,7 @@ class Bullshido(commands.Cog):
         except Exception as e:
             await ctx.send(f"An error occurred: {e}")
         
-    async def increment_training_level(ctx, self, user):
+    async def increment_training_level(self, ctx, user):
         self.logger.info(f"Incrementing training level for {user}")
         user_data = await self.config.user(user).all()
         new_training_level = min(100,user_data['training_level'] + 10)
@@ -630,7 +691,7 @@ class Bullshido(commands.Cog):
         self.logger.info(f"Stamina level for {user} is now {new_stamina_level}")
         return new_stamina_level
 
-    async def increment_nutrition_level(ctx, self, user):
+    async def increment_nutrition_level(self, ctx, user):
         self.logger.info(f"Incrementing nutrition level for {user}")
         user_data = await self.config.user(user).all()
         new_nutrition_level = min(100,user_data['nutrition_level'] + 10)
@@ -657,5 +718,5 @@ class Bullshido(commands.Cog):
     
     async def setup(bot):
         cog = Bullshido(bot)
-        await bot.add_cog(Bullshido(cog))
+        await bot.add_cog(cog)
         await bot.tree.sync()

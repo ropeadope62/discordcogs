@@ -43,7 +43,7 @@ class FightingGame:
             self.current_turn = player1
         else:
             self.current_turn = player2
-            
+        45
     @staticmethod
     def is_game_active(channel_id):
         return FightingGame.active_games.get(channel_id, False)
@@ -200,7 +200,7 @@ class FightingGame:
             strike, damage_range = random.choice(list(STRIKES[style].items()))
             base_damage = random.randint(*damage_range)
             modified_damage = self.calculate_adjusted_damage(base_damage, attacker['training_level'], attacker['nutrition_level'])
-            modifier = random.uniform(0.8, 1.2)
+            modifier = random.uniform(0.8, 1.3)
 
             is_critical_hit = random.random() < 0.1
             if is_critical_hit:
@@ -209,7 +209,7 @@ class FightingGame:
                 conclude_message = conclude_message.format(defender=defender.display_name)
                 message = random.choice(CRITICAL_MESSAGES)
                 
-                if random.random() < 0.1: 
+                if random.random() < 0.2: 
                     asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, critical_injury))
                     critical_injury = f"**Permanent Injury:** {critical_injury}" 
                 
@@ -364,6 +364,19 @@ class FightingGame:
         if FightingGame.is_game_active(channel_id):
             await self.channel.send("A game is already in progress in this channel.")
             return
+        
+        guild = self.channel.guild
+        self.rounds = await self.bullshido_cog.config.guild(guild).rounds()
+        self.max_strikes_per_round = await self.bullshido_cog.config.guild(guild).max_strikes_per_round()
+        self.training_weight = await self.bullshido_cog.config.guild(guild).training_weight()
+        self.diet_weight = await self.bullshido_cog.config.guild(guild).diet_weight()
+        self.max_health = await self.bullshido_cog.config.guild(guild).max_health()
+        self.ACTION_COST = await self.bullshido_cog.config.guild(guild).action_cost()
+        self.BASE_MISS_PROBABILITY = await self.bullshido_cog.config.guild(guild).base_miss_probability()
+        self.BASE_STAMINA_COST = await self.bullshido_cog.config.guild(guild).base_stamina_cost()
+
+        self.player1_health = self.max_health
+        self.player2_health = self.max_health
 
         FightingGame.set_game_active(channel_id, True)
         fight_image_path = await self.generate_fight_image()
