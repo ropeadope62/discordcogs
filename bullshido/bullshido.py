@@ -378,7 +378,7 @@ class Bullshido(commands.Cog):
         await ctx.send(f"{user.mention} has successfully trained in {style}! Your training level is now {new_training_level}.")
 
     @bullshido_group.command(name="diet", description="Focus on your diet to increase your nutrition level")
-    async def diet(self, ctx: commands.Context, user):
+    async def diet(self, ctx: commands.Context):
         """Focus on your diet to increase your nutrition level."""
         self.logger.info(f"{ctx.author} used the diet command.")
         user = ctx.author
@@ -399,7 +399,7 @@ class Bullshido(commands.Cog):
         await self.config.user(user).last_diet.set(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
         
         # Increment nutrition level
-        new_nutrition_level = await self.increment_nutrition_level(user)
+        new_nutrition_level = await self.increment_nutrition_level(ctx)
         await ctx.send(f"{user.mention} has followed their specialized diet today and gained nutrition level! Your nutrition level is now {new_nutrition_level}.")
     
     @bullshido_group.command(name="help", description="Learn how the Bullshido game works")
