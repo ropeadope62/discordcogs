@@ -202,14 +202,14 @@ class FightingGame:
             modified_damage = self.calculate_adjusted_damage(base_damage, attacker['training_level'], attacker['nutrition_level'])
             modifier = random.uniform(0.8, 1.3)
 
-            is_critical_hit = random.random() < 0.1
+            is_critical_hit = random.random() < self.CRITICAL_CHANCE
             if is_critical_hit:
                 modified_damage = base_damage * 2
                 conclude_message, critical_injury = random.choice(list(CRITICAL_RESULTS.items()))
                 conclude_message = conclude_message.format(defender=defender.display_name)
                 message = random.choice(CRITICAL_MESSAGES)
                 
-                if random.random() < 0.2: 
+                if random.random() < self.PERMANENT_INJURY_CHANCE: 
                     asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, critical_injury))
                     critical_injury = f"**Permanent Injury:** {critical_injury}" 
                 
@@ -374,6 +374,8 @@ class FightingGame:
         self.ACTION_COST = await self.bullshido_cog.config.guild(guild).action_cost()
         self.BASE_MISS_PROBABILITY = await self.bullshido_cog.config.guild(guild).base_miss_probability()
         self.BASE_STAMINA_COST = await self.bullshido_cog.config.guild(guild).base_stamina_cost()
+        self.CRITICAL_CHANCE = await self.bullshido_cog.config.guild(guild).critical_chance()
+        self.PERMANENT_INJURY_CHANCE = await self.bullshido_cog.config.guild(guild).permanent_injury_chance()
 
         self.player1_health = self.max_health
         self.player2_health = self.max_health

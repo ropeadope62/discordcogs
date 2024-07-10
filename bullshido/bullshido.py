@@ -54,7 +54,9 @@ class Bullshido(commands.Cog):
             "max_health": 100,
             "action_cost": 10,
             "base_miss_probability": 0.15,
-            "base_stamina_cost": 10
+            "base_stamina_cost": 10,
+            "critical_chance": 0.1,
+            "permanent_injury_chance": 0.5
         }
         
         self.config.register_user(**default_user)
@@ -171,6 +173,20 @@ class Bullshido(commands.Cog):
         """ Set the number of rounds in a fight."""
         await self.config.guild(ctx.guild).rounds.set(rounds)
         await ctx.send(f"Number of rounds set to {rounds}.")
+        
+    @bullshido_group.command(name="set_critical_chance", description="Set the critical hit chance.")
+    @is_admin_or_mod()
+    async def set_critical_chance(self, ctx: commands.Context, critical_chance: float):
+        """ Set the critical hit chance."""
+        await self.config.guild(ctx.guild).critical_chance.set(critical_chance)
+        await ctx.send(f"Critical hit chance set to {critical_chance}.")
+        
+    @bullshido_group.command(name="set_permanent_injury_chance", description="Set the permanent injury chance.")
+    @is_admin_or_mod()
+    async def set_permanent_injury_chance(self, ctx: commands.Context, permanent_injury_chance: float):
+        """ Set the permanent injury chance. Permanent injuries occur upon critical hits."""
+        await self.config.guild(ctx.guild).permanent_injury_chance.set(permanent_injury_chance)
+        await ctx.send(f"Permanent injury chance set to {permanent_injury_chance}.")
         
     @bullshido_group.command(name="set_max_strikes_per_round", description="Set the maximum number of strikes per round.")
     @is_admin_or_mod()
