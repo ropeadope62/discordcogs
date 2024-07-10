@@ -168,42 +168,49 @@ class Bullshido(commands.Cog):
     @bullshido_group.command(name="set_rounds", description="Set the number of rounds in a fight.")
     @is_admin_or_mod()
     async def set_rounds(self, ctx: commands.Context, rounds: int):
+        """ Set the number of rounds in a fight."""
         await self.config.guild(ctx.guild).rounds.set(rounds)
         await ctx.send(f"Number of rounds set to {rounds}.")
         
     @bullshido_group.command(name="set_max_strikes_per_round", description="Set the maximum number of strikes per round.")
     @is_admin_or_mod()
     async def set_max_strikes_per_round(self, ctx: commands.Context, max_strikes_per_round: int):
+        """ Set the maximum number of strikes per player per round."""
         await self.config.guild(ctx.guild).max_strikes_per_round.set(max_strikes_per_round)
         await ctx.send(f"Maximum number of strikes per round set to {max_strikes_per_round}.")
         
     @bullshido_group.command(name="set_training_weight", description="Set the training weight.")
     @is_admin_or_mod()
     async def set_training_weight(self, ctx: commands.Context, training_weight: float):
+        """Set the player training weight. This is used to calculate adjusted damage in the fight."""
         await self.config.guild(ctx.guild).training_weight.set(training_weight)
         await ctx.send(f"Training weight set to {training_weight}.")
         
     @bullshido_group.command(name="set_diet_weight", description="Set the diet weight.")
     @is_admin_or_mod()
     async def set_diet_weight(self, ctx: commands.Context, diet_weight: float):
+        """ Set the player diet weight. This is used to calculated adjusted damage in the fight."""
         await self.config.guild(ctx.guild).diet_weight.set(diet_weight)
         await ctx.send(f"Diet weight set to {diet_weight}.")
         
     @bullshido_group.command(name="set_max_health", description="Set the maximum health.")
     @is_admin_or_mod()
     async def set_max_health(self, ctx: commands.Context, max_health: int):
+        """ Set the player maximum health."""
         await self.config.guild(ctx.guild).max_health.set(max_health)
         await ctx.send(f"Maximum health set to {max_health}.")
         
     @bullshido_group.command(name="set_action_cost", description="Set the action cost.")
     @is_admin_or_mod()
     async def set_action_cost(self, ctx: commands.Context, action_cost: int):
+        """ Set the action cost per strike before modifiers."""
         await self.config.guild(ctx.guild).action_cost.set(action_cost)
         await ctx.send(f"Action cost set to {action_cost}.")
     
     @bullshido_group.command(name="set_base_miss_probability", description="Set the base miss probability.")
     @is_admin_or_mod()
     async def set_base_miss_probability(self, ctx: commands.Context, base_miss_probability: float):
+        """ Set the base miss probability per strike before modifiers."""
         await self.config.guild(ctx.guild).base_miss_probability.set(base_miss_probability)
         await ctx.send(f"Base miss probability set to {base_miss_probability}.")
         
@@ -211,6 +218,7 @@ class Bullshido(commands.Cog):
     @bullshido_group.command(name="set_base_stamina_cost", description="Set the base stamina cost.")
     @is_admin_or_mod()
     async def set_base_stamina_cost(self, ctx: commands.Context, base_stamina_cost: int):
+        """ Set the base stamina cost per strike before modifiers."""
         await self.config.guild(ctx.guild).base_stamina_cost.set(base_stamina_cost)
         await ctx.send(f"Base stamina cost set to {base_stamina_cost}.")
         
