@@ -205,13 +205,13 @@ class FightingGame:
             is_critical_hit = random.random() < self.CRITICAL_CHANCE
             if is_critical_hit:
                 modified_damage = base_damage * 2
-                conclude_message, critical_injury = random.choice(list(CRITICAL_RESULTS.items()))
+                conclude_message, critical_injury = random.choice(list(CRITICAL_RESULTS.values()))
                 conclude_message = conclude_message.format(defender=defender.display_name)
                 message = random.choice(CRITICAL_MESSAGES)
                 
                 if random.random() < self.PERMANENT_INJURY_CHANCE: 
                     asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, critical_injury))
-                    critical_injury = f"**Permanent Injury:** {critical_injury}" 
+                    critical_injury = f"{critical_injury}" 
                 
             else:
                 modified_damage = round(modified_damage * modifier)
