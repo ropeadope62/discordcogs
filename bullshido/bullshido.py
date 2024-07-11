@@ -564,9 +564,11 @@ class Bullshido(commands.Cog):
         await ctx.send("Bullshido configuration has been reset to default values.")
 
     @bullshido_group.command(name="player_stats", description="Displays your wins and losses", aliases=["stats"])
-    async def player_stats(self, ctx: commands.Context):
+    async def player_stats(self, ctx: commands.Context, user: discord.Member = None):
         """Displays your wins and losses."""
-        user = ctx.author
+        if user is None:
+            user = ctx.author
+        
         wins = await self.config.user(user).wins()
         losses = await self.config.user(user).losses()
         level = await self.config.user(user).level()
