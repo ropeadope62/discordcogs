@@ -168,8 +168,80 @@ class Bullshido(commands.Cog):
 
     @commands.hybrid_group(name="bullshidoset", description="Configuration commands for the Bullshido game")
     async def bullshidoset_group(self, ctx: commands.Context):
+        """Display Bullshido settings."""
         if ctx.invoked_subcommand is None:
-            await ctx.send("Use this group to configure Bullshido settings.")
+            embed = discord.Embed(
+                title="Bullshido Settings",
+                description="Cog Settings",
+                color=discord.Color.red()
+            )
+
+            embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
+            embed.add_field(
+                name="About",
+                value="Another action packed discord cog by Slurms Mackenzie/ropeadope62\n Use [p]bullshidoset for admin commands!",
+                inline=True
+            )
+            embed.add_field(
+                name="Repo",
+                value="If you liked this, check out my other cogs! https://github.com/ropeadope62/discordcogs",
+                inline=True
+            )
+            embed.add_field(
+                name="Rounds:",
+                value=f"{await self.config.guild(ctx.guild).rounds()}",
+                inline=False
+            )
+            embed.add_field(
+                name="Max Strikes per Round:",
+                value=f"{await self.config.guild(ctx.guild).max_strikes_per_round()}",
+                inline=False
+            )
+            embed.add_field(
+                name="Training Weight:",
+                value=f"{await self.config.guild(ctx.guild).training_weight()}",
+                inline=False
+            )
+            embed.add_field(
+                name="Diet Weight:",
+                value=f"{await self.config.guild(ctx.guild).diet_weight()}",
+                inline=False
+            )
+            embed.add_field(
+                name="Max Health:",
+                value=f"{await self.config.guild(ctx.guild).max_health()}",
+                inline=False
+            )
+            embed.add_field(
+                name="Action Cost:",
+                value=f"{await self.config.guild(ctx.guild).action_cost()}",
+                inline=False
+            )
+            embed.add_field(
+                name="Base Miss Probability:",
+                value=f"{await self.config.guild(ctx.guild).base_miss_probability()}",
+                inline=False
+            )
+            embed.add_field(
+                name="Base Stamina Cost:",
+                value=f"{await self.config.guild(ctx.guild).base_stamina_cost()}",
+                inline=False
+            )
+            embed.add_field(
+                name="Critical Hit Chance:",
+                value=f"{await self.config.guild(ctx.guild).critical_chance()}",
+                inline=False
+            )
+            embed.add_field(
+                name="Permanent Injury Chance:",
+                value=f"{await self.config.guild(ctx.guild).permanent_injury_chance()}",
+                inline=False
+            )
+
+            embed.set_thumbnail(url="attachment://bullshido_logo.png")
+
+            message = await ctx.send(embed=embed, file=discord.File(image_path, "bullshido_logo.png"))
+
 
     @bullshidoset_group.command(name="rounds", description="Set the number of rounds in a fight.")
     @is_admin_or_mod()
