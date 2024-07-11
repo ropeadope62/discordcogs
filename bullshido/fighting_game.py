@@ -205,7 +205,7 @@ class FightingGame:
             is_critical_hit = random.random() < self.CRITICAL_CHANCE
             if is_critical_hit:
                 modified_damage = base_damage * 2
-                conclude_message, critical_injury = random.choice(list(CRITICAL_RESULTS.values()))
+                conclude_message, critical_injury = random.choice(list(CRITICAL_RESULTS.items()))
                 conclude_message = conclude_message.format(defender=defender.display_name)
                 message = random.choice(CRITICAL_MESSAGES)
                 
@@ -304,7 +304,10 @@ class FightingGame:
                 return True
 
             if (self.player1_health < 20 or self.player2_health < 20) and random.random() < 0.5:
-                await self.declare_winner_by_tko(round_message, defender)
+                if self.player1_health < 20:
+                    await self.declare_winner_by_tko(round_message, self.player1)
+                else:
+                    await self.declare_winner_by_tko(round_message, self.player2)
                 return True
 
             return False
@@ -313,6 +316,20 @@ class FightingGame:
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
+
+async def declare_winner_by_tko(self, round_message, loser):
+    winner = self.player1 if loser == self.player2 else self.player2
+    tko_message_flavor = random.choice(TKO_MESSAGES).format(loser=loser.display_name)
+    referee_stop_flavor = random.choice(REFEREE_STOPS)
+    tko_victor_message = random.choice(TKO_VICTOR_MESSAGE)
+
+    final_message = (
+        f"{tko_message_flavor} {referee_stop_flavor}, {winner.display_name} wins the fight by TKO!\n"
+        f"{winner.display_name} {tko_victor_message}, Wow!"
+    )
+    await self.update_health_bars(0, final_message, "TKO Victory!")  # Update embed with TKO result
+    await self.record_result(winner, loser, "TKO")
+
 
     async def play_round(self, round_number):
         strike_count = 0
