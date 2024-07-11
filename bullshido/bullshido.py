@@ -238,9 +238,7 @@ class Bullshido(commands.Cog):
                 inline=False
             )
 
-            embed.set_thumbnail(url="attachment://bullshido_logo.png")
-
-            message = await ctx.send(embed=embed, file=discord.File(image_path, "bullshido_logo.png"))
+            await ctx.send(embed=embed) 
 
 
     @bullshidoset_group.command(name="rounds", description="Set the number of rounds in a fight.")
