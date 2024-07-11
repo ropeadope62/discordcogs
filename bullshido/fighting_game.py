@@ -149,26 +149,32 @@ class FightingGame:
         else:
             return "Exhausted" 
     
-    async def update_health_bars(self, round_number, latest_message, round_result):
+    async def update_health_bars(self, round_number, latest_message, round_result, fight_over=False):
         player1_health_bar = self.create_health_bar(self.player1_health, self.max_health)
         player2_health_bar = self.create_health_bar(self.player2_health, self.max_health)
         player1_stamina_status = self.get_stamina_status(self.player1_stamina)
         player2_stamina_status = self.get_stamina_status(self.player2_stamina)
 
+        title = round_result if fight_over else f"Round {round_number} - {self.player1.display_name} vs {self.player2.display_name}"
         embed = discord.Embed(
-            title=f"Round {round_number} - {self.player1.display_name} vs {self.player2.display_name}",
+            title=title,
             color=0xFF0000
         )
         embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health}", inline=False)
         embed.add_field(name=f"{self.player1.display_name}'s Stamina", value=player1_stamina_status, inline=False)
         if self.player1_critical_injuries:
-            embed.add_field(name=f"{self.player1.display_name} Injuries", value=", ".join(self.player1_critical_injuries), inline=False)
+            embed.add_field(name=f"{self.player1.display_name} Critical Injuries", value=", ".join(self.player1_critical_injuries), inline=False)
+        if self.player1_data.get("permanent_injuries"):
+            embed.add_field(name=f"{self.player1.display_name} Permanent Injuries", value=", ".join(self.player1_data["permanent_injuries"]), inline=False)
+        
         embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
         embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
         if self.player2_critical_injuries:
-            embed.add_field(name=f"{self.player2.display_name} Injuries", value=", ".join(self.player2_critical_injuries), inline=False)
+            embed.add_field(name=f"{self.player2.display_name} Critical Injuries", value=", ".join(self.player2_critical_injuries), inline=False)
+        if self.player2_data.get("permanent_injuries"):
+            embed.add_field(name=f"{self.player2.display_name} Permanent Injuries", value=", ".join(self.player2_data["permanent_injuries"]), inline=False)
         
-        if round_result:
+        if round_result and not fight_over:
             embed.add_field(name="Round Result", value=round_result, inline=False)
         embed.add_field(name="Latest Strike", value=latest_message, inline=False)
 
