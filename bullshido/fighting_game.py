@@ -291,7 +291,7 @@ class FightingGame:
                 if critical_injury:
                     self.player1_critical_injuries.append(critical_injury)
 
-            sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)
+            sleep_duration = random.uniform(1, 2) + (4 if critical_message else 0)
             await asyncio.sleep(sleep_duration)
 
             if "Permanent Injury:" in critical_injury:
@@ -300,13 +300,16 @@ class FightingGame:
             await self.update_health_bars(round_number, message, None)
 
             if self.player1_health <= 0 or self.player2_health <= 0:
+                await asyncio.sleep(sleep_duration)
                 await self.declare_winner_by_ko(round_message)
                 return True
 
             if (self.player1_health < 20 or self.player2_health < 20) and random.random() < 0.5:
                 if self.player1_health < 20:
+                    await asyncio.sleep(sleep_duration)
                     await self.declare_winner_by_tko(round_message, self.player1)
                 else:
+                    await asyncio.sleep(sleep_duration)
                     await self.declare_winner_by_tko(round_message, self.player2)
                 return True
 
