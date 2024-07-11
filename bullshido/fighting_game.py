@@ -284,32 +284,33 @@ class FightingGame:
                 self.current_turn = self.player2
                 if critical_injury:
                     self.player2_critical_injuries.append(critical_injury)
+                    if "Permanent Injury" in critical_injury:
+                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, critical_injury.split(": ")[1]))
             else:
                 self.player1_health -= damage
                 self.player2_stamina -= self.BASE_STAMINA_COST
                 self.current_turn = self.player1
                 if critical_injury:
                     self.player1_critical_injuries.append(critical_injury)
+                    if "Permanent Injury" in critical_injury:
+                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, critical_injury.split(": ")[1]))
 
-            sleep_duration = random.uniform(1, 2) + (4 if critical_message else 0)
+            sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)
             await asyncio.sleep(sleep_duration)
 
-            if "Permanent Injury:" in critical_injury:
+            if "Permanent Injury" in critical_injury:
                 message += f"\n**Permanent Injury:** {critical_injury.split(': ')[1]}"
 
             await self.update_health_bars(round_number, message, None)
 
             if self.player1_health <= 0 or self.player2_health <= 0:
-                await asyncio.sleep(sleep_duration)
                 await self.declare_winner_by_ko(round_message)
                 return True
 
             if (self.player1_health < 20 or self.player2_health < 20) and random.random() < 0.5:
                 if self.player1_health < 20:
-                    await asyncio.sleep(sleep_duration)
                     await self.declare_winner_by_tko(round_message, self.player1)
                 else:
-                    await asyncio.sleep(sleep_duration)
                     await self.declare_winner_by_tko(round_message, self.player2)
                 return True
 
@@ -319,6 +320,7 @@ class FightingGame:
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
+
 
     async def declare_winner_by_tko(self, round_message, loser):
         winner = self.player1 if loser == self.player2 else self.player2
