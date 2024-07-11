@@ -187,6 +187,7 @@ class FightingGame:
 
 
 
+
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
         training_bonus = math.log10(training_level + 1) * self.training_weight
         diet_bonus = math.log10(diet_level + 1) * self.diet_weight
@@ -292,10 +293,11 @@ class FightingGame:
                 if critical_injury:
                     self.player2_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
-                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, critical_injury.split(": ")[1]))
+                        permanent_injury = critical_injury.split(": ")[1]
+                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury))
                         if "permanent_injuries" not in self.player2_data:
                             self.player2_data["permanent_injuries"] = []
-                        self.player2_data["permanent_injuries"].append(critical_injury.split(": ")[1])
+                        self.player2_data["permanent_injuries"].append(permanent_injury)
             else:
                 self.player1_health -= damage
                 self.player2_stamina -= self.BASE_STAMINA_COST
@@ -303,10 +305,11 @@ class FightingGame:
                 if critical_injury:
                     self.player1_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
-                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, critical_injury.split(": ")[1]))
+                        permanent_injury = critical_injury.split(": ")[1]
+                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury))
                         if "permanent_injuries" not in self.player1_data:
                             self.player1_data["permanent_injuries"] = []
-                        self.player1_data["permanent_injuries"].append(critical_injury.split(": ")[1])
+                        self.player1_data["permanent_injuries"].append(permanent_injury)
 
             sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)
             await asyncio.sleep(sleep_duration)
@@ -333,6 +336,7 @@ class FightingGame:
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
+
 
 
 
