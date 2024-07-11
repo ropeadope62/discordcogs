@@ -163,14 +163,14 @@ class FightingGame:
         embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health}", inline=False)
         embed.add_field(name=f"{self.player1.display_name}'s Stamina", value=player1_stamina_status, inline=False)
         if self.player1_critical_injuries:
-            embed.add_field(name=f"{self.player1.display_name} Critical Injuries", value=", ".join(self.player1_critical_injuries), inline=False)
+            embed.add_field(name=f"{self.player1.display_name} Injuries", value=", ".join(self.player1_critical_injuries), inline=False)
         if self.player1_data.get("permanent_injuries"):
             embed.add_field(name=f"{self.player1.display_name} Permanent Injuries", value=", ".join(self.player1_data["permanent_injuries"]), inline=False)
         
         embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
         embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
         if self.player2_critical_injuries:
-            embed.add_field(name=f"{self.player2.display_name} Critical Injuries", value=", ".join(self.player2_critical_injuries), inline=False)
+            embed.add_field(name=f"{self.player2.display_name} Injuries", value=", ".join(self.player2_critical_injuries), inline=False)
         if self.player2_data.get("permanent_injuries"):
             embed.add_field(name=f"{self.player2.display_name} Permanent Injuries", value=", ".join(self.player2_data["permanent_injuries"]), inline=False)
         
@@ -184,6 +184,7 @@ class FightingGame:
             await self.embed_message.edit(embed=embed)
         else:
             self.embed_message = await self.channel.send(embed=embed)
+
 
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
@@ -214,11 +215,10 @@ class FightingGame:
                 conclude_message, critical_injury = random.choice(list(CRITICAL_RESULTS.items()))
                 conclude_message = conclude_message.format(defender=defender.display_name)
                 message = random.choice(CRITICAL_MESSAGES)
-                
-                if random.random() < self.PERMANENT_INJURY_CHANCE: 
-                    asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, critical_injury))
-                    critical_injury = f"{critical_injury}" 
-                
+
+                if random.random() < self.PERMANENT_INJURY_CHANCE:
+                    critical_injury = f"Permanent Injury: {critical_injury}"
+
             else:
                 modified_damage = round(modified_damage * modifier)
             return strike, modified_damage, message, conclude_message, critical_injury
@@ -226,6 +226,7 @@ class FightingGame:
             print(f"Error during get_strike_damage: {e}")
             print(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
             return strike, modified_damage, message, conclude_message, critical_injury
+
 
     async def target_bodypart(self):
         bodypart = random.choice(BODY_PARTS)
@@ -292,6 +293,9 @@ class FightingGame:
                     self.player2_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
                         asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, critical_injury.split(": ")[1]))
+                        if "permanent_injuries" not in self.player2_data:
+                            self.player2_data["permanent_injuries"] = []
+                        self.player2_data["permanent_injuries"].append(critical_injury.split(": ")[1])
             else:
                 self.player1_health -= damage
                 self.player2_stamina -= self.BASE_STAMINA_COST
@@ -300,6 +304,9 @@ class FightingGame:
                     self.player1_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
                         asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, critical_injury.split(": ")[1]))
+                        if "permanent_injuries" not in self.player1_data:
+                            self.player1_data["permanent_injuries"] = []
+                        self.player1_data["permanent_injuries"].append(critical_injury.split(": ")[1])
 
             sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)
             await asyncio.sleep(sleep_duration)
@@ -326,6 +333,9 @@ class FightingGame:
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
+
+
+
 
 
     async def declare_winner_by_tko(self, round_message, loser):
