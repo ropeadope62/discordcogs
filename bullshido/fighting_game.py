@@ -57,8 +57,8 @@ class FightingGame:
         response = requests.get(template_url)
         background = Image.open(BytesIO(response.content))
         font_path ='/home/slurms/ScrapGPT/scrapgpt_data/cogs/CogManager/cogs/bullshido/osaka.ttf'
-        font = ImageFont.truetype(font_path, size=18)
-        header_font = ImageFont.truetype(font_path, size=32)
+        font = ImageFont.truetype(font_path, size=20)
+        header_font = ImageFont.truetype(font_path, size=34)
         
         player1_avatar_bytes = await self.player1.avatar.read()
         player2_avatar_bytes = await self.player2.avatar.read()
