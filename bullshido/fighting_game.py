@@ -317,63 +317,63 @@ class FightingGame:
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
 
-async def declare_winner_by_tko(self, round_message, loser):
-    winner = self.player1 if loser == self.player2 else self.player2
-    tko_message_flavor = random.choice(TKO_MESSAGES).format(loser=loser.display_name)
-    referee_stop_flavor = random.choice(REFEREE_STOPS)
-    tko_victor_message = random.choice(TKO_VICTOR_MESSAGE)
+    async def declare_winner_by_tko(self, round_message, loser):
+        winner = self.player1 if loser == self.player2 else self.player2
+        tko_message_flavor = random.choice(TKO_MESSAGES).format(loser=loser.display_name)
+        referee_stop_flavor = random.choice(REFEREE_STOPS)
+        tko_victor_message = random.choice(TKO_VICTOR_MESSAGE)
 
-    final_message = (
-        f"{tko_message_flavor} {referee_stop_flavor}, {winner.display_name} wins the fight by TKO!\n"
-        f"{winner.display_name} {tko_victor_message}, Wow!"
-    )
-    await self.update_health_bars(0, final_message, "TKO Victory!")  # Update embed with TKO result
-    await self.record_result(winner, loser, "TKO")
+        final_message = (
+            f"{tko_message_flavor} {referee_stop_flavor}, {winner.display_name} wins the fight by TKO!\n"
+            f"{winner.display_name} {tko_victor_message}, Wow!"
+        )
+        await self.update_health_bars(0, final_message, "TKO Victory!")  # Update embed with TKO result
+        await self.record_result(winner, loser, "TKO")
 
 
-    async def play_round(self, round_number):
-        strike_count = 0
-        player1_health_start = self.player1_health
-        player2_health_start = self.player2_health
+        async def play_round(self, round_number):
+            strike_count = 0
+            player1_health_start = self.player1_health
+            player2_health_start = self.player2_health
 
-        while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
-            ko_or_tko_occurred = await self.play_turn(self.embed_message, round_number)
-            if ko_or_tko_occurred:
-                return True  
+            while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
+                ko_or_tko_occurred = await self.play_turn(self.embed_message, round_number)
+                if ko_or_tko_occurred:
+                    return True  
 
-            strike_count += 1
-            await asyncio.sleep(random.uniform(3, 4))
+                strike_count += 1
+                await asyncio.sleep(random.uniform(3, 4))
 
-        player1_health_end = self.player1_health
-        player2_health_end = self.player2_health
+            player1_health_end = self.player1_health
+            player2_health_end = self.player2_health
 
-        damage_player1 = player2_health_start - player2_health_end
-        damage_player2 = player1_health_start - player1_health_end
+            damage_player1 = player2_health_start - player2_health_end
+            damage_player2 = player1_health_start - player1_health_end
 
-        print(f"Ending Round {round_number} - Player1 Health: {player1_health_end}, Player2 Health: {player2_health_end}")
+            print(f"Ending Round {round_number} - Player1 Health: {player1_health_end}, Player2 Health: {player2_health_end}")
 
-        if damage_player1 > damage_player2:
-            if damage_player1 - damage_player2 > 20:
-                self.player1_score += 10
-                self.player2_score += 8
-                round_result = f"{self.player1.display_name} won the round handily!"
+            if damage_player1 > damage_player2:
+                if damage_player1 - damage_player2 > 20:
+                    self.player1_score += 10
+                    self.player2_score += 8
+                    round_result = f"{self.player1.display_name} won the round handily!"
+                else:
+                    self.player1_score += 10
+                    self.player2_score += 9
+                    round_result = f"{self.player1.display_name} had the edge this round!"
             else:
-                self.player1_score += 10
-                self.player2_score += 9
-                round_result = f"{self.player1.display_name} had the edge this round!"
-        else:
-            if damage_player2 > damage_player1 and damage_player2 - damage_player1 > 20:
-                self.player1_score += 8
-                self.player2_score += 10
-                round_result = f"{self.player2.display_name} won the round handily!"
-            else:
-                self.player1_score += 9
-                self.player2_score += 10
-                round_result = f"{self.player2.display_name} had the edge this round!"
+                if damage_player2 > damage_player1 and damage_player2 - damage_player1 > 20:
+                    self.player1_score += 8
+                    self.player2_score += 10
+                    round_result = f"{self.player2.display_name} won the round handily!"
+                else:
+                    self.player1_score += 9
+                    self.player2_score += 10
+                    round_result = f"{self.player2.display_name} had the edge this round!"
 
-        await self.update_health_bars(round_number, "End of Round", round_result)
+            await self.update_health_bars(round_number, "End of Round", round_result)
 
-        return False
+            return False
 
     async def start_game(self):
         channel_id = self.channel.id
