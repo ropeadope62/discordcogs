@@ -195,9 +195,9 @@ STRIKES = {
                 "Superman Punch": (7, 9),
                 "Flying Knee": (7, 9),
                 "Kick": (6, 8),
-                "Submission": (4, 6),
+                "Submission": (5, 8),
                 "Ground and Pound": (7, 9),
-            "Rear Naked Choke": (9, 10)
+                "Rear Naked Choke": (9, 10)
             },
             "Brazilian Jiu-Jitsu": {
                 "Armbar": (6, 8),
