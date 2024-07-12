@@ -352,9 +352,10 @@ class Bullshido(commands.Cog):
         await ctx.send(embed=embed)
     
     @bullshido_group.command(name="injuries", description="View your permanent injuries that require treatment.", aliases = ["injury", "inj"])
-    async def permanent_injuries(self, ctx: commands.Context):
+    async def permanent_injuries(self, ctx: commands.Context, user: discord.Member = None):
         """View your permanent injuries that require treatment."""
-        user = ctx.author
+        if not user:
+            user = ctx.author
         user_data = await self.config.user(user).all()
         permanent_injuries = user_data.get("permanent_injuries", [])
 
