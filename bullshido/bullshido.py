@@ -373,6 +373,7 @@ class Bullshido(commands.Cog):
     @bullshido_group.command(name="treat", description="Treat a permanent injury")
     async def treat(self, ctx: commands.Context, *, injury: str):
         """Treat a permanent injury."""
+        server_currency = await self.config.guild(ctx.guild).server_currency()
         user = ctx.author
         user_data = await self.config.user(user).all()
         permanent_injuries = user_data.get("permanent_injuries", [])
@@ -388,14 +389,14 @@ class Bullshido(commands.Cog):
 
         balance = await bank.get_balance(user)
         if balance < cost:
-            await ctx.send(f"You do not have enough credits to treat this injury. You need {cost} credits.")
+            await ctx.send(f"You do not have enough {server_currency} to treat this injury. You need {cost} {server_currency}.")
             return
 
         await bank.withdraw_credits(user, cost)
         permanent_injuries.remove(injury)
         await self.config.user(user).permanent_injuries.set(permanent_injuries)
 
-        await ctx.send(f"Successfully treated {injury}. Your new balance is {balance - cost} credits.")
+        await ctx.send(f"Successfully treated {injury} for {cost} {server_currency}. Your new balance is {balance - cost} {server_currency}.")
     
     @bullshido_group.command(name="rankings", description="Top fighters in the Bullshido Kumatae.", aliases = ["rank", "leaderboard", "lb"])
     async def rankings(self, ctx: commands.Context):
