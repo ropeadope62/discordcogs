@@ -163,14 +163,16 @@ class FightingGame:
         embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health}", inline=False)
         embed.add_field(name=f"{self.player1.display_name}'s Stamina", value=player1_stamina_status, inline=False)
         if self.player1_critical_injuries:
-            embed.add_field(name=f"{self.player1.display_name} Injuries", value=", ".join(self.player1_critical_injuries), inline=False)
+            critical_injuries = [injury for injury in self.player1_critical_injuries if "Permanent Injury" not in injury]
+            embed.add_field(name=f"{self.player1.display_name} Injuries", value=", ".join(critical_injuries), inline=False)
         if self.player1_data.get("permanent_injuries"):
             embed.add_field(name=f"{self.player1.display_name} Permanent Injuries", value=", ".join(self.player1_data["permanent_injuries"]), inline=False)
         
         embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
         embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
         if self.player2_critical_injuries:
-            embed.add_field(name=f"{self.player2.display_name} Injuries", value=", ".join(self.player2_critical_injuries), inline=False)
+            critical_injuries = [injury for injury in self.player2_critical_injuries if "Permanent Injury" not in injury]
+            embed.add_field(name=f"{self.player2.display_name} Injuries", value=", ".join(critical_injuries), inline=False)
         if self.player2_data.get("permanent_injuries"):
             embed.add_field(name=f"{self.player2.display_name} Permanent Injuries", value=", ".join(self.player2_data["permanent_injuries"]), inline=False)
         
@@ -227,7 +229,6 @@ class FightingGame:
             print(f"Error during get_strike_damage: {e}")
             print(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
             return strike, modified_damage, message, conclude_message, critical_injury
-
 
     async def target_bodypart(self):
         bodypart = random.choice(BODY_PARTS)
@@ -294,7 +295,7 @@ class FightingGame:
                     self.player2_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
                         permanent_injury = critical_injury.split(": ")[1]
-                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury))
+                        await self.bullshido_cog.add_permanent_injury(defender, permanent_injury)
                         if "permanent_injuries" not in self.player2_data:
                             self.player2_data["permanent_injuries"] = []
                         self.player2_data["permanent_injuries"].append(permanent_injury)
@@ -306,7 +307,7 @@ class FightingGame:
                     self.player1_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
                         permanent_injury = critical_injury.split(": ")[1]
-                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury))
+                        await self.bullshido_cog.add_permanent_injury(defender, permanent_injury)
                         if "permanent_injuries" not in self.player1_data:
                             self.player1_data["permanent_injuries"] = []
                         self.player1_data["permanent_injuries"].append(permanent_injury)
@@ -336,6 +337,7 @@ class FightingGame:
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
+
 
 
 
