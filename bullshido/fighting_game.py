@@ -344,6 +344,7 @@ class FightingGame:
 
 
 
+
     async def declare_winner_by_tko(self, round_message, loser):
         winner = self.player1 if loser == self.player2 else self.player2
         tko_message_flavor = random.choice(TKO_MESSAGES).format(loser=loser.display_name)
