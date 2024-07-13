@@ -266,40 +266,49 @@ class FightingGame:
         fight_ended = False
         attacker = self.player1 if self.current_turn == self.player1 else self.player2
         defender = self.player2 if self.current_turn == self.player1 else self.player1
+        self.logger.debug(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
         attacker_stamina = self.player1_stamina if self.current_turn == self.player1 else self.player2_stamina
         defender_stamina = self.player2_stamina if self.current_turn == self.player1 else self.player1_stamina
         attacker_training = self.player1_data["training_level"] if self.current_turn == self.player1 else self.player2_data["training_level"]
         defender_training = self.player2_data["training_level"] if self.current_turn == self.player1 else self.player1_data["training_level"]
+        self.logger.debud(f"Attacker stamina: {attacker_stamina}, Defender stamina: {defender_stamina}")
         style = self.player1_data["fighting_style"] if self.current_turn == self.player1 else self.player2_data["fighting_style"]
 
         try:
             miss_probability = self.calculate_miss_probability(attacker_stamina, attacker_training, defender_training, defender_stamina)
             if random.random() < miss_probability:
                 miss_message = f"{attacker.display_name} missed their attack on {defender.display_name}!"
+                self.logger.debug(f"{miss_message}")
                 await self.update_health_bars(round_number, miss_message, None)
                 self.current_turn = defender
                 return False
 
             body_part = await self.target_bodypart()
             strike, damage, critical_message, conclude_message, critical_injury = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender, body_part)
+            self.logger.debug(f"Strike: {strike}, Damage: {damage}, Body Part: {body_part}")
             if not strike:
                 await self.update_health_bars(round_number, "An error occurred during the turn: Failed to determine strike.", None)
                 return True
 
             if self.is_grapple_move(strike):
+                self.logger.debug(f"{strike} is a grapple move")
                 action = random.choice(GRAPPLE_ACTIONS)
                 message = f"{critical_message} {attacker.display_name} {action} a {strike} causing {damage} damage! {conclude_message}"
             else:
                 action = random.choice(STRIKE_ACTIONS)
+                self.logger.debug(f"{strike} is not a grapple move")
                 message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {body_part} causing {damage} damage! {conclude_message}"
 
             if self.current_turn == self.player1:
                 self.player2_health -= damage
+                self.logger.debug(f"Player 2 health: {self.player2_health}")
                 self.player1_stamina -= self.BASE_STAMINA_COST
                 self.current_turn = self.player2
                 if critical_injury:
+                    self.logger.debug(f"Player 2 critical injury: {critical_injury}")
                     self.player2_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
+                        self.logger.debug(f"Player 2 permanent injury: {critical_injury}")
                         permanent_injury = critical_injury.split(": ")[1]
                         asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury, body_part))
                         if "permanent_injuries" not in self.player2_data:
@@ -307,11 +316,14 @@ class FightingGame:
                         self.player2_data["permanent_injuries"].append({"injury": permanent_injury, "body_part": body_part})
             else:
                 self.player1_health -= damage
+                self.logger.debug(f"Player 1 health: {self.player1_health}")
                 self.player2_stamina -= self.BASE_STAMINA_COST
                 self.current_turn = self.player1
                 if critical_injury:
+                    self.logger.debug(f"Player 1 critical injury: {critical_injury}")
                     self.player1_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
+                        self.logger.debug(f"Player 1 permanent injury: {critical_injury}")
                         permanent_injury = critical_injury.split(": ")[1]
                         asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury, body_part))
                         if "permanent_injuries" not in self.player1_data:
@@ -322,16 +334,20 @@ class FightingGame:
             await asyncio.sleep(sleep_duration)
 
             if "Permanent Injury" in critical_injury:
+                self.logger.debug(f"Critical injury is permanent: {critical_injury}")
                 message += f"\n**Permanent Injury:** {critical_injury.split(': ')[1]}"
 
             await self.update_health_bars(round_number, message, None)
+            self.logger.debug(f"Updating health bars: Player 1 health: {self.player1_health}, Player 2 health: {self.player2_health}")
 
             if self.player1_health <= 0 or self.player2_health <= 0:
+                self.logger.debug(f"KO occured: Player 1 health: {self.player1_health}, Player 2 health: {self.player2_health}")
                 await self.declare_winner_by_ko(round_message)
                 return True
 
             if (self.player1_health < 20 or self.player2_health < 20) and random.random() < 0.5:
                 if self.player1_health < 20:
+                    self.logger.debug(f"TKO occured: Player 1 health: {self.player1_health}, Player 2 health: {self.player2_health}")
                     await self.declare_winner_by_tko(round_message, self.player1)
                 else:
                     await self.declare_winner_by_tko(round_message, self.player2)
