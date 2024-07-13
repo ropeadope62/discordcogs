@@ -43,7 +43,7 @@ class Bullshido(commands.Cog):
             "last_train": None,
             "last_diet": None,
             "fight_history": [],
-            "permanent_injuries": {}
+            "permanent_injuries": []
         }
         
         default_guild = {
