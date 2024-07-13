@@ -198,7 +198,7 @@ class FightingGame:
         return round(adjusted_damage)
 
     
-    def get_strike_damage(self, style, attacker, defender):
+    def get_strike_damage(self, style, attacker, defender, body_part):
         strike = ""
         damage_range = (0, 0)
         base_damage = 0
@@ -225,6 +225,11 @@ class FightingGame:
 
             else:
                 modified_damage = round(modified_damage * modifier)
+                
+            for injury in defender["permanent_injuries"]:
+                if injury["body_part"] == body_part:
+                    modified_damage *= 2
+                    break
             return strike, modified_damage, message, conclude_message, critical_injury
         except Exception as e:
             print(f"Error during get_strike_damage: {e}")
@@ -274,19 +279,18 @@ class FightingGame:
                 self.current_turn = defender
                 return False
 
-            strike, damage, critical_message, conclude_message, critical_injury = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender)
+            body_part = await self.target_bodypart()
+            strike, damage, critical_message, conclude_message, critical_injury = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender, body_part)
             if not strike:
                 await self.update_health_bars(round_number, "An error occurred during the turn: Failed to determine strike.", None)
                 return True
-
-            bodypart = await self.target_bodypart()
 
             if self.is_grapple_move(strike):
                 action = random.choice(GRAPPLE_ACTIONS)
                 message = f"{critical_message} {attacker.display_name} {action} a {strike} causing {damage} damage! {conclude_message}"
             else:
                 action = random.choice(STRIKE_ACTIONS)
-                message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"
+                message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {body_part} causing {damage} damage! {conclude_message}"
 
             if self.current_turn == self.player1:
                 self.player2_health -= damage
@@ -296,10 +300,10 @@ class FightingGame:
                     self.player2_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
                         permanent_injury = critical_injury.split(": ")[1]
-                        await self.bullshido_cog.add_permanent_injury(defender, permanent_injury)
+                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury, body_part))
                         if "permanent_injuries" not in self.player2_data:
                             self.player2_data["permanent_injuries"] = []
-                        self.player2_data["permanent_injuries"].append(permanent_injury)
+                        self.player2_data["permanent_injuries"].append({"injury": permanent_injury, "body_part": body_part})
             else:
                 self.player1_health -= damage
                 self.player2_stamina -= self.BASE_STAMINA_COST
@@ -308,10 +312,10 @@ class FightingGame:
                     self.player1_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
                         permanent_injury = critical_injury.split(": ")[1]
-                        await self.bullshido_cog.add_permanent_injury(defender, permanent_injury)
+                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury, body_part))
                         if "permanent_injuries" not in self.player1_data:
                             self.player1_data["permanent_injuries"] = []
-                        self.player1_data["permanent_injuries"].append(permanent_injury)
+                        self.player1_data["permanent_injuries"].append({"injury": permanent_injury, "body_part": body_part})
 
             sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)
             await asyncio.sleep(sleep_duration)
@@ -338,6 +342,7 @@ class FightingGame:
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
+
 
 
 

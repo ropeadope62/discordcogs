@@ -86,11 +86,11 @@ class Bullshido(commands.Cog):
         stamina = await self.config.user(user).stamina_level()
         return stamina >= 20
     
-    async def add_permanent_injury(self, user: discord.Member, injury: str):
+    async def add_permanent_injury(self, user: discord.Member, injury: str, body_part: str):
         """Add a permanent injury to a user."""
-        self.logger.info(f"Adding permanent injury {injury} to {user}.")
+        self.logger.info(f"Adding permanent injury {injury} on {body_part} to {user}.")
         async with self.config.user(user).permanent_injuries() as injuries:
-            injuries.append(injury)
+            injuries.append({"injury": injury, "body_part": body_part})
 
     async def get_permanent_injuries(self, user: discord.Member):
         """Get the list of permanent injuries for a user."""
@@ -163,7 +163,6 @@ class Bullshido(commands.Cog):
         ko_wins = user_data["wins"]["KO"]
         tko_wins = user_data["wins"]["TKO"]
         intimidation_level = ko_wins + tko_wins
-        self.logger.info(f"Intimidation level for {user} is {intimidation_level}")
         await self.config.user(user).intimidation_level.set(intimidation_level)
 
     @commands.hybrid_group(name="bullshido", description="Commands related to the Bullshido game")
