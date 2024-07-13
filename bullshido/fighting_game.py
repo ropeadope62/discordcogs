@@ -164,18 +164,18 @@ class FightingGame:
         embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health}", inline=False)
         embed.add_field(name=f"{self.player1.display_name}'s Stamina", value=player1_stamina_status, inline=False)
         if self.player1_critical_injuries:
-            critical_injuries = [injury for injury in self.player1_critical_injuries if "Permanent Injury" not in injury]
-            embed.add_field(name=f"{self.player1.display_name} Injuries", value=", ".join(critical_injuries), inline=False)
+            embed.add_field(name=f"{self.player1.display_name} Injuries", value=", ".join(self.player1_critical_injuries), inline=False)
         if self.player1_data.get("permanent_injuries"):
-            embed.add_field(name=f"{self.player1.display_name} Permanent Injuries", value=", ".join(self.player1_data["permanent_injuries"]), inline=False)
+            permanent_injuries = [injury["injury"] for injury in self.player1_data["permanent_injuries"]]
+            embed.add_field(name=f"{self.player1.display_name} Permanent Injuries", value=", ".join(permanent_injuries), inline=False)
         
         embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
         embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
         if self.player2_critical_injuries:
-            critical_injuries = [injury for injury in self.player2_critical_injuries if "Permanent Injury" not in injury]
-            embed.add_field(name=f"{self.player2.display_name} Injuries", value=", ".join(critical_injuries), inline=False)
+            embed.add_field(name=f"{self.player2.display_name} Injuries", value=", ".join(self.player2_critical_injuries), inline=False)
         if self.player2_data.get("permanent_injuries"):
-            embed.add_field(name=f"{self.player2.display_name} Permanent Injuries", value=", ".join(self.player2_data["permanent_injuries"]), inline=False)
+            permanent_injuries = [injury["injury"] for injury in self.player2_data["permanent_injuries"]]
+            embed.add_field(name=f"{self.player2.display_name} Permanent Injuries", value=", ".join(permanent_injuries), inline=False)
         
         if round_result and not fight_over:
             embed.add_field(name="Round Result", value=round_result, inline=False)
@@ -187,6 +187,7 @@ class FightingGame:
             await self.embed_message.edit(embed=embed)
         else:
             self.embed_message = await self.channel.send(embed=embed)
+
 
 
 
@@ -342,6 +343,7 @@ class FightingGame:
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
+
 
 
 
