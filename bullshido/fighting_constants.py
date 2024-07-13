@@ -231,11 +231,12 @@ BODY_PARTS = [
     "teeth", "left leg", "right leg", "right foot", "left foot", "liver", "kidneys",
     "spine", "clavical", "left hip", "right hip", "left knee", "right knee", "solar plexus",
     "cranium", "kisser", "chin", "left shoulder", "right shoulder", "ass", "crotch", "spine", "ribs", "spinal column",
-    "left ankle", "right ankle", "jaw", "left eye", "right eye", "stomach", "temple", "forehead", "mid-section"
+    "left ankle", "right ankle", "jaw", "left eye", "right eye", "stomach", "temple", "forehead", "mid-section","stomach",
+    "throat", "ribcage"
 ]
 
 GRAPPLE_ACTIONS = [
-    "completes", "nails", "executes", "finishes", "performs", "grabs", "attains", "pulls off"]
+    "completes", "nails", "executes", "finishes", "performs", "grabs", "attains", "pulls off", "applies", "transitions to", "forces"]
 
 GRAPPLE_KEYWORDS = [
     "Choke", "Mount", "Triangle", "Kimura", "Omoplata", "Crucifix", "Guillotine", "Lock", "Bar", "Hold", "Submission", "Crank", "Takedown", "Suplex", "Slam", "Throw", "Drag", "Take", "Redirect", "Chokehold", "Single Leg", "Double Leg"
@@ -296,6 +297,10 @@ CRITICAL_RESULTS = {
     "{defender} struggles with a broken left leg!": "Broken Left Leg",
     "{defender} clutches their broken right arm!": "Broken Right Arm",
     "{defender} clutches their broken left arm!": "Broken Left Arm",
+    "{defender}'s right arm is tweaked!": "Fractured Right Arm",
+    "{defender}'s left arm is tweaked!": "Fractured Left Arm",
+    "{defender}'s right leg is tweaked! Ouch!": "Fractured Right Leg",
+    "{defender}'s left leg is tweaked! Ouch!": "Fractured Left Leg",
     "{defender} winces from a broken left collarbone!": "Broken Left Collarbone",
     "{defender} winces from a broken right collarbone!": "Broken Right Collarbone",
     "{defender} struggles with a broken left wrist!": "Broken Left Wrist",
@@ -353,6 +358,10 @@ INJURY_TREATMENT_COST = {
     "Shattered Rib": 6250,
     "Dislocated Left Shoulder": 2180,
     "Dislocated Right Shoulder": 2180,
+    "Fractured Right Arm": 3100,
+    "Fractured Left Arm": 3100,
+    "Fractured Left Leg": 3100,
+    "Fractured Right Leg": 3100,
     "Broken Jaw": 4220,
     "Concussion": 1300,
     "Broken Right Leg": 5270,
