@@ -358,24 +358,24 @@ class Bullshido(commands.Cog):
         await ctx.send(embed=embed)
 
     
-    @bullshido_group.command(name="injuries", description="View your permanent injuries that require treatment.", aliases = ["injury", "inj"])
+    @bullshido_group.command(name="injuries", description="View your permanent injuries that require treatment.", aliases=["injury", "inj"])
     async def permanent_injuries(self, ctx: commands.Context, user: discord.Member = None):
         """View your permanent injuries that require treatment."""
         if not user:
             user = ctx.author
         user_data = await self.config.user(user).all()
-        permanent_injuries = user_data.get("permanent_injuries", {})
+        permanent_injuries = user_data.get("permanent_injuries", [])
 
         if not permanent_injuries:
             await ctx.send("You have no permanent injuries.")
             return
 
         embed = discord.Embed(title=f"{user.display_name}'s Permanent Injuries", color=0xFF0000)
-        for body_part, injuries in permanent_injuries.items():
-            embed.add_field(name=f"{body_part} Injuries", value=", ".join(injuries), inline=False)
+        embed.add_field(name="Injuries", value=", ".join(permanent_injuries), inline=False)
 
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
         await ctx.send(embed=embed)
+
 
     @bullshido_group.command(name="treat", description="Treat a permanent injury")
     async def treat(self, ctx: commands.Context, *, injury: str, body_part: str):
