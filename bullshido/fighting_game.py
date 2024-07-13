@@ -11,7 +11,7 @@ import os
 class FightingGame:
     active_games = {}
     
-    def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog, logger):
+    def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog):
         self.bot = bot
         self.channel = channel
         self.player1 = player1
@@ -27,7 +27,6 @@ class FightingGame:
         self.player1_score = 0
         self.player2_score = 0
         self.bullshido_cog = bullshido_cog
-        self.logger = logger
         self.training_weight = 0.15  # 15% contribution
         self.diet_weight = 0.15  # 15% contribution
         self.player1_critical_message = ""
@@ -146,8 +145,8 @@ class FightingGame:
         elif stamina >= 25:
             return "Gassed"
         else:
-            return "Exhausted" 
-    
+            return "Exhausted"
+
     async def update_health_bars(self, round_number, latest_message, round_result, fight_over=False):
         player1_health_bar = self.create_health_bar(self.player1_health, self.max_health)
         player2_health_bar = self.create_health_bar(self.player2_health, self.max_health)
@@ -163,14 +162,14 @@ class FightingGame:
         embed.add_field(name=f"{self.player1.display_name}'s Stamina", value=player1_stamina_status, inline=False)
         if self.player1_critical_injuries:
             embed.add_field(name=f"{self.player1.display_name} Injuries", value=", ".join(self.player1_critical_injuries), inline=False)
-        if self.player1_data.get("permanent_injuries"):
+        if "permanent_injuries" in self.player1_data:
             embed.add_field(name=f"{self.player1.display_name} Permanent Injuries", value=", ".join(self.player1_data["permanent_injuries"]), inline=False)
         
         embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
         embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
         if self.player2_critical_injuries:
             embed.add_field(name=f"{self.player2.display_name} Injuries", value=", ".join(self.player2_critical_injuries), inline=False)
-        if self.player2_data.get("permanent_injuries"):
+        if "permanent_injuries" in self.player2_data:
             embed.add_field(name=f"{self.player2.display_name} Permanent Injuries", value=", ".join(self.player2_data["permanent_injuries"]), inline=False)
         
         if round_result and not fight_over:
@@ -203,9 +202,10 @@ class FightingGame:
         try:
             strike, damage_range = random.choice(list(STRIKES[style].items()))
             base_damage = random.randint(*damage_range)
-            body_part = random.choice(BODY_PARTS)
             modified_damage = self.calculate_adjusted_damage(base_damage, attacker['training_level'], attacker['nutrition_level'])
             modifier = random.uniform(0.8, 1.3)
+
+            body_part = random.choice(BODY_PARTS)
 
             is_critical_hit = random.random() < self.CRITICAL_CHANCE
             if is_critical_hit:
@@ -216,6 +216,8 @@ class FightingGame:
 
                 if random.random() < self.PERMANENT_INJURY_CHANCE:
                     critical_injury = f"Permanent Injury: {critical_injury}"
+                    asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, critical_injury))
+
             else:
                 modified_damage = round(modified_damage * modifier)
 
@@ -269,13 +271,9 @@ class FightingGame:
                 return False
 
             strike, damage, critical_message, conclude_message, critical_injury, body_part = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender)
-
             if not strike:
                 await self.update_health_bars(round_number, "An error occurred during the turn: Failed to determine strike.", None)
                 return True
-
-            if body_part in defender.get("permanent_injuries", []):
-                damage *= 2  # Double the damage if the body part has a permanent injury
 
             if self.is_grapple_move(strike):
                 action = random.choice(GRAPPLE_ACTIONS)
@@ -283,6 +281,11 @@ class FightingGame:
             else:
                 action = random.choice(STRIKE_ACTIONS)
                 message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {body_part} causing {damage} damage! {conclude_message}"
+
+            defender_permanent_injuries = self.player2_data["permanent_injuries"] if defender == self.player2 else self.player1_data["permanent_injuries"]
+            if body_part in defender_permanent_injuries:
+                damage *= 2
+                message += f" **Double Damage!** {body_part} was hit, and it's already injured!"
 
             if self.current_turn == self.player1:
                 self.player2_health -= damage
