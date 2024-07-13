@@ -475,7 +475,7 @@ class Bullshido(commands.Cog):
                 return
 
             # Set up an instance of game session
-            game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self)
+            game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self, self.logger)
             await game.start_game()
 
         except Exception as e:
