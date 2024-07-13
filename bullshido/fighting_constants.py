@@ -130,12 +130,12 @@ STRIKES = {
                 "Palm Strike": (6, 8),
                 "Low Kick": (5, 7),
                 "Knee Strike": (5, 7),
-                "Eye Gouge": (4, 6),
+                "Eye Gouge": (9, 10),
                 "Backhand": (5, 7),
                 "Finger Strike": (5, 7),
                 "Headbutt": (5, 7),
                 "Short Elbow": (4, 6),
-                "Hammerfist": (5, 7),
+                "Hammerfist": (7, 8),
                 "Inside Knee": (6, 8),
                 "Elbow": (6, 8),
                 "High Knee": (6, 8)
@@ -151,7 +151,7 @@ STRIKES = {
                 "Handstand": (4, 6),
                 "Backflip": (6, 8),
                 "Front Kick": (5, 7),
-                "Roundhouse Kick": (6, 8),
+                "Roundhouse Kick": (6, 10),
                 "Axe Kick": (6, 8)
             },
             "Sambo": {
@@ -232,7 +232,7 @@ BODY_PARTS = [
     "spine", "clavical", "left hip", "right hip", "left knee", "right knee", "solar plexus",
     "cranium", "kisser", "chin", "left shoulder", "right shoulder", "ass", "crotch", "spine", "ribs", "spinal column",
     "left ankle", "right ankle", "jaw", "left eye", "right eye", "stomach", "temple", "forehead", "mid-section","stomach",
-    "throat", "ribcage"
+    "throat", "ribcage", "butt"
 ]
 
 GRAPPLE_ACTIONS = [
@@ -277,7 +277,10 @@ CRITICAL_MESSAGES = [
     "Drawing from the legendary moves of Yung Ho,",
     "Channeling the power of Grand Master Chew Kok,",
     "Unleashing he power of Lo Hung Dong,",
-    "Lifting the power of Phat Ho"
+    "Lifting the power of Phat Ho",
+    "Ivoking the power of Master Ti Ni Peen",
+    "Calling upon the power of the Gokkun Gorilla",
+    "Unleashing the power of the Bukkake Beast"
     
     
     
