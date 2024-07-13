@@ -43,7 +43,7 @@ class Bullshido(commands.Cog):
             "last_train": None,
             "last_diet": None,
             "fight_history": [],
-            "permanent_injuries": []
+            "permanent_injuries": {}
         }
         
         default_guild = {
@@ -88,9 +88,11 @@ class Bullshido(commands.Cog):
     
     async def add_permanent_injury(self, user: discord.Member, injury: str, body_part: str):
         """Add a permanent injury to a user."""
-        self.logger.info(f"Adding permanent injury {injury} on {body_part} to {user}.")
+        self.logger.info(f"Adding permanent injury {injury} to {user}.")
         async with self.config.user(user).permanent_injuries() as injuries:
-            injuries.append({"injury": injury, "body_part": body_part})
+            if body_part not in injuries:
+                injuries[body_part] = []
+            injuries[body_part].append(injury)
 
     async def get_permanent_injuries(self, user: discord.Member):
         """Get the list of permanent injuries for a user."""
