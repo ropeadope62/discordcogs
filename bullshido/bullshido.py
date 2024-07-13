@@ -88,6 +88,7 @@ class Bullshido(commands.Cog):
     
     async def add_permanent_injury(self, user: discord.Member, injury: str):
         """Add a permanent injury to a user."""
+        self.logger.info(f"Adding permanent injury {injury} to {user}.")
         async with self.config.user(user).permanent_injuries() as injuries:
             injuries.append(injury)
 
@@ -97,12 +98,14 @@ class Bullshido(commands.Cog):
 
     async def remove_permanent_injury(self, user: discord.Member, injury: str):
         """Remove a permanent injury from a user."""
+        self.logger.info(f"Removing permanent injury {injury} from {user}.")
         async with self.config.user(user).permanent_injuries() as injuries:
             if injury in injuries:
                 injuries.remove(injury)
     
     def is_admin_or_mod():
-        async def predicate(ctx):
+        async def predicate(self,ctx):
+            self.logger.info(f"Checking if {ctx.author} is an admin or mod...")
             return ctx.author.guild_permissions.administrator or ctx.author.guild_permissions.manage_guild
         return commands.check(predicate)
     
@@ -148,6 +151,7 @@ class Bullshido(commands.Cog):
                 # Apply penalty if the user missed a day
                 new_level = max(1, user_data[level_key] - 20)
                 await self.config.user_from_id(user_id)[level_key].set(new_level)
+                self.logger.info(f"User {user_id} has lost 20 points in their {level_key.replace('_', ' ')} due to inactivity.")
                 user = self.bot.get_user(user_id)
                 if user:
                     await user.send(f"You've lost 20 points in your {level_key.replace('_', ' ')} due to inactivity.")
@@ -540,7 +544,7 @@ class Bullshido(commands.Cog):
         )
         embed.add_field(
             name="Selecting a Fighting Style",
-            value="Use `/bullshido select_fighting_style` to choose your fighting style. Each style has unique strikes and abilities.",
+            value="Use `/bullshido setstyle` to choose your fighting style. Each style has unique strikes and abilities.",
             inline=False
         )
         embed.add_field(
@@ -796,7 +800,7 @@ class Bullshido(commands.Cog):
             }
 
             # Initialize the FightingGame instance with dummy data for testing
-            game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self)
+            game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self, self.logger)
 
             fight_image_path = await game.generate_fight_image()
             await ctx.send(file=discord.File(fight_image_path))

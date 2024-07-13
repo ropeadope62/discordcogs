@@ -11,8 +11,9 @@ import os
 class FightingGame:
     active_games = {}
     
-    def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog):
+    def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog, logger):
         self.bot = bot
+        self.logger = logger
         self.channel = channel
         self.player1 = player1
         self.player2 = player2
