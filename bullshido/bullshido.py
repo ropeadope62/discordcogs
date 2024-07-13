@@ -98,12 +98,12 @@ class Bullshido(commands.Cog):
         """Get the list of permanent injuries for a user."""
         return await self.config.user(user).permanent_injuries()
 
-    async def remove_permanent_injury(self, user: discord.Member, injury: str):
+    async def remove_permanent_injury(self, user: discord.Member, injury: str, body_part: str):
         """Remove a permanent injury from a user."""
         self.logger.info(f"Removing permanent injury {injury} from {user}.")
         async with self.config.user(user).permanent_injuries() as injuries:
-            if injury in injuries:
-                injuries.remove(injury)
+            if body_part in injuries and injury in injuries[body_part]:
+                injuries[body_part].remove(injury)
     
     def is_admin_or_mod():
         async def predicate(self,ctx):
@@ -165,6 +165,7 @@ class Bullshido(commands.Cog):
         ko_wins = user_data["wins"]["KO"]
         tko_wins = user_data["wins"]["TKO"]
         intimidation_level = ko_wins + tko_wins
+        self.logger.info(f"Intimidation level for {user} is {intimidation_level}")
         await self.config.user(user).intimidation_level.set(intimidation_level)
 
     @commands.hybrid_group(name="bullshido", description="Commands related to the Bullshido game")
@@ -335,8 +336,8 @@ class Bullshido(commands.Cog):
         injury_counts = []
 
         for user_id, user_data in users.items():
-            permanent_injuries = user_data.get("permanent_injuries", [])
-            injury_count = len(permanent_injuries)
+            permanent_injuries = user_data.get("permanent_injuries", {})
+            injury_count = sum(len(v) for v in permanent_injuries.values())
             injury_counts.append((user_id, injury_count))
 
         # Sort by injury count in descending order and take the top 10
@@ -362,28 +363,28 @@ class Bullshido(commands.Cog):
         if not user:
             user = ctx.author
         user_data = await self.config.user(user).all()
-        permanent_injuries = user_data.get("permanent_injuries", [])
+        permanent_injuries = user_data.get("permanent_injuries", {})
 
         if not permanent_injuries:
             await ctx.send("You have no permanent injuries.")
             return
 
         embed = discord.Embed(title=f"{user.display_name}'s Permanent Injuries", color=0xFF0000)
-        for injury in permanent_injuries:
-            embed.add_field(name="Injury", value=injury, inline=False)
+        for body_part, injuries in permanent_injuries.items():
+            embed.add_field(name=f"{body_part} Injuries", value=", ".join(injuries), inline=False)
 
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
         await ctx.send(embed=embed)
 
     @bullshido_group.command(name="treat", description="Treat a permanent injury")
-    async def treat(self, ctx: commands.Context, *, injury: str):
+    async def treat(self, ctx: commands.Context, *, injury: str, body_part: str):
         """Treat a permanent injury."""
         currency = await bank.get_currency_name(ctx.guild)
         user = ctx.author
         user_data = await self.config.user(user).all()
-        permanent_injuries = user_data.get("permanent_injuries", [])
-        
-        if injury not in permanent_injuries:
+        permanent_injuries = user_data.get("permanent_injuries", {})
+
+        if body_part not in permanent_injuries or injury not in permanent_injuries[body_part]:
             await ctx.send("You do not have this injury.")
             return
 
@@ -398,7 +399,7 @@ class Bullshido(commands.Cog):
             return
 
         await bank.withdraw_credits(user, cost)
-        permanent_injuries.remove(injury)
+        permanent_injuries[body_part].remove(injury)
         await self.config.user(user).permanent_injuries.set(permanent_injuries)
 
         await ctx.send(f"Successfully treated {injury} for {cost} {currency}. Your new balance is {balance - cost} {currency}.")
@@ -476,7 +477,7 @@ class Bullshido(commands.Cog):
                 return
 
             # Set up an instance of game session
-            game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self, self.logger)
+            game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self)
             await game.start_game()
 
         except Exception as e:
@@ -781,7 +782,8 @@ class Bullshido(commands.Cog):
                 "last_command_used": None,
                 "last_train": None,
                 "last_diet": None,
-                "fight_history": []
+                "fight_history": [],
+                "permanent_injuries": {}
             }
             
             player2_data = {
@@ -797,11 +799,12 @@ class Bullshido(commands.Cog):
                 "last_command_used": None,
                 "last_train": None,
                 "last_diet": None,
-                "fight_history": []
+                "fight_history": [],
+                "permanent_injuries": {}
             }
 
             # Initialize the FightingGame instance with dummy data for testing
-            game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self, self.logger)
+            game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self)
 
             fight_image_path = await game.generate_fight_image()
             await ctx.send(file=discord.File(fight_image_path))

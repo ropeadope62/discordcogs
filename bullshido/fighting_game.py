@@ -11,7 +11,7 @@ import os
 class FightingGame:
     active_games = {}
     
-    def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog, logger):
+    def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog):
         self.bot = bot
         self.channel = channel
         self.player1 = player1
@@ -27,7 +27,6 @@ class FightingGame:
         self.player1_score = 0
         self.player2_score = 0
         self.bullshido_cog = bullshido_cog
-        self.logger = logger
         self.training_weight = 0.15  # 15% contribution
         self.diet_weight = 0.15  # 15% contribution
         self.player1_critical_message = ""
@@ -44,7 +43,7 @@ class FightingGame:
             self.current_turn = player1
         else:
             self.current_turn = player2
-
+    
     @staticmethod
     def is_game_active(channel_id):
         return FightingGame.active_games.get(channel_id, False)
@@ -57,7 +56,7 @@ class FightingGame:
         template_url = self.FIGHT_TEMPLATE_URL
         response = requests.get(template_url)
         background = Image.open(BytesIO(response.content))
-        font_path = '/home/slurms/ScrapGPT/scrapgpt_data/cogs/CogManager/cogs/bullshido/osaka.ttf'
+        font_path ='/home/slurms/ScrapGPT/scrapgpt_data/cogs/CogManager/cogs/bullshido/osaka.ttf'
         font = ImageFont.truetype(font_path, size=20)
         header_font = ImageFont.truetype(font_path, size=34)
         
@@ -105,7 +104,7 @@ class FightingGame:
             draw.text(position, text, font=font, fill=text_color)
 
         shadow_color = (0, 0, 0)
-        text_color = (249, 4, 43)
+        text_color = (249,4,43)
 
         draw_text_with_shadow(draw, player1_name_text_position, player1_name, font, shadow_color, text_color)
         draw_text_with_shadow(draw, player2_name_text_position, player2_name, font, shadow_color, text_color)
@@ -118,7 +117,7 @@ class FightingGame:
         intro_subtitle = ("")
 
         intro_text_position = (80, 10)
-        intro_subtitle_position = (20, 40)
+        intro_subtitle_position = (20,40)
         draw_text_with_shadow(draw, intro_text_position, intro_message, header_font, shadow_color, text_color)
         draw_text_with_shadow(draw, intro_subtitle_position, intro_subtitle, header_font, shadow_color, text_color)
 
@@ -166,16 +165,14 @@ class FightingGame:
         if self.player1_critical_injuries:
             embed.add_field(name=f"{self.player1.display_name} Injuries", value=", ".join(self.player1_critical_injuries), inline=False)
         if self.player1_data.get("permanent_injuries"):
-            for body_part, injuries in self.player1_data["permanent_injuries"].items():
-                embed.add_field(name=f"{self.player1.display_name} Permanent Injuries ({body_part})", value=", ".join(injuries), inline=False)
+            embed.add_field(name=f"{self.player1.display_name} Permanent Injuries", value=", ".join([f"{bp}: {', '.join(injs)}" for bp, injs in self.player1_data["permanent_injuries"].items()]), inline=False)
         
         embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
         embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
         if self.player2_critical_injuries:
             embed.add_field(name=f"{self.player2.display_name} Injuries", value=", ".join(self.player2_critical_injuries), inline=False)
         if self.player2_data.get("permanent_injuries"):
-            for body_part, injuries in self.player2_data["permanent_injuries"].items():
-                embed.add_field(name=f"{self.player2.display_name} Permanent Injuries ({body_part})", value=", ".join(injuries), inline=False)
+            embed.add_field(name=f"{self.player2.display_name} Permanent Injuries", value=", ".join([f"{bp}: {', '.join(injs)}" for bp, injs in self.player2_data["permanent_injuries"].items()]), inline=False)
         
         if round_result and not fight_over:
             embed.add_field(name="Round Result", value=round_result, inline=False)
@@ -193,8 +190,8 @@ class FightingGame:
         diet_bonus = math.log10(diet_level + 1) * self.diet_weight
         adjusted_damage = base_damage * (1 + training_bonus + diet_bonus)
         return round(adjusted_damage)
-
-    def get_strike_damage(self, style, attacker, defender, body_part):
+    
+    def get_strike_damage(self, style, attacker, defender):
         strike = ""
         damage_range = (0, 0)
         base_damage = 0
@@ -202,6 +199,7 @@ class FightingGame:
         message = ""
         conclude_message = ""
         critical_injury = ""
+        bodypart = ""
 
         try:
             strike, damage_range = random.choice(list(STRIKES[style].items()))
@@ -209,6 +207,9 @@ class FightingGame:
             modified_damage = self.calculate_adjusted_damage(base_damage, attacker['training_level'], attacker['nutrition_level'])
             modifier = random.uniform(0.8, 1.3)
 
+            bodypart = random.choice(BODY_PARTS)
+
+            # Check for critical hit
             is_critical_hit = random.random() < self.CRITICAL_CHANCE
             if is_critical_hit:
                 modified_damage = base_damage * 2
@@ -217,21 +218,19 @@ class FightingGame:
                 message = random.choice(CRITICAL_MESSAGES)
 
                 if random.random() < self.PERMANENT_INJURY_CHANCE:
-                    critical_injury = f"{critical_injury}"
-
+                    critical_injury = f"Permanent Injury: {critical_injury}"
             else:
                 modified_damage = round(modified_damage * modifier)
 
-            # Check for permanent injuries and apply double damage if necessary
-            if body_part in defender.get('permanent_injuries', {}):
+            # Check for existing permanent injuries to apply additional damage
+            if defender.get("permanent_injuries") and bodypart in defender["permanent_injuries"]:
                 modified_damage *= 2
 
-            return strike, modified_damage, message, conclude_message, critical_injury
+            return strike, modified_damage, message, conclude_message, critical_injury, bodypart
         except Exception as e:
             print(f"Error during get_strike_damage: {e}")
             print(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
-            return strike, modified_damage, message, conclude_message, critical_injury
-
+            return strike, modified_damage, message, conclude_message, critical_injury, bodypart
 
     async def target_bodypart(self):
         bodypart = random.choice(BODY_PARTS)
@@ -241,159 +240,103 @@ class FightingGame:
         return any(keyword.lower() in strike.lower() for keyword in GRAPPLE_KEYWORDS)
     
     def calculate_miss_probability(self, attacker_stamina, attacker_training, defender_training, defender_stamina):
-        miss_probability = self.BASE_MISS_PROBABILITY
+        training_ratio = attacker_training / (defender_training + 1)
+        stamina_ratio = attacker_stamina / (defender_stamina + 1)
+        miss_probability = self.BASE_MISS_PROBABILITY / (training_ratio * stamina_ratio)
+        return min(max(miss_probability, 0.05), 0.5)  # Ensure it's between 5% and 50%
+    
+    def calculate_stamina_cost(self, move):
+        if move in STRIKE_ACTIONS:
+            return self.BASE_STAMINA_COST
+        elif move in GRAPPLE_ACTIONS:
+            return self.BASE_STAMINA_COST * 2
+        return self.BASE_STAMINA_COST
+    
+    async def execute_turn(self, attacker, defender, attacker_data, defender_data):
+        move_type = await self.get_strike(attacker)
+        move_name, base_damage = move_type
         
-        if attacker_stamina < 50:
-            miss_probability += 0.05  
+        # Calculate miss probability
+        miss_probability = self.calculate_miss_probability(attacker_data['stamina_level'], attacker_data['training_level'], defender_data['training_level'], defender_data['stamina_level'])
         
-        if defender_stamina > 50:
-            miss_probability -= 0.05  
+        if random.random() < miss_probability:
+            await self.channel.send(f"{attacker.display_name} attempted a {move_name} but missed!")
+            return False, f"{attacker.display_name} missed with a {move_name}!", 0, None, "", None
         
-        miss_probability -= 0.01 * math.log10(attacker_training + 1)
-        miss_probability += 0.01 * math.log10(defender_training + 1)
+        damage, bodypart = self.calculate_damage(attacker_data, defender_data, base_damage)
+        defender_data['health'] -= damage
+        critical_message = ""
         
-        return min(max(miss_probability, 0.05), 0.5)  
+        if damage > base_damage * 1.5:
+            critical_message = random.choice(CRITICAL_MESSAGES).format(defender=defender.display_name)
+            defender_data['injuries'].append(bodypart)
 
-    def regenerate_stamina(self, current_stamina, training_level, diet_level):
-        regeneration_rate = (training_level + diet_level) / 20 
-        return min(current_stamina + regeneration_rate, self.max_stamina)
+        await self.update_health_bars(self.rounds, f"{attacker.display_name} used {move_name} on {defender.display_name} for {damage} damage!", critical_message)
+        return True, f"{attacker.display_name} hit {defender.display_name} with a {move_name} for {damage} damage!", damage, bodypart, critical_message, attacker.display_name
 
-    async def play_turn(self, round_message, round_number):
-        fight_ended = False
-        attacker = self.player1 if self.current_turn == self.player1 else self.player2
-        defender = self.player2 if self.current_turn == self.player1 else self.player1
-        attacker_stamina = self.player1_stamina if self.current_turn == self.player1 else self.player2_stamina
-        defender_stamina = self.player2_stamina if self.current_turn == self.player1 else self.player1_stamina
-        attacker_training = self.player1_data["training_level"] if self.current_turn == self.player1 else self.player2_data["training_level"]
-        defender_training = self.player2_data["training_level"] if self.current_turn == self.player1 else self.player1_data["training_level"]
-        style = self.player1_data["fighting_style"] if self.current_turn == self.player1 else self.player2_data["fighting_style"]
+    async def get_strike(self, player):
+        style = player.style
+        strike = random.choice(list(STRIKES[style].items()))
+        return strike
 
-        try:
-            miss_probability = self.calculate_miss_probability(attacker_stamina, attacker_training, defender_training, defender_stamina)
-            if random.random() < miss_probability:
-                miss_message = f"{attacker.display_name} missed their attack on {defender.display_name}!"
-                await self.update_health_bars(round_number, miss_message, None)
-                self.current_turn = defender
-                return False
-
-            body_part = await self.target_bodypart()
-            strike, damage, critical_message, conclude_message, critical_injury = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender, body_part)
-            if not strike:
-                await self.update_health_bars(round_number, "An error occurred during the turn: Failed to determine strike.", None)
-                return True
-
-            if self.is_grapple_move(strike):
-                action = random.choice(GRAPPLE_ACTIONS)
-                message = f"{critical_message} {attacker.display_name} {action} a {strike} causing {damage} damage! {conclude_message}"
-            else:
-                action = random.choice(STRIKE_ACTIONS)
-                message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {body_part} causing {damage} damage! {conclude_message}"
-
-            if self.current_turn == self.player1:
-                self.player2_health -= damage
-                self.player1_stamina -= self.BASE_STAMINA_COST
-                self.current_turn = self.player2
-                if critical_injury:
-                    self.player2_critical_injuries.append(critical_injury)
-                    if "Permanent Injury" in critical_injury:
-                        permanent_injury = critical_injury.split(": ")[1]
-                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury, body_part))
-                        if "permanent_injuries" not in self.player2_data:
-                            self.player2_data["permanent_injuries"] = {}
-                        if body_part not in self.player2_data["permanent_injuries"]:
-                            self.player2_data["permanent_injuries"][body_part] = []
-                        self.player2_data["permanent_injuries"][body_part].append(permanent_injury)
-            else:
-                self.player1_health -= damage
-                self.player2_stamina -= self.BASE_STAMINA_COST
-                self.current_turn = self.player1
-                if critical_injury:
-                    self.player1_critical_injuries.append(critical_injury)
-                    if "Permanent Injury" in critical_injury:
-                        permanent_injury = critical_injury.split(": ")[1]
-                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury, body_part))
-                        if "permanent_injuries" not in self.player1_data:
-                            self.player1_data["permanent_injuries"] = {}
-                        if body_part not in self.player1_data["permanent_injuries"]:
-                            self.player1_data["permanent_injuries"][body_part] = []
-                        self.player1_data["permanent_injuries"][body_part].append(permanent_injury)
-
-            sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)
-            await asyncio.sleep(sleep_duration)
-
-            if critical_injury:
-                message += f"\n**Critical Injury:** {critical_injury}"
-                if "Permanent Injury" in critical_injury:
-                    message += f"\n**Permanent Injury:** {permanent_injury}"
-
-            await self.update_health_bars(round_number, message, None)
-
-            if self.player1_health <= 0 or self.player2_health <= 0:
-                await self.declare_winner_by_ko(round_message)
-                return True
-
-            if (self.player1_health < 20 or self.player2_health < 20) and random.random() < 0.5:
-                if self.player1_health < 20:
-                    await self.declare_winner_by_tko(round_message, self.player1)
-                else:
-                    await self.declare_winner_by_tko(round_message, self.player2)
-                return True
-
-            return False
-        except Exception as e:
-            print(f"Error during play_turn: {e}")
-            print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
-            await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
-            return True
-
-    async def declare_winner_by_ko(self, round_message):
-        winner = self.player1 if self.player2_health <= 0 else self.player2
-        loser = self.player2 if self.player1_health <= 0 else self.player1
-
-        ko_message = random.choice(KO_MESSAGES).format(winner=winner.display_name, loser=loser.display_name)
-        await self.update_health_bars(0, ko_message, KO_VICTOR_MESSAGE.format(winner=winner.display_name), fight_over=True)
-
-    async def declare_winner_by_tko(self, round_message, winner):
-        loser = self.player2 if winner == self.player1 else self.player1
-
-        tko_message = random.choice(TKO_MESSAGES).format(winner=winner.display_name, loser=loser.display_name)
-        await self.update_health_bars(0, tko_message, TKO_VICTOR_MESSAGE.format(winner=winner.display_name), fight_over=True)
+    def calculate_damage(self, attacker_data, defender_data, base_damage):
+        adjusted_damage = self.calculate_adjusted_damage(base_damage, attacker_data['training_level'], attacker_data['nutrition_level'])
+        modifier = random.uniform(0.8, 1.3)
+        final_damage = round(adjusted_damage * modifier)
+        
+        bodypart = random.choice(BODY_PARTS)
+        if bodypart in defender_data['injuries']:
+            final_damage *= 2
+        
+        return final_damage, bodypart
 
     async def start_game(self):
-        if FightingGame.is_game_active(self.channel.id):
-            await self.channel.send("A fight is already in progress in this channel.")
-            return
+        try:
+            if FightingGame.is_game_active(self.channel.id):
+                await self.channel.send("A game is already active in this channel.")
+                return
 
-        FightingGame.set_game_active(self.channel.id, True)
+            FightingGame.set_game_active(self.channel.id, True)
+            fight_image_path = await self.generate_fight_image()
+            await self.channel.send(file=discord.File(fight_image_path))
 
-        round_message = await self.channel.send("The fight is about to begin! Get ready!")
-        await asyncio.sleep(2)
+            for current_round in range(1, self.rounds + 1):
+                await asyncio.sleep(2)  # Simulate a delay between rounds
+                for _ in range(self.max_strikes_per_round):
+                    attacker, defender = (self.player1, self.player2) if self.current_turn == self.player1 else (self.player2, self.player1)
+                    attacker_data, defender_data = (self.player1_data, self.player2_data) if attacker == self.player1 else (self.player2_data, self.player1_data)
 
-        for round_number in range(1, self.rounds + 1):
-            round_result = ""
-            await round_message.edit(content=f"Round {round_number} - Fight!")
-            for _ in range(self.max_strikes_per_round):
-                fight_ended = await self.play_turn(round_message, round_number)
-                if fight_ended:
-                    FightingGame.set_game_active(self.channel.id, False)
-                    return
+                    turn_successful, latest_message, damage, bodypart, critical_message, last_attacker = await self.execute_turn(attacker, defender, attacker_data, defender_data)
+                    
+                    if not turn_successful:
+                        continue
 
-            round_result = f"Round {round_number} is over!"
-            await self.update_health_bars(round_number, "", round_result)
+                    if defender_data['health'] <= 0:
+                        await self.update_health_bars(current_round, latest_message, critical_message, fight_over=True)
+                        await self.channel.send(f"{attacker.display_name} wins by KO!")
+                        await self.bullshido_cog.update_player_stats(attacker, True, "KO", defender.display_name)
+                        await self.bullshido_cog.update_player_stats(defender, False, "KO", attacker.display_name)
+                        FightingGame.set_game_active(self.channel.id, False)
+                        return
 
-        await self.declare_winner_by_decision(round_message)
-        FightingGame.set_game_active(self.channel.id, False)
+                    if damage and bodypart:
+                        if critical_message:
+                            await self.channel.send(critical_message)
+                            self.current_turn = defender
 
-    async def declare_winner_by_decision(self, round_message):
-        if self.player1_score > self.player2_score:
-            winner = self.player1
-            loser = self.player2
-        elif self.player2_score > self.player1_score:
-            winner = self.player2
-            loser = self.player1
-        else:
-            await self.update_health_bars(0, "The fight is a draw!", "The fight is a draw!", fight_over=True)
-            return
+                round_result = f"Round {current_round} is over."
+                await self.update_health_bars(current_round, latest_message, round_result)
+                self.current_turn = self.player1 if self.current_turn == self.player2 else self.player2
 
-        decision_message = random.choice(FIGHT_RESULT_LONG).format(winner=winner.display_name, loser=loser.display_name)
-        await self.update_health_bars(0, decision_message, FIGHT_RESULT_LONG.format(winner=winner.display_name, loser=loser.display_name), fight_over=True)
+            winner = self.player1 if self.player1_score > self.player2_score else self.player2
+            loser = self.player1 if winner == self.player2 else self.player2
+
+            await self.channel.send(f"The fight is over! The winner is {winner.display_name}!")
+            await self.bullshido_cog.update_player_stats(winner, True, "UD", loser.display_name)
+            await self.bullshido_cog.update_player_stats(loser, False, "UD", winner.display_name)
+            FightingGame.set_game_active(self.channel.id, False)
+
+        except Exception as e:
+            print(f"Error during fight: {e}")
+            await self.channel.send(f"Failed to start the fight due to an error: {e}")
+            FightingGame.set_game_active(self.channel.id, False)
