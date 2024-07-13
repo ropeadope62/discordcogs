@@ -336,8 +336,8 @@ class Bullshido(commands.Cog):
         injury_counts = []
 
         for user_id, user_data in users.items():
-            permanent_injuries = user_data.get("permanent_injuries", {})
-            injury_count = sum(len(v) for v in permanent_injuries.values())
+            permanent_injuries = user_data.get("permanent_injuries", [])
+            injury_count = len(permanent_injuries)
             injury_counts.append((user_id, injury_count))
 
         # Sort by injury count in descending order and take the top 10
@@ -356,6 +356,7 @@ class Bullshido(commands.Cog):
                 embed.add_field(name=f"{i}. {user.display_name}", value=f"Injuries: {count}", inline=False)
 
         await ctx.send(embed=embed)
+
     
     @bullshido_group.command(name="injuries", description="View your permanent injuries that require treatment.", aliases = ["injury", "inj"])
     async def permanent_injuries(self, ctx: commands.Context, user: discord.Member = None):
