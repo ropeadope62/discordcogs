@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import os
 from .fighting_constants import (STRIKES, CRITICAL_RESULTS, CRITICAL_MESSAGES, BODY_PARTS, GRAPPLE_KEYWORDS, GRAPPLE_ACTIONS, 
-                                 STRIKE_ACTIONS, TKO_MESSAGES, KO_MESSAGES, TKO_VICTOR_MESSAGE, REFEREE_STOPS, FIGHT_RESULT_LONG)
+                                 STRIKE_ACTIONS, TKO_MESSAGES, KO_MESSAGES, KO_VICTOR_MESSAGE, TKO_VICTOR_MESSAGE, REFEREE_STOPS, FIGHT_RESULT_LONG)
 
 class FightingGame:
     active_games = {}
