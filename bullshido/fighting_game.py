@@ -198,6 +198,7 @@ class FightingGame:
         message = ""
         conclude_message = ""
         critical_injury = ""
+        critical_result_key = ""
 
         try:
             strike, damage_range = random.choice(list(STRIKES[style].items()))
@@ -208,20 +209,20 @@ class FightingGame:
             is_critical_hit = random.random() < self.CRITICAL_CHANCE
             if is_critical_hit:
                 modified_damage = base_damage * 2
-                conclude_message, critical_injury = random.choice(list(CRITICAL_RESULTS.items()))
-                conclude_message = conclude_message.format(defender=defender.display_name)
+                critical_result_key, critical_injury = random.choice(list(CRITICAL_RESULTS.items()))
+                conclude_message = critical_result_key.format(defender=defender.display_name)
                 message = random.choice(CRITICAL_MESSAGES)
 
                 if random.random() < self.PERMANENT_INJURY_CHANCE:
-                    critical_injury = f"Permanent Injury: {critical_injury}"
+                    critical_injury = f"{critical_injury}"
 
             else:
                 modified_damage = round(modified_damage * modifier)
-            return strike, modified_damage, message, conclude_message, critical_injury
+            return strike, modified_damage, message, conclude_message, critical_injury, critical_result_key
         except Exception as e:
             print(f"Error during get_strike_damage: {e}")
             print(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
-            return strike, modified_damage, message, conclude_message, critical_injury
+            return strike, modified_damage, message, conclude_message, critical_injury, critical_result_key
 
     async def target_bodypart(self):
         bodypart = random.choice(BODY_PARTS)
@@ -266,7 +267,7 @@ class FightingGame:
                 self.current_turn = defender
                 return False
 
-            strike, damage, critical_message, conclude_message, critical_injury = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender)
+            strike, damage, critical_message, conclude_message, critical_injury, critical_result_key = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender)
             if not strike:
                 await self.update_health_bars(round_number, "An error occurred during the turn: Failed to determine strike.", None)
                 return True
@@ -288,7 +289,8 @@ class FightingGame:
                     self.player2_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
                         permanent_injury = critical_injury.split(": ")[1]
-                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury))
+                        body_part = CRITICAL_RESULTS[critical_result_key]
+                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury, body_part))
                         if "permanent_injuries" not in self.player2_data:
                             self.player2_data["permanent_injuries"] = []
                         self.player2_data["permanent_injuries"].append(permanent_injury)
@@ -300,7 +302,8 @@ class FightingGame:
                     self.player1_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
                         permanent_injury = critical_injury.split(": ")[1]
-                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury))
+                        body_part = CRITICAL_RESULTS[critical_result_key]
+                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury, body_part))
                         if "permanent_injuries" not in self.player1_data:
                             self.player1_data["permanent_injuries"] = []
                         self.player1_data["permanent_injuries"].append(permanent_injury)
