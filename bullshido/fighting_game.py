@@ -154,7 +154,10 @@ class FightingGame:
         player1_stamina_status = self.get_stamina_status(self.player1_stamina)
         player2_stamina_status = self.get_stamina_status(self.player2_stamina)
 
-        title = final_result if fight_over and final_result else f"Round {round_number} - {self.player1.display_name} vs {self.player2.display_name}"
+        if FightingGame.is_game_active(self.channel.id):
+            title = f"Round {round_number} - {self.player1.display_name} vs {self.player2.display_name}"
+        else:
+            title = final_result if final_result else f"Fight Concluded - {self.player1.display_name} vs {self.player2.display_name}"
         embed = discord.Embed(
             title=title,
             color=0xFF0000
@@ -250,7 +253,8 @@ class FightingGame:
         return min(current_stamina + regeneration_rate, self.max_health)
 
     async def play_turn(self, round_message, round_number):
-        fight_ended = False
+        if not FightingGame.is_game_active(self.channel.id):
+            return True
         attacker = self.player1 if self.current_turn == self.player1 else self.player2
         defender = self.player2 if self.current_turn == self.player1 else self.player1
         attacker_stamina = self.player1_stamina if self.current_turn == self.player1 else self.player2_stamina
@@ -348,6 +352,7 @@ class FightingGame:
         )
         await self.update_health_bars(0, final_message, "KO Victory!", final_result=f"KO Victory for {winner.display_name}!")  # Update embed with KO result
         await self.record_result(winner, loser, "KO")
+        FightingGame.set_game_active(self.channel.id, False)
 
     async def declare_winner_by_tko(self, round_message, loser):
         winner = self.player1 if loser == self.player2 else self.player2
@@ -361,6 +366,7 @@ class FightingGame:
         )
         await self.update_health_bars(0, final_message, "TKO Victory!", final_result=f"TKO Victory for {winner.display_name}!")  # Update embed with TKO result
         await self.record_result(winner, loser, "TKO")
+        FightingGame.set_game_active(self.channel.id, False)
 
     async def record_result(self, winner, loser, result_type):
         try:
@@ -455,16 +461,14 @@ class FightingGame:
         self.embed_message = await self.channel.send(file=file, embed=embed)
         await asyncio.sleep(10)
 
-        await self.update_health_bars(0, "The fight is about to begin!", "Initial Health")
-
-        fight_ended = False
+        await self.update_health_bars(0, "The fight is about to begin!", "Ready? FIGHT!")
 
         for round_number in range(1, self.rounds + 1):
-            fight_ended = await self.play_round(round_number)
-            if fight_ended:
+            if not FightingGame.is_game_active(channel_id):
                 break
+            await self.play_round(round_number)
 
-        if not fight_ended:
+        if FightingGame.is_game_active(channel_id):
             if self.player1_health > self.player2_health:
                 winner = self.player1
                 loser = self.player2
