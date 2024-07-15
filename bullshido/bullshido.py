@@ -169,12 +169,12 @@ class Bullshido(commands.Cog):
         await self.config.user(user).intimidation_level.set(intimidation_level)
 
     @commands.hybrid_group(name="bullshido", description="Commands related to the Bullshido game")
-    async def bullshido(self, ctx: commands.Context):
+    async def bullshido_group(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
             await ctx.invoke(self.bullshido_help)
 
     @commands.hybrid_group(name="bullshidoset", description="Configuration commands for the Bullshido game")
-    async def bullshidoset(self, ctx: commands.Context):
+    async def bullshidoset_group(self, ctx: commands.Context):
         """Display Bullshido settings."""
         if ctx.invoked_subcommand is None:
             embed = discord.Embed(
@@ -248,77 +248,77 @@ class Bullshido(commands.Cog):
             await ctx.send(embed=embed) 
 
 
-    @bullshidoset.command(name="rounds", description="Set the number of rounds in a fight.")
+    @bullshidoset_group.command(name="rounds", description="Set the number of rounds in a fight.")
     @is_admin_or_mod()
     async def set_rounds(self, ctx: commands.Context, rounds: int):
         """ Set the number of rounds in a fight."""
         await self.config.guild(ctx.guild).rounds.set(rounds)
         await ctx.send(f"Number of rounds set to {rounds}.")
         
-    @bullshidoset.command(name="critical_chance", description="Set the critical hit chance.")
+    @bullshidoset_group.command(name="critical_chance", description="Set the critical hit chance.")
     @is_admin_or_mod()
     async def set_critical_chance(self, ctx: commands.Context, critical_chance: float):
         """ Set the critical hit chance."""
         await self.config.guild(ctx.guild).critical_chance.set(critical_chance)
         await ctx.send(f"Critical hit chance set to {critical_chance}.")
         
-    @bullshidoset.command(name="permanent_injury_chance", description="Set the permanent injury chance.")
+    @bullshidoset_group.command(name="permanent_injury_chance", description="Set the permanent injury chance.")
     @is_admin_or_mod()
     async def set_permanent_injury_chance(self, ctx: commands.Context, permanent_injury_chance: float):
         """ Set the permanent injury chance. Permanent injuries occur upon critical hits."""
         await self.config.guild(ctx.guild).permanent_injury_chance.set(permanent_injury_chance)
         await ctx.send(f"Permanent injury chance set to {permanent_injury_chance}.")
         
-    @bullshidoset.command(name="max_strikes_per_round", description="Set the maximum number of strikes per round.")
+    @bullshidoset_group.command(name="max_strikes_per_round", description="Set the maximum number of strikes per round.")
     @is_admin_or_mod()
     async def set_max_strikes_per_round(self, ctx: commands.Context, max_strikes_per_round: int):
         """ Set the maximum number of strikes per player per round."""
         await self.config.guild(ctx.guild).max_strikes_per_round.set(max_strikes_per_round)
         await ctx.send(f"Maximum number of strikes per round set to {max_strikes_per_round}.")
         
-    @bullshidoset.command(name="training_weight", description="Set the training weight.")
+    @bullshidoset_group.command(name="training_weight", description="Set the training weight.")
     @is_admin_or_mod()
     async def set_training_weight(self, ctx: commands.Context, training_weight: float):
         """Set the player training weight. This is used to calculate adjusted damage in the fight."""
         await self.config.guild(ctx.guild).training_weight.set(training_weight)
         await ctx.send(f"Training weight set to {training_weight}.")
         
-    @bullshidoset.command(name="diet_weight", description="Set the diet weight.")
+    @bullshidoset_group.command(name="diet_weight", description="Set the diet weight.")
     @is_admin_or_mod()
     async def set_diet_weight(self, ctx: commands.Context, diet_weight: float):
         """ Set the player diet weight. This is used to calculated adjusted damage in the fight."""
         await self.config.guild(ctx.guild).diet_weight.set(diet_weight)
         await ctx.send(f"Diet weight set to {diet_weight}.")
         
-    @bullshidoset.command(name="max_health", description="Set the maximum health.")
+    @bullshidoset_group.command(name="max_health", description="Set the maximum health.")
     @is_admin_or_mod()
     async def set_max_health(self, ctx: commands.Context, max_health: int):
         """ Set the player maximum health."""
         await self.config.guild(ctx.guild).max_health.set(max_health)
         await ctx.send(f"Maximum health set to {max_health}.")
         
-    @bullshidoset.command(name="action_cost", description="Set the action cost.")
+    @bullshidoset_group.command(name="action_cost", description="Set the action cost.")
     @is_admin_or_mod()
     async def set_action_cost(self, ctx: commands.Context, action_cost: int):
         """ Set the action cost per strike before modifiers."""
         await self.config.guild(ctx.guild).action_cost.set(action_cost)
         await ctx.send(f"Action cost set to {action_cost}.")
     
-    @bullshidoset.command(name="base_miss_probability", description="Set the base miss probability.")
+    @bullshidoset_group.command(name="base_miss_probability", description="Set the base miss probability.")
     @is_admin_or_mod()
     async def set_base_miss_probability(self, ctx: commands.Context, base_miss_probability: float):
         """ Set the base miss probability per strike before modifiers."""
         await self.config.guild(ctx.guild).base_miss_probability.set(base_miss_probability)
         await ctx.send(f"Base miss probability set to {base_miss_probability}.")
         
-    @bullshidoset.command(name="base_stamina_cost", description="Set the base stamina cost.")
+    @bullshidoset_group.command(name="base_stamina_cost", description="Set the base stamina cost.")
     @is_admin_or_mod()
     async def set_base_stamina_cost(self, ctx: commands.Context, base_stamina_cost: int):
         """ Set the base stamina cost per strike before modifiers."""
         await self.config.guild(ctx.guild).base_stamina_cost.set(base_stamina_cost)
         await ctx.send(f"Base stamina cost set to {base_stamina_cost}.")
         
-    @bullshido.command(name="log", description="Displays the log")
+    @bullshid_group.command(name="log", description="Displays the log")
     @is_admin_or_mod()
     async def show_log(self, ctx: commands.Context):
         """Displays the Bullshido log."""
@@ -329,7 +329,7 @@ class Bullshido(commands.Cog):
         for chunk in [logs[i:i+10] for i in range(0, len(logs), 10)]:
             await ctx.send("```\n{}\n```".format("\n".join(chunk)))
     
-    @bullshido.command(name="top_injuries", description="List the players with the 10 most permanent injuries")
+    @bullshid_group.command(name="top_injuries", description="List the players with the 10 most permanent injuries")
     async def top_injuries(self, ctx: commands.Context):
         """Lists the players with the 10 most permanent injuries."""
         users = await self.config.all_users()
@@ -358,7 +358,7 @@ class Bullshido(commands.Cog):
         await ctx.send(embed=embed)
 
     
-    @bullshido.command(name="injuries", description="View your permanent injuries that require treatment.", aliases=["injury", "inj"])
+    @bullshid_group.command(name="injuries", description="View your permanent injuries that require treatment.", aliases=["injury", "inj"])
     async def permanent_injuries(self, ctx: commands.Context, user: discord.Member = None):
         """View your permanent injuries that require treatment."""
         if not user:
@@ -377,7 +377,7 @@ class Bullshido(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    @bullshido.command(name="treat", description="Treat a permanent injury")
+    @bullshid_group.command(name="treat", description="Treat a permanent injury")
     async def treat(self, ctx: commands.Context, *, injury: str, body_part: str):
         """Treat a permanent injury."""
         currency = await bank.get_currency_name(ctx.guild)
@@ -405,7 +405,7 @@ class Bullshido(commands.Cog):
 
         await ctx.send(f"Successfully treated {injury} for {cost} {currency}. Your new balance is {balance - cost} {currency}.")
     
-    @bullshido.command(name="rankings", description="Top fighters in the Bullshido Kumatae.", aliases = ["rank", "leaderboard", "lb"])
+    @bullshid_group.command(name="rankings", description="Top fighters in the Bullshido Kumatae.", aliases = ["rank", "leaderboard", "lb"])
     async def rankings(self, ctx: commands.Context):
         """Displays the top 25 players based on win-loss ratio and their fight record."""
         server_name = ctx.guild.name
@@ -438,13 +438,13 @@ class Bullshido(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    @bullshido.command(name="setstyle", description="Select your fighting style")
+    @bullshido_group.command(name="setstyle", description="Select your fighting style")
     async def select_fighting_style(self, ctx: commands.Context):
         """Prompts the user to select their fighting style."""
         view = SelectFightingStyleView(self.set_fighting_style, ctx.author, ctx)
         await ctx.send("Please select your fighting style:", view=view)
         
-    @bullshido.command(name="list_fighting_styles", description="List all available fighting styles")
+    @bullshido_group.command(name="list_fighting_styles", description="List all available fighting styles")
     async def list_fighting_styles(self, ctx: commands.Context):
         """List all available fighting styles."""
         styles = ["Karate", "Muay-Thai", "Aikido", "Boxing", "Kung-Fu", "Judo", "Taekwondo", "Wrestling", "Sambo", "MMA", "Capoeira", "Kickboxing", "Krav-Maga", "Brazilian Jiu-Jitsu"]
@@ -452,7 +452,7 @@ class Bullshido(commands.Cog):
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
         await self.channel.send(embed=embed)
         
-    @bullshido.command(name="fight", description="Start a fight with another player")
+    @bullshido_group.command(name="fight", description="Start a fight with another player")
     async def fight(self, ctx: commands.Context, opponent: discord.Member):
         """Start a fight with another player."""
         await ctx.defer()
@@ -485,7 +485,7 @@ class Bullshido(commands.Cog):
             self.logger.error(f"Failed to start fight: {e}")
             await ctx.send(f"Failed to start the fight due to an error: {e}")
 
-    @bullshido.command(name="train", description="Train daily to increase your Bullshido training level")
+    @bullshido_group.command(name="train", description="Train daily to increase your Bullshido training level")
     async def train(self, ctx: commands.Context):
         """Train daily to increase your Bullshido training level."""
         self.logger.info(f"{ctx.author} used the train command.")
@@ -512,7 +512,7 @@ class Bullshido(commands.Cog):
         self.logger.info(f"{user} has successfully trained in {style}! Their training level is now {new_training_level}.")
         await ctx.send(f"{user.mention} has successfully trained in {style}! Your training level is now {new_training_level}.")
 
-    @bullshido.command(name="diet", description="Focus on your diet to increase your nutrition level")
+    @bullshido_group.command(name="diet", description="Focus on your diet to increase your nutrition level")
     async def diet(self, ctx: commands.Context):
         """Focus on your diet to increase your nutrition level."""
         self.logger.info(f"{ctx.author} used the diet command.")
@@ -537,7 +537,7 @@ class Bullshido(commands.Cog):
         new_nutrition_level = await self.increment_nutrition_level(ctx)
         await ctx.send(f"{user.mention} has followed their specialized diet today and gained nutrition level! Your nutrition level is now {new_nutrition_level}.")
     
-    @bullshido.command(name="help", description="Learn how the Bullshido game works")
+    @bullshido_group.command(name="help", description="Learn how the Bullshido game works")
     async def bullshido_help(self, ctx: commands.Context):
         """Provides information about how the Bullshido game works."""
         embed = discord.Embed(
@@ -594,7 +594,7 @@ class Bullshido(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    @bullshido.command(name="reset_stats", description="Resets all Bullshido user data to default values")
+    @bullshido_group.command(name="reset_stats", description="Resets all Bullshido user data to default values")
     @is_admin_or_mod()
     async def reset_stats(self, ctx: commands.Context):
         """Reset the Bullshido Redbot Configuration values to default for all users."""
@@ -636,14 +636,14 @@ class Bullshido(commands.Cog):
         except asyncio.TimeoutError:
             await ctx.send("Reset operation cancelled due to timeout.")
 
-    @bullshido.command(name="reset_config", description="Resets Bullshido configuration to default values")
+    @bullshido_group.command(name="reset_config", description="Resets Bullshido configuration to default values")
     @is_admin_or_mod()
     async def reset_config(self, ctx: commands.Context):
         """Resets Bullshido configuration to default values."""
         await self.config.clear_all_users()
         await ctx.send("Bullshido configuration has been reset to default values.")
 
-    @bullshido.command(name="player_stats", description="Displays your wins and losses", aliases=["stats"])
+    @bullshido_group.command(name="player_stats", description="Displays your wins and losses", aliases=["stats"])
     async def player_stats(self, ctx: commands.Context, user: discord.Member = None):
         """Displays your wins and losses."""
         if user is None:
@@ -684,7 +684,7 @@ class Bullshido(commands.Cog):
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
         await ctx.send(embed=embed)
 
-    @bullshido.command(name="fight_record", description="Displays the results of your last 10 fights")
+    @bullshido_group.command(name="fight_record", description="Displays the results of your last 10 fights")
     async def fight_record(self, ctx: commands.Context):
         """Displays the results of your last 10 fights."""
         user = ctx.author
@@ -759,14 +759,14 @@ class Bullshido(commands.Cog):
         except Exception as e:
             self.logger.error(f"Error updating stats for {user.display_name}: {e}")
 
-    @bullshido.command(name="clear_old_config", description="Clears old configuration to avoid conflicts")
+    @bullshido_group.command(name="clear_old_config", description="Clears old configuration to avoid conflicts")
     @is_admin_or_mod()
     async def clear_old_config(self, ctx: commands.Context):
         """Clears old configuration to avoid conflicts."""
         await self.config.clear_all_users()
         await ctx.send("Old Bullshido configuration has been cleared.")
         
-    @bullshido.command(name="test_fight_image")
+    @bullshido_group.command(name="test_fight_image")
     async def display_fight_image(self, ctx: commands.Context, player1: discord.Member, player2: discord.Member):
         try:
             # Create a dummy player data for testing
