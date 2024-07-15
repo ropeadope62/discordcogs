@@ -318,7 +318,7 @@ class Bullshido(commands.Cog):
         await self.config.guild(ctx.guild).base_stamina_cost.set(base_stamina_cost)
         await ctx.send(f"Base stamina cost set to {base_stamina_cost}.")
         
-    @bullshid_group.command(name="log", description="Displays the log")
+    @bullshido_group.command(name="log", description="Displays the log")
     @is_admin_or_mod()
     async def show_log(self, ctx: commands.Context):
         """Displays the Bullshido log."""
@@ -329,7 +329,7 @@ class Bullshido(commands.Cog):
         for chunk in [logs[i:i+10] for i in range(0, len(logs), 10)]:
             await ctx.send("```\n{}\n```".format("\n".join(chunk)))
     
-    @bullshid_group.command(name="top_injuries", description="List the players with the 10 most permanent injuries")
+    @bullshido_group.command(name="top_injuries", description="List the players with the 10 most permanent injuries")
     async def top_injuries(self, ctx: commands.Context):
         """Lists the players with the 10 most permanent injuries."""
         users = await self.config.all_users()
@@ -358,7 +358,7 @@ class Bullshido(commands.Cog):
         await ctx.send(embed=embed)
 
     
-    @bullshid_group.command(name="injuries", description="View your permanent injuries that require treatment.", aliases=["injury", "inj"])
+    @bullshido_group.command(name="injuries", description="View your permanent injuries that require treatment.", aliases=["injury", "inj"])
     async def permanent_injuries(self, ctx: commands.Context, user: discord.Member = None):
         """View your permanent injuries that require treatment."""
         if not user:
@@ -377,7 +377,7 @@ class Bullshido(commands.Cog):
         await ctx.send(embed=embed)
 
 
-    @bullshid_group.command(name="treat", description="Treat a permanent injury")
+    @bullshido_group.command(name="treat", description="Treat a permanent injury")
     async def treat(self, ctx: commands.Context, *, injury: str, body_part: str):
         """Treat a permanent injury."""
         currency = await bank.get_currency_name(ctx.guild)
@@ -405,7 +405,7 @@ class Bullshido(commands.Cog):
 
         await ctx.send(f"Successfully treated {injury} for {cost} {currency}. Your new balance is {balance - cost} {currency}.")
     
-    @bullshid_group.command(name="rankings", description="Top fighters in the Bullshido Kumatae.", aliases = ["rank", "leaderboard", "lb"])
+    @bullshido_group.command(name="rankings", description="Top fighters in the Bullshido Kumatae.", aliases = ["rank", "leaderboard", "lb"])
     async def rankings(self, ctx: commands.Context):
         """Displays the top 25 players based on win-loss ratio and their fight record."""
         server_name = ctx.guild.name
