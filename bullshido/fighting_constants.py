@@ -126,7 +126,7 @@ STRIKES = {
                 "Neck Crank": (5, 7),
                 "Leg Lock": (6, 8)
             },
-            "Krav Maga": {
+            "Krav-Maga": {
                 "Palm Strike": (6, 8),
                 "Low Kick": (5, 7),
                 "Knee Strike": (5, 7),
