@@ -213,7 +213,7 @@ class FightingGame:
                 message = random.choice(CRITICAL_MESSAGES)
 
                 if random.random() < self.PERMANENT_INJURY_CHANCE:
-                    critical_injury = f"{critical_injury}"
+                    critical_injury = f"Permanent Injury: {critical_injury}"
 
             else:
                 modified_damage = round(modified_damage * modifier)

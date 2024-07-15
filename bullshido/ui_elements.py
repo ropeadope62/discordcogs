@@ -69,3 +69,24 @@ class SelectFightingStyleView(ui.View):
     @ui.button(label="Brazilian Jiu-Jitsu", style=ButtonStyle.primary)
     async def handle_bjj(self, interaction: discord.Interaction, button: ui.Button):
         await self.on_fighting_style_selected(interaction, "Brazilian Jiu-Jitsu")
+
+class LevelUpView(ui.View):
+    def __init__(self, on_stat_selected, user):
+        super().__init__(timeout=180)
+        self.on_stat_selected = on_stat_selected
+        self.user = user
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return interaction.user == self.user
+
+    @ui.button(label="Increase Max Health", style=ButtonStyle.primary)
+    async def handle_health(self, interaction: discord.Interaction, button: ui.Button):
+        await self.on_stat_selected(interaction, "health")
+
+    @ui.button(label="Increase Stamina", style=ButtonStyle.primary)
+    async def handle_stamina(self, interaction: discord.Interaction, button: ui.Button):
+        await self.on_stat_selected(interaction, "stamina")
+
+    @ui.button(label="Increase Damage", style=ButtonStyle.primary)
+    async def handle_damage(self, interaction: discord.Interaction, button: ui.Button):
+        await self.on_stat_selected(interaction, "damage")
