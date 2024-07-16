@@ -264,7 +264,7 @@ class Bullshido(commands.Cog):
     async def toggle_socialized_medicine(self, ctx, single_payer: discord.Member = None):
         """Toggle payment mode for treating injuries."""
         guild = ctx.guild
-        current_mode = await self.config.guild(guild).single_payer_mode()
+        current_mode = await self.config.guild(guild).socialized_medicine()
 
         if current_mode:
             await self.config.guild(guild).socialized_medicine.set(False)
