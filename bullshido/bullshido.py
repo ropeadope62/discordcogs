@@ -58,7 +58,9 @@ class Bullshido(commands.Cog):
             "base_miss_probability": 0.15,
             "base_stamina_cost": 10,
             "critical_chance": 0.1,
-            "permanent_injury_chance": 0.5
+            "permanent_injury_chance": 0.5,
+            "socialized_medicine": False,
+            "socialized_medicine_payer_id": None
         }
         
         self.config.register_user(**default_user)
@@ -95,6 +97,8 @@ class Bullshido(commands.Cog):
             user_data["permanent_injuries"] = []
         user_data["permanent_injuries"].append(f"{injury}")
         await self.bullshido_cog.config.user(user).permanent_injuries.set(user_data["permanent_injuries"])
+        
+    
 
 
     async def get_permanent_injuries(self, user: discord.Member):
@@ -255,6 +259,24 @@ class Bullshido(commands.Cog):
 
             await ctx.send(embed=embed) 
 
+    @bullshidoset_group.command(name="socializedmedicine", description="Enable or disable socialized medicine.")
+    @commands.is_owner()
+    async def toggle_socialized_medicine(self, ctx, single_payer: discord.Member = None):
+        """Toggle payment mode for treating injuries."""
+        guild = ctx.guild
+        current_mode = await self.config.guild(guild).single_payer_mode()
+
+        if current_mode:
+            await self.config.guild(guild).single_payer_mode.set(False)
+            await self.config.guild(guild).single_payer_id.set(None)
+            await ctx.send(f"Payment mode set to individual payment by each user.")
+        else:
+            if not single_payer:
+                await ctx.send("You need to mention a user who will be the single payer.")
+                return
+            await self.config.guild(guild).single_payer_mode.set(True)
+            await self.config.guild(guild).single_payer_id.set(single_payer.id)
+            await ctx.send(f"New provider of socialized medicine: {single_payer.display_name}.")
 
     @bullshidoset_group.command(name="rounds", description="Set the number of rounds in a fight.")
     @commands.is_owner()
