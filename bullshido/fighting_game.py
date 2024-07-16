@@ -457,7 +457,7 @@ class FightingGame:
         user_config = await self.bullshido_cog.config.all_users()
         print(f"user_config: {user_config}")  # Debug log
         print(f"player1 ID: {self.player1.id}, player2 ID: {self.player2.id}")  # Debug log
-        narrative = generate_hype(self.user_config, str(self.player1.id), str(self.player2.id))
+        narrative = generate_hype(self.user_config, str(self.player1.id), str(self.player2.id), self.player1.display_name, self.player2.display_name)
 
         embed = discord.Embed(
             title=f"{self.player1.display_name} vs {self.player2.display_name}",
@@ -469,7 +469,7 @@ class FightingGame:
         embed.set_image(url="attachment://fight_image.png")
         
         self.embed_message = await self.channel.send(file=file, embed=embed)
-        await asyncio.sleep(10)
+        await asyncio.sleep(15)
 
         await self.update_health_bars(0, "The fight is about to begin!", "Ready? FIGHT!")
 
