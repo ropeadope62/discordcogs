@@ -456,13 +456,12 @@ class FightingGame:
 
         embed = discord.Embed(
             title=f"{self.player1.display_name} vs {self.player2.display_name}",
-            description="The fight is about to begin!",
+            description=f"{narrative}",
             color=0xFF0000
         )
         file = discord.File(fight_image_path, filename="fight_image.png")
         
         embed.set_image(url="attachment://fight_image.png")
-        embed.add_field(name="Matchup:", value=narrative, inline=False)
         
         self.embed_message = await self.channel.send(file=file, embed=embed)
         await asyncio.sleep(10)
