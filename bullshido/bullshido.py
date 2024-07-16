@@ -88,13 +88,14 @@ class Bullshido(commands.Cog):
         stamina = await self.config.user(user).stamina_level()
         return stamina >= 20
     
-    async def add_permanent_injury(self, user: discord.Member, injury: str, body_part: str):
-        """Add a permanent injury to a user."""
-        self.logger.info(f"Adding permanent injury {injury} to {user}.")
-        async with self.config.user(user).permanent_injuries() as injuries:
-            if body_part not in injuries:
-                injuries[body_part] = []
-            injuries[body_part].append(injury)
+    async def add_permanent_injury(self, user: discord.Member, injury, body_part):
+        """ Add a permanent injury to a user. """
+        user_data = self.user_config[str(user.id)]
+        if "permanent_injuries" not in user_data:
+            user_data["permanent_injuries"] = []
+        user_data["permanent_injuries"].append(f"{injury} ({body_part})")
+        await self.bullshido_cog.config.user(user).permanent_injuries.set(user_data["permanent_injuries"])
+
 
     async def get_permanent_injuries(self, user: discord.Member):
         """Get the list of permanent injuries for a user."""

@@ -298,10 +298,7 @@ class FightingGame:
                     if "Permanent Injury" in critical_injury:
                         permanent_injury = critical_injury.split(": ")[1]
                         body_part = CRITICAL_RESULTS[critical_result_key]
-                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury, body_part))
-                        if "permanent_injuries" not in self.player2_data:
-                            self.player2_data["permanent_injuries"] = []
-                        self.player2_data["permanent_injuries"].append(permanent_injury)
+                        await self.add_permanent_injury(defender, permanent_injury, body_part)
             else:
                 self.player1_health -= damage
                 self.player2_stamina -= self.BASE_STAMINA_COST
@@ -311,10 +308,7 @@ class FightingGame:
                     if "Permanent Injury" in critical_injury:
                         permanent_injury = critical_injury.split(": ")[1]
                         body_part = CRITICAL_RESULTS[critical_result_key]
-                        asyncio.create_task(self.bullshido_cog.add_permanent_injury(defender, permanent_injury, body_part))
-                        if "permanent_injuries" not in self.player1_data:
-                            self.player1_data["permanent_injuries"] = []
-                        self.player1_data["permanent_injuries"].append(permanent_injury)
+                        await self.add_permanent_injury(defender, permanent_injury, body_part)
 
             sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)
             await asyncio.sleep(sleep_duration)
@@ -342,6 +336,7 @@ class FightingGame:
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
 
+
     async def declare_winner_by_ko(self, round_message):
         if self.player1_health <= 0:
             winner = self.player2
@@ -357,6 +352,14 @@ class FightingGame:
         await self.update_health_bars(0, final_message, "KO Victory!", final_result=f"KO Victory for {winner.display_name}!")  # Update embed with KO result
         await self.record_result(winner, loser, "KO")
         FightingGame.set_game_active(self.channel.id, False)
+        
+    async def add_permanent_injury(self, user: discord.Member, injury, body_part):
+        """ Add a permanent injury to a user. """
+        user_data = self.user_config[str(user.id)]
+        if "permanent_injuries" not in user_data:
+            user_data["permanent_injuries"] = []
+        user_data["permanent_injuries"].append(f"{injury} ({body_part})")
+        await self.bullshido_cog.config.user(user).permanent_injuries.set(user_data["permanent_injuries"])
 
     async def declare_winner_by_tko(self, round_message, loser):
         winner = self.player1 if loser == self.player2 else self.player2
