@@ -358,7 +358,7 @@ class FightingGame:
         user_data = self.user_config[str(user.id)]
         if "permanent_injuries" not in user_data:
             user_data["permanent_injuries"] = []
-        user_data["permanent_injuries"].append(f"{injury} ({body_part})")
+        user_data["permanent_injuries"].append(f"{injury}")
         await self.bullshido_cog.config.user(user).permanent_injuries.set(user_data["permanent_injuries"])
 
     async def declare_winner_by_tko(self, round_message, loser):
