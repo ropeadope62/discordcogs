@@ -337,7 +337,7 @@ class Bullshido(commands.Cog):
             await ctx.send("```\n{}\n```".format("\n".join(chunk)))
             
     @bullshido_group.command(name="hype", description="Hype the fight between two opponents.")
-    async def hype_fight(self, ctx, fighter1_id, fighter2_id, fighter1: discord.Member, fighter2: discord.Member):
+    async def hype_fight(self, ctx, fighter1: discord.Member, fighter2: discord.Member):
         fighter1_id = fighter1.id
         fighter2_id = fighter2.id
 
