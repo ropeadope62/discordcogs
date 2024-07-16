@@ -337,7 +337,7 @@ class Bullshido(commands.Cog):
             await ctx.send("```\n{}\n```".format("\n".join(chunk)))
             
     @bullshido_group.command(name="hype", description="Hype the fight between two opponents.")
-    async def hype_fight(self, ctx, fighter1: discord.Member, fighter2: discord.Member):
+    async def hype_fight(self, ctx, fighter1_id, fighter2_id, fighter1: discord.Member, fighter2: discord.Member):
         fighter1_id = fighter1.id
         fighter2_id = fighter2.id
 
@@ -357,7 +357,7 @@ class Bullshido(commands.Cog):
         user_config[str(fighter1_id)] = fighter1_data
         user_config[str(fighter2_id)] = fighter2_data
 
-        narrative = generate_hype(user_config, fighter1_id, fighter2_id)
+        narrative = generate_hype(user_config, fighter1_id, fighter2_id, fighter1.display_name, fighter2.display_name)
 
         embed = discord.Embed(
             title=f"{fighter1_data['name']} vs {fighter2_data['name']}",
