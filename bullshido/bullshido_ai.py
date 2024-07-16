@@ -18,12 +18,12 @@ def generate_hype(user_config, attacker_id, defender_id):
     
 
     prompt = f"""
-    Given the following user config, {attacker_data} and {defender_data}, Generate some hype about the upcoming match. Keep your responses under 200 characters. 
+    Given the following user config, {attacker_data} and {defender_data}, Generate some hype about the upcoming match. Keep your responses under 300 characters. Include some of their stats in the response.  
         """
 
     response = client.chat.completions.create(model="gpt-4",
     messages=[
-        {"role": "system", "content": "You are a commentator for an MMA fight."},
+    {"role": "system", "content": "You are a commentator for a fight in the Bullshido Kumatae."},
         {"role": "user", "content": prompt}
     ])
 
