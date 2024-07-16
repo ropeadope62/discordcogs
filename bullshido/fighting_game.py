@@ -453,7 +453,7 @@ class FightingGame:
         user_config = await self.bullshido_cog.config.all_users()
         print(f"user_config: {user_config}")  # Debug log
         print(f"player1 ID: {self.player1.id}, player2 ID: {self.player2.id}")  # Debug log
-        narrative = generate_hype(user_config, self.player1.id, self.player2.id)
+        narrative = generate_hype(self.user_config, self.player1.id, self.player2.id)
 
         embed = discord.Embed(
             title=f"{self.player1.display_name} vs {self.player2.display_name}",
