@@ -422,6 +422,7 @@ class FightingGame:
                 round_result = f"{self.player2.display_name} had the edge this round!"
 
         await self.update_health_bars(round_number, "End of Round", round_result)
+        
 
         return False
 
