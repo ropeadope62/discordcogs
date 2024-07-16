@@ -267,15 +267,15 @@ class Bullshido(commands.Cog):
         current_mode = await self.config.guild(guild).single_payer_mode()
 
         if current_mode:
-            await self.config.guild(guild).single_payer_mode.set(False)
-            await self.config.guild(guild).single_payer_id.set(None)
+            await self.config.guild(guild).socialized_medicine.set(False)
+            await self.config.guild(guild).socialized_medicine_payer_id.set(None)
             await ctx.send(f"Payment mode set to individual payment by each user.")
         else:
             if not single_payer:
                 await ctx.send("You need to mention a user who will be the single payer.")
                 return
-            await self.config.guild(guild).single_payer_mode.set(True)
-            await self.config.guild(guild).single_payer_id.set(single_payer.id)
+            await self.config.guild(guild).socialized_medicine.set(True)
+            await self.config.guild(guild).socialized_medicine_payer_id.set(single_payer.id)
             await ctx.send(f"New provider of socialized medicine: {single_payer.display_name}.")
 
     @bullshidoset_group.command(name="rounds", description="Set the number of rounds in a fight.")
@@ -440,32 +440,41 @@ class Bullshido(commands.Cog):
 
 
     @bullshido_group.command(name="treat", description="Treat a permanent injury")
-    async def treat(self, ctx: commands.Context, *, injury: str, body_part: str):
-        """Treat a permanent injury."""
+    async def treat_injury(self, ctx, user: discord.Member, injury: str):
+        """Treat specific injury for a user."""
+        guild = ctx.guild
+        single_payer_mode = await self.config.guild(guild).single_payer_mode()
+        single_payer_id = await self.config.guild(guild).single_payer_id()
         currency = await bank.get_currency_name(ctx.guild)
-        user = ctx.author
-        user_data = await self.config.user(user).all()
-        permanent_injuries = user_data.get("permanent_injuries", {})
 
-        if body_part not in permanent_injuries or injury not in permanent_injuries[body_part]:
-            await ctx.send("You do not have this injury.")
+        user_data = await self.config.user(user).all()
+        permanent_injuries = user_data.get("permanent_injuries", [])
+
+        if injury not in permanent_injuries:
+            await ctx.send(f"{user.display_name} does not have the specified injury: {injury}.")
             return
 
         cost = INJURY_TREATMENT_COST.get(injury)
-        if cost is None:
-            await ctx.send("This injury cannot be treated.")
+        if not cost:
+            await ctx.send(f"The specified injury: {injury} is not recognized.")
             return
 
-        balance = await bank.get_balance(user)
-        if balance < cost:
-            await ctx.send(f"You do not have enough {currency} to treat this injury. You need {cost} {currency}.")
-            return
+        if single_payer_mode:
+            single_payer = guild.get_member(single_payer_id)
+            if single_payer:
+                await bank.withdraw_credits(single_payer, cost)
+                await ctx.send(f"{single_payer.display_name} has paid {cost} {currency} for treating {user.display_name}'s {injury}.")
+            else:
+                await ctx.send("Single payer is not found. Please reconfigure the payment mode.")
+                return
+        else:
+            await bank.withdraw_credits(user, cost)
+            await ctx.send(f"{user.display_name} has paid {cost} {currency} for their own {injury} treatment.")
 
-        await bank.withdraw_credits(user, cost)
-        permanent_injuries[body_part].remove(injury)
+        # Code to remove the specified injury from user config
+        permanent_injuries.remove(injury)
         await self.config.user(user).permanent_injuries.set(permanent_injuries)
-
-        await ctx.send(f"Successfully treated {injury} for {cost} {currency}. Your new balance is {balance - cost} {currency}.")
+        await ctx.send(f"{user.display_name}'s {injury} has been treated and removed.")
     
     @bullshido_group.command(name="rankings", description="Top fighters in the Bullshido Kumatae.", aliases = ["rank", "leaderboard", "lb"])
     async def rankings(self, ctx: commands.Context):
