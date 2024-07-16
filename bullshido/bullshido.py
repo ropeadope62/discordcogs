@@ -362,7 +362,7 @@ class Bullshido(commands.Cog):
         embed = discord.Embed(
             title=f"{fighter1_data['name']} vs {fighter2_data['name']}",
             description=narrative,
-            color=0x00FF00
+            color=0xFF0000
         )
 
         await ctx.send(embed=embed)
