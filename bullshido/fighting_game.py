@@ -8,7 +8,7 @@ from io import BytesIO
 import os
 from .fighting_constants import (STRIKES, CRITICAL_RESULTS, CRITICAL_MESSAGES, BODY_PARTS, GRAPPLE_KEYWORDS, GRAPPLE_ACTIONS, 
                                  STRIKE_ACTIONS, TKO_MESSAGES, KO_MESSAGES, KO_VICTOR_MESSAGE, TKO_VICTOR_MESSAGE, REFEREE_STOPS, FIGHT_RESULT_LONG)
-
+from .bullshido_ai import generate_hype
 class FightingGame:
     active_games = {}
 
@@ -450,6 +450,9 @@ class FightingGame:
 
         FightingGame.set_game_active(channel_id, True)
         fight_image_path = await self.generate_fight_image()
+        user_config = await self.bullshido_cog.config.all_users()
+        narrative = generate_hype(user_config, self.player1.id, self.player2.id)
+
 
         embed = discord.Embed(
             title=f"{self.player1.display_name} vs {self.player2.display_name}",
@@ -457,8 +460,10 @@ class FightingGame:
             color=0xFF0000
         )
         file = discord.File(fight_image_path, filename="fight_image.png")
+        
         embed.set_image(url="attachment://fight_image.png")
-
+        embed.add_field(name="Matchup:", value=narrative, inline=False)
+        
         self.embed_message = await self.channel.send(file=file, embed=embed)
         await asyncio.sleep(10)
 
