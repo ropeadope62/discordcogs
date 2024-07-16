@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont, ImageTransform
 from .fighting_constants import INJURY_TREATMENT_COST
+from .bullshido_ai import generate_hype
 import logging
 import os
 
@@ -334,6 +335,37 @@ class Bullshido(commands.Cog):
             return
         for chunk in [logs[i:i+10] for i in range(0, len(logs), 10)]:
             await ctx.send("```\n{}\n```".format("\n".join(chunk)))
+            
+    @bullshido_group.command(name="hype", description="Hype the fight between two opponents.")
+    async def hype_fight(self, ctx, fighter1: discord.Member, fighter2: discord.Member):
+        fighter1_id = fighter1.id
+        fighter2_id = fighter2.id
+
+        user_config = {}
+
+        fighter1_data = await self.config.user_from_id(fighter1_id).all()
+        fighter2_data = await self.config.user_from_id(fighter2_id).all()
+
+        if not fighter1_data or not fighter2_data:
+            await ctx.send("Invalid fighter ID.")
+            return
+
+        # Update names from Discord API
+        fighter1_data["name"] = fighter1.display_name
+        fighter2_data["name"] = fighter2.display_name
+
+        user_config[str(fighter1_id)] = fighter1_data
+        user_config[str(fighter2_id)] = fighter2_data
+
+        narrative = generate_hype(user_config, fighter1_id, fighter2_id)
+
+        embed = discord.Embed(
+            title=f"{fighter1_data['name']} vs {fighter2_data['name']}",
+            description=narrative,
+            color=0x00FF00
+        )
+
+        await ctx.send(embed=embed)
     
     @bullshido_group.command(name="top_injuries", description="List the players with the 10 most permanent injuries")
     async def top_injuries(self, ctx: commands.Context):
