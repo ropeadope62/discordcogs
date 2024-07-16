@@ -18,7 +18,7 @@ def generate_hype(user_config, attacker_id, defender_id, attacker_name, defender
     
 
     prompt = f"""
-    Given the following user config for {attacker_name}, {attacker_data} and {defender_name}, {defender_data}, Generate some funny hype about the upcoming match. Keep your responses under 200 characters. Include some of their stats in the response and any past matchups between the fighters.  
+    Given the following user config for {attacker_name}, {attacker_data} and {defender_name}, {defender_data}, Generate some funny hype about the upcoming match. Keep your responses under 200 characters. Include some of their stats in the response and any past matchups between the fighters but make sure they are accurate with the fight result.  
         """
 
     response = client.chat.completions.create(model="gpt-4",
