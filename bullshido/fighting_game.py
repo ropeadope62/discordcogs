@@ -34,7 +34,10 @@ class FightingGame:
         self.player2_critical_message = ""
         self.player1_critical_injuries = []
         self.player2_critical_injuries = []
-        self.user_config = {}
+        self.user_config = {
+            str(player1.id): player1_data,
+            str(player2.id): player2_data
+        }
         self.max_health = 100
         self.ACTION_COST = 10
         self.BASE_MISS_PROBABILITY = 0.15
@@ -454,7 +457,7 @@ class FightingGame:
         user_config = await self.bullshido_cog.config.all_users()
         print(f"user_config: {user_config}")  # Debug log
         print(f"player1 ID: {self.player1.id}, player2 ID: {self.player2.id}")  # Debug log
-        narrative = generate_hype(self.user_config, self.player1.id, self.player2.id)
+        narrative = generate_hype(self.user_config, str(self.player1.id), str(self.player2.id))
 
         embed = discord.Embed(
             title=f"{self.player1.display_name} vs {self.player2.display_name}",

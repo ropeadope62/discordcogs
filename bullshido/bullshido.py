@@ -518,9 +518,9 @@ class Bullshido(commands.Cog):
             # Set up an instance of game session
             game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self)
             game.user_config = {
-            player1.id: player1_data,
-            player2.id: player2_data
-        }
+            str(player1.id): player1_data,
+            str(player2.id): player2_data
+            }
             await game.start_game()
 
         except Exception as e:
