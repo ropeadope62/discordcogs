@@ -347,7 +347,7 @@ GRAPPLE_KEYWORDS = [
 STRIKE_ACTIONS = [
     "throws", "slams", "nails", "whacks", "connects", "rips", "thuds", "crushes", "snaps", "smashes", 
     "pounds", "cracks", "hits", "drives", "lands", "bashes", "clobbers", "wallops", "hammers",
-    "strikes", "belts", "mashes", "pummels", "slugs", "batters", "blasts", "bludgeons", "thumps", "thwacks",
+"strikes", "belts", "mashes", "pummels", "slugs", "batters", "blasts", "bludgeons", "thumps", "thwacks",
     "wacks", "whams", "socks", "smacks", "beats", "whomps", "whips", "thwumps", "clangs", "claps", "donks"
 ]
 
