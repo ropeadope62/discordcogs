@@ -34,6 +34,7 @@ class FightingGame:
         self.player2_critical_message = ""
         self.player1_critical_injuries = []
         self.player2_critical_injuries = []
+        self.user_config = {}
         self.max_health = 100
         self.ACTION_COST = 10
         self.BASE_MISS_PROBABILITY = 0.15
