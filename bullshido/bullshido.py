@@ -474,7 +474,7 @@ class Bullshido(commands.Cog):
         # Code to remove the specified injury from user config
         permanent_injuries.remove(injury)
         await self.config.user(user).permanent_injuries.set(permanent_injuries)
-        await ctx.send(f"{user.display_name}'s {injury} has been treated and removed.")
+        await ctx.send(f"{user.display_name}'s {injury} has been successfully treated.")
     
     @bullshido_group.command(name="rankings", description="Top fighters in the Bullshido Kumatae.", aliases = ["rank", "leaderboard", "lb"])
     async def rankings(self, ctx: commands.Context):
