@@ -443,8 +443,8 @@ class Bullshido(commands.Cog):
     async def treat_injury(self, ctx, user: discord.Member, injury: str):
         """Treat specific injury for a user."""
         guild = ctx.guild
-        single_payer_mode = await self.config.guild(guild).single_payer_mode()
-        single_payer_id = await self.config.guild(guild).single_payer_id()
+        single_payer_mode = await self.config.guild(guild).socialized_medicine()
+        single_payer_id = await self.config.guild(guild).socialized_medicine_payer_id()
         currency = await bank.get_currency_name(ctx.guild)
 
         user_data = await self.config.user(user).all()
