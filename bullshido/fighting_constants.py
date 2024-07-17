@@ -325,7 +325,53 @@ STRIKES = {
                 "Clock Choke": (6, 8),
                 "Paper Cutter Choke": (7, 9),
                 "Bread Cutter Choke": (8, 10)
-            }
+            },
+            "Zui Quan": {
+                "Drunken Fist": (6, 8),
+                "Swaying Step": (5, 7),
+                "Stumbling Palm": (6, 8),
+                "Reeling Punch": (6, 8),
+                "Slippery Kick": (6, 8),
+                "Drunken Elbow": (4, 6),
+                "Wobbly Knee": (5, 7),
+                "Tipsy Headbutt": (6, 8),
+                "Liquor Sweep": (6, 8),
+                "Swerving Dodge": (7, 9),
+                "Spinning Strike": (7, 9),
+                "Rolling Throw": (6, 8),
+                "Dizzy Jab": (7, 9),
+                "Teetering Uppercut": (7, 9),
+                "Unsteady Palm": (7, 9),
+                "Wobble Stance": (6, 8),
+                "Tipsy Crane": (5, 7),
+                "Faltering Step": (6, 8),
+                "Drunken Backfist": (7, 9),
+                "Swaggering Kick": (7, 9),
+                "Liquor Leg Sweep": (6, 8),
+                "Staggering Punch": (7, 9),
+                "Rolling Fist": (8, 10),
+                "Lu Dongbin's Drunken Fist": (6, 8),
+                "Lu Dongbin's Sword Dance": (7, 9),
+                "Lu Dongbin's Evil Dispel": (8, 10),
+                "Li Tieguai's Iron Cane Strike": (6, 8),
+                "Li Tieguai's Crippled Feint": (5, 7),
+                "Li Tieguai's One Leg Power Kick": (7, 9),
+                "Han Zhongli's Cauldron Smash": (7, 9),
+                "Han Zhongli's Wine Jug Throw": (6, 8),
+                "Han Zhongli's Strength Tackle": (8, 10),
+                "Lan Caihe's Swaying Waist": (6, 8),
+                "Lan Caihe's Feminine Posture Strike": (5, 7),
+                "Lan Caihe's Bamboo Basket Attack": (7, 9),
+                "Zhang Guolao's Donkey Kick": (6, 8),
+                "Zhang Guolao's Donkey Ride Posture": (5, 7),
+                "Zhang Guolao's Swift Double Kick": (7, 9),
+                "Cao Guojiu's Joint Lock": (6, 8),
+                "Cao Guojiu's Deadly Soft Point Attack": (7, 9),
+                "Cao Guojiu's Clever Counter": (6, 8),
+                "Han Xiangzi's Flute Strike": (6, 8),
+                "Han Xiangzi's Wrist Counter": (7, 9),
+}   
+                
         }
 
 BODY_PARTS = [
@@ -341,7 +387,7 @@ GRAPPLE_ACTIONS = [
     "completes", "nails", "executes", "finishes", "performs", "grabs", "attains", "pulls off", "applies", "transitions to", "forces"]
 
 GRAPPLE_KEYWORDS = [
-    "Choke", "Mount", "Triangle", "Kimura", "Omoplata", "Crucifix", "Guillotine", "Lock", "Bar", "Hold", "Submission", "Crank", "Takedown", "Suplex", "Slam", "Throw", "Drag", "Take", "Redirect", "Chokehold", "Single Leg", "Double Leg", "Hug", "Toss", "Fireman", "Piledriver", "Full Nelson", "Cradle", "Clinch"
+    "Choke", "Mount", "Triangle", "Kimura", "Omoplata", "Crucifix", "Guillotine", "Lock", "Bar", "Hold", "Submission", "Crank", "Takedown", "Suplex", "Slam", "Throw", "Drag", "Take", "Redirect", "Chokehold", "Single Leg", "Double Leg", "Hug", "Toss", "Fireman", "Piledriver", "Full Nelson", "Cradle", "Clinch", "Tackle"
 ]
 
 STRIKE_ACTIONS = [
@@ -1211,3 +1257,11 @@ KO_VICTOR_MESSAGE = [
 
 
 ACTION_COST = 10
+
+XP_REQUIREMENTS = {
+    1: 100,
+    2: 300,
+    3: 600,
+    4: 1000,
+    5: 1500,
+}

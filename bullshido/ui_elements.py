@@ -69,24 +69,25 @@ class SelectFightingStyleView(ui.View):
     @ui.button(label="Brazilian Jiu-Jitsu", style=ButtonStyle.primary)
     async def handle_bjj(self, interaction: discord.Interaction, button: ui.Button):
         await self.on_fighting_style_selected(interaction, "Brazilian Jiu-Jitsu")
+        
+    @ui.button(label="Zui Quan", style=ButtonStyle.primary)
+    async def handle_bjj(self, interaction: discord.Interaction, button: ui.Button):
+        await self.on_fighting_style_selected(interaction, "Brazilian Jiu-Jitsu")
 
-class LevelUpView(ui.View):
-    def __init__(self, on_stat_selected, user):
-        super().__init__(timeout=180)
-        self.on_stat_selected = on_stat_selected
+class StatIncreaseView(discord.ui.View):
+    def __init__(self, config, user):
+        super().__init__()
+        self.config = config
         self.user = user
 
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        return interaction.user == self.user
+    @discord.ui.button(label="Stamina", style=discord.ButtonStyle.primary)
+    async def increase_stamina(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.increase_stat(interaction, "stamina")
 
-    @ui.button(label="Increase Max Health", style=ButtonStyle.primary)
-    async def handle_health(self, interaction: discord.Interaction, button: ui.Button):
-        await self.on_stat_selected(interaction, "health")
+    @discord.ui.button(label="Health", style=discord.ButtonStyle.primary)
+    async def increase_health(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.increase_stat(interaction, "health")
 
-    @ui.button(label="Increase Stamina", style=ButtonStyle.primary)
-    async def handle_stamina(self, interaction: discord.Interaction, button: ui.Button):
-        await self.on_stat_selected(interaction, "stamina")
-
-    @ui.button(label="Increase Damage", style=ButtonStyle.primary)
-    async def handle_damage(self, interaction: discord.Interaction, button: ui.Button):
-        await self.on_stat_selected(interaction, "damage")
+    @discord.ui.button(label="Damage", style=discord.ButtonStyle.primary)
+    async def increase_damage(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.increase_stat(interaction, "damage")

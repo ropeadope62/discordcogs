@@ -2,12 +2,12 @@ import discord
 import asyncio
 from redbot.core import commands, Config, bank
 from discord import Interaction
-from .ui_elements import SelectFightingStyleView
+from .ui_elements import SelectFightingStyleView, StatIncreaseView
 from .fighting_game import FightingGame
 from datetime import datetime, timedelta
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont, ImageTransform
-from .fighting_constants import INJURY_TREATMENT_COST
+from .fighting_constants import INJURY_TREATMENT_COST, XP_REQUIREMENTS
 from .bullshido_ai import generate_hype
 import logging
 import os
@@ -34,7 +34,12 @@ class Bullshido(commands.Cog):
             "fighting_style": None,
             "wins": {"UD": 0, "SD": 0, "TKO": 0, "KO": 0},
             "losses": {"UD": 0, "SD": 0, "TKO": 0, "KO": 0},
+            "xp": 0,
             "level": 1,
+            "level_points_to_distribute": 0,
+            "stamina_bonus": 0,
+            "health_bonus": 0,
+            "damage_bonus": 0,
             "training_level": 1,
             "nutrition_level": 1,
             "morale": 100,
@@ -122,6 +127,37 @@ class Bullshido(commands.Cog):
                 return ctx.user.guild_permissions.administrator or ctx.user.guild_permissions.manage_guild
             return False
         return commands.check(predicate)
+    
+    async def xp_for_next_level(self, level):
+        return XP_REQUIREMENTS.get(level, None)
+    
+    async def add_xp(self, user, xp):
+        user_data = await self.config.user(user).all()
+        user_data["xp"] += xp
+        next_level_xp = await self.xp_for_next_level(user_data["level"])
+
+        if next_level_xp and user_data["xp"] >= next_level_xp:
+            user_data["level"] += 1
+            user_data["points_to_distribute"] += 1
+            user_data["xp"] -= next_level_xp
+
+            await user.send(f"Your level has increased! You've reached level {user_data['level']}! You have 1 point to distribute to Stamina, Health, or Damage. Choose wisely..")
+            await self.prompt_stat_increase(user)
+
+        await self.config.user(user).set(user_data)
+
+    async def prompt_stat_increase(self, user):
+        embed = discord.Embed(
+            title="Level Up!",
+            description="Choose a stat to increase:",
+            color=discord.Color.green()
+        )
+        view = StatIncreaseView(self.config, user)
+        await user.send(embed=embed, view=view)
+
+    async def end_fight(self, winner, loser):
+        await self.add_xp(winner, 10)
+        await self.add_xp(loser, 5)
     
     async def set_fighting_style(self, interaction: discord.Interaction, new_style: str):
         user = interaction.user
