@@ -256,6 +256,11 @@ class Bullshido(commands.Cog):
                 value=f"{await self.config.guild(ctx.guild).permanent_injury_chance()}",
                 inline=False
             )
+            embed.add_field(
+                name="Socialized Medicine:",
+                value=f"{await self.config.guild(ctx.guild).socialized_medicine()}",
+                inline=False
+            )
 
             await ctx.send(embed=embed) 
 

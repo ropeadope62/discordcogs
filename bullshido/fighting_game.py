@@ -322,7 +322,7 @@ class FightingGame:
                 await self.declare_winner_by_ko(round_message)
                 return True
 
-            if (self.player1_health < 20 or self.player2_health < 20) and random.random() < 0.5:
+            if (self.player1_health < 20 or self.player2_health < 20) and random.random() < 0.4:
                 if self.player1_health < 20:
                     await self.declare_winner_by_tko(round_message, self.player1)
                 else:
