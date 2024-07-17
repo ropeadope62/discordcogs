@@ -443,8 +443,8 @@ class Bullshido(commands.Cog):
     async def treat_injury(self, ctx, user: discord.Member, *, injury: str):
         """Treat specific injury for a user."""
         guild = ctx.guild
-        single_payer_mode = await self.config.guild(guild).socialized_medicine()
-        single_payer_id = await self.config.guild(guild).socialized_medicine_payer_id()
+        socialized_medicine_mode = await self.config.guild(guild).socialized_medicine()
+        socialized_medicine_payer_id = await self.config.guild(guild).socialized_medicine_payer_id()
         currency = await bank.get_currency_name(ctx.guild)
 
         user_data = await self.config.user(user).all()
@@ -459,13 +459,13 @@ class Bullshido(commands.Cog):
             await ctx.send(f"The specified injury: {injury} is not recognized.")
             return
 
-        if single_payer_mode:
-            single_payer = guild.get_member(single_payer_id)
-            if single_payer:
-                await bank.withdraw_credits(single_payer, cost)
-                await ctx.send(f"{single_payer.display_name} has paid {cost} {currency} for treating {user.display_name}'s {injury}.")
+        if socialized_medicine_mode:
+            socialized_medicine_payer = guild.get_member(socialized_medicine_payer_id)
+            if socialized_medicine_mode:
+                await bank.withdraw_credits(socialized_medicine_payer, cost)
+                await ctx.send(f"Through socialized medicine, {socialized_medicine_payer.display_name} has paid {cost} {currency} for treating {user.display_name}'s {injury}.")
             else:
-                await ctx.send("Single payer is not found. Please reconfigure the payment mode.")
+                await ctx.send("Socialized medicine payer is not found. Please reconfigure the payment mode.")
                 return
         else:
             await bank.withdraw_credits(user, cost)
