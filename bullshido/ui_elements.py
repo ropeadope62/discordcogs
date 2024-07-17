@@ -72,7 +72,7 @@ class SelectFightingStyleView(ui.View):
         
     @ui.button(label="Zui Quan", style=ButtonStyle.primary)
     async def handle_bjj(self, interaction: discord.Interaction, button: ui.Button):
-        await self.on_fighting_style_selected(interaction, "Brazilian Jiu-Jitsu")
+        await self.on_fighting_style_selected(interaction, "Zui Quan")
 
 class StatIncreaseView(discord.ui.View):
     def __init__(self, config, user):
