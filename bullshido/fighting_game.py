@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import os
 from .fighting_constants import (STRIKES, CRITICAL_RESULTS, CRITICAL_MESSAGES, BODY_PARTS, GRAPPLE_KEYWORDS, GRAPPLE_ACTIONS, BODY_PART_INJURIES
-                                 STRIKE_ACTIONS, TKO_MESSAGES, KO_MESSAGES, KO_VICTOR_MESSAGE, TKO_VICTOR_MESSAGE, REFEREE_STOPS, FIGHT_RESULT_LONG)
+                                ,STRIKE_ACTIONS, TKO_MESSAGES, KO_MESSAGES, KO_VICTOR_MESSAGE, TKO_VICTOR_MESSAGE, REFEREE_STOPS, FIGHT_RESULT_LONG)
 from .bullshido_ai import generate_hype
 class FightingGame:
     active_games = {}
@@ -205,6 +205,7 @@ class FightingGame:
         message = ""
         conclude_message = ""
         critical_injury = ""
+        critical_result_key = ""
 
         try:
             strike, damage_range = random.choice(list(STRIKES[style].items()))
@@ -215,9 +216,8 @@ class FightingGame:
             is_critical_hit = random.random() < self.CRITICAL_CHANCE
             if is_critical_hit:
                 modified_damage = base_damage * 2
-                possible_injuries = BODY_PART_INJURIES.get(body_part, [])
-                critical_injury = random.choice(possible_injuries) if possible_injuries else "Unknown Injury"
-                conclude_message = f"{defender.display_name} suffers a critical injury: {critical_injury}!"
+                critical_result_key, critical_injury = random.choice(list(CRITICAL_RESULTS.items()))
+                conclude_message = critical_result_key.format(defender=defender.display_name)
                 message = random.choice(CRITICAL_MESSAGES)
 
                 if random.random() < self.PERMANENT_INJURY_CHANCE:
@@ -229,6 +229,7 @@ class FightingGame:
             print(f"Error during get_strike_damage: {e}")
             print(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
+
 
 
     async def target_bodypart(self):
@@ -333,6 +334,7 @@ class FightingGame:
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
+
 
 
 
