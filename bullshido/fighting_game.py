@@ -216,12 +216,18 @@ class FightingGame:
             is_critical_hit = random.random() < self.CRITICAL_CHANCE
             if is_critical_hit:
                 modified_damage = base_damage * 2
-                critical_result_key, critical_injury = random.choice(list(CRITICAL_RESULTS.items()))
-                conclude_message = critical_result_key.format(defender=defender.display_name)
-                message = random.choice(CRITICAL_MESSAGES)
+                possible_injuries = BODY_PART_INJURIES.get(body_part, [])
+                if possible_injuries:
+                    critical_injury = random.choice(possible_injuries)
+                    for result, injury in CRITICAL_RESULTS.items():
+                        if injury == critical_injury:
+                            critical_result_key = result
+                            break
+                    conclude_message = critical_result_key.format(defender=defender.display_name)
+                    message = random.choice(CRITICAL_MESSAGES)
 
-                if random.random() < self.PERMANENT_INJURY_CHANCE:
-                    critical_injury = f"Permanent Injury: {critical_injury}"
+                    if random.random() < self.PERMANENT_INJURY_CHANCE:
+                        critical_injury = f"Permanent Injury: {critical_injury}"
             else:
                 modified_damage = round(modified_damage * modifier)
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
@@ -334,6 +340,7 @@ class FightingGame:
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
+
 
 
 
