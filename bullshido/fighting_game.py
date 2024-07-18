@@ -6,7 +6,7 @@ import requests
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import os
-from .fighting_constants import (STRIKES, CRITICAL_RESULTS, CRITICAL_MESSAGES, BODY_PARTS, GRAPPLE_KEYWORDS, GRAPPLE_ACTIONS, 
+from .fighting_constants import (STRIKES, CRITICAL_RESULTS, CRITICAL_MESSAGES, BODY_PARTS, GRAPPLE_KEYWORDS, GRAPPLE_ACTIONS, BODY_PART_INJURIES
                                  STRIKE_ACTIONS, TKO_MESSAGES, KO_MESSAGES, KO_VICTOR_MESSAGE, TKO_VICTOR_MESSAGE, REFEREE_STOPS, FIGHT_RESULT_LONG)
 from .bullshido_ai import generate_hype
 class FightingGame:
@@ -197,7 +197,7 @@ class FightingGame:
         adjusted_damage = base_damage * (1 + training_bonus + diet_bonus)
         return round(adjusted_damage)
 
-    def get_strike_damage(self, style, attacker, defender):
+    def get_strike_damage(self, style, attacker, defender, body_part):
         strike = ""
         damage_range = (0, 0)
         base_damage = 0
@@ -205,7 +205,6 @@ class FightingGame:
         message = ""
         conclude_message = ""
         critical_injury = ""
-        critical_result_key = ""
 
         try:
             strike, damage_range = random.choice(list(STRIKES[style].items()))
@@ -216,20 +215,21 @@ class FightingGame:
             is_critical_hit = random.random() < self.CRITICAL_CHANCE
             if is_critical_hit:
                 modified_damage = base_damage * 2
-                critical_result_key, critical_injury = random.choice(list(CRITICAL_RESULTS.items()))
-                conclude_message = critical_result_key.format(defender=defender.display_name)
+                possible_injuries = BODY_PART_INJURIES.get(body_part, [])
+                critical_injury = random.choice(possible_injuries) if possible_injuries else "Unknown Injury"
+                conclude_message = f"{defender.display_name} suffers a critical injury: {critical_injury}!"
                 message = random.choice(CRITICAL_MESSAGES)
 
                 if random.random() < self.PERMANENT_INJURY_CHANCE:
                     critical_injury = f"Permanent Injury: {critical_injury}"
-
             else:
                 modified_damage = round(modified_damage * modifier)
-            return strike, modified_damage, message, conclude_message, critical_injury, critical_result_key
+            return strike, modified_damage, message, conclude_message, critical_injury, body_part
         except Exception as e:
             print(f"Error during get_strike_damage: {e}")
             print(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
-            return strike, modified_damage, message, conclude_message, critical_injury, critical_result_key
+            return strike, modified_damage, message, conclude_message, critical_injury, body_part
+
 
     async def target_bodypart(self):
         bodypart = random.choice(BODY_PARTS)
@@ -275,19 +275,19 @@ class FightingGame:
                 self.current_turn = defender
                 return False
 
-            strike, damage, critical_message, conclude_message, critical_injury, critical_result_key = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender)
+            bodypart = await self.target_bodypart()
+            strike, damage, critical_message, conclude_message, critical_injury, targeted_bodypart = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender, bodypart)
+            
             if not strike:
                 await self.update_health_bars(round_number, "An error occurred during the turn: Failed to determine strike.", None)
                 return True
-
-            bodypart = await self.target_bodypart()
 
             if self.is_grapple_move(strike):
                 action = random.choice(GRAPPLE_ACTIONS)
                 message = f"{critical_message} {attacker.display_name} {action} a {strike} causing {damage} damage! {conclude_message}"
             else:
                 action = random.choice(STRIKE_ACTIONS)
-                message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {bodypart} causing {damage} damage! {conclude_message}"
+                message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {targeted_bodypart} causing {damage} damage! {conclude_message}"
 
             if self.current_turn == self.player1:
                 self.player2_health -= damage
@@ -297,8 +297,7 @@ class FightingGame:
                     self.player2_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
                         permanent_injury = critical_injury.split(": ")[1]
-                        body_part = CRITICAL_RESULTS[critical_result_key]
-                        await self.add_permanent_injury(defender, permanent_injury, body_part)
+                        await self.add_permanent_injury(defender, permanent_injury, targeted_bodypart)
             else:
                 self.player1_health -= damage
                 self.player2_stamina -= self.BASE_STAMINA_COST
@@ -307,8 +306,7 @@ class FightingGame:
                     self.player1_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
                         permanent_injury = critical_injury.split(": ")[1]
-                        body_part = CRITICAL_RESULTS[critical_result_key]
-                        await self.add_permanent_injury(defender, permanent_injury, body_part)
+                        await self.add_permanent_injury(defender, permanent_injury, targeted_bodypart)
 
             sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)
             await asyncio.sleep(sleep_duration)
@@ -335,6 +333,7 @@ class FightingGame:
             print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
+
 
 
     async def declare_winner_by_ko(self, round_message):
