@@ -324,10 +324,12 @@ class FightingGame:
             await self.update_health_bars(round_number, message, None)
 
             if self.player1_health <= 0 or self.player2_health <= 0:
+                await asyncio.sleep(2)
                 await self.declare_winner_by_ko(round_message)
                 return True
 
             if (self.player1_health < 20 or self.player2_health < 20) and random.random() < 0.4:
+                await asyncio.sleep(2)
                 if self.player1_health < 20:
                     await self.declare_winner_by_tko(round_message, self.player1)
                 else:
