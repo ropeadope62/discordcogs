@@ -832,6 +832,8 @@ INJURY_TREATMENT_COST = {
     "Cracked Rib": 6230,
     "Sprained Wrist": 1100,
     "Sprained Ankle": 1100,
+    "Broken Left Ankle": 2100,
+    "Broken Right Ankle": 2100, 
     "Deep Arm Cut": 1150,
     "Deep Leg Cut": 1150,
     "Torn Ligament": 1300,
