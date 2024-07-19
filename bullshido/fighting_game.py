@@ -43,6 +43,7 @@ class FightingGame:
         self.BASE_MISS_PROBABILITY = 0.15
         self.BASE_STAMINA_COST = 10
         self.FIGHT_TEMPLATE_URL = "https://i.ibb.co/MSprvBG/bullshido-template.png"
+        self.BASE_TKO_PROBABILITY = 0.5
         self.embed_message = None
         if player1_data['training_level'] >= player2_data['training_level']:
             self.current_turn = player1
@@ -245,7 +246,7 @@ class FightingGame:
     def is_grapple_move(self, strike):
         return any(keyword.lower() in strike.lower() for keyword in GRAPPLE_KEYWORDS)
 
-    def calculate_miss_probability(self, attacker_stamina, attacker_training, defender_training, defender_stamina):
+    def calculate_miss_probability(self, attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation):
         miss_probability = self.BASE_MISS_PROBABILITY
 
         if attacker_stamina < 50:
@@ -256,6 +257,9 @@ class FightingGame:
 
         miss_probability -= 0.01 * math.log10(attacker_training + 1)
         miss_probability += 0.01 * math.log10(defender_training + 1)
+        
+        intimidation_factor = (defender_intimidation - attacker_intimidation) * 0.01
+        miss_probability += intimidation_factor
 
         return min(max(miss_probability, 0.05), 0.5)
 
@@ -272,10 +276,12 @@ class FightingGame:
         defender_stamina = self.player2_stamina if self.current_turn == self.player1 else self.player1_stamina
         attacker_training = self.player1_data["training_level"] if self.current_turn == self.player1 else self.player2_data["training_level"]
         defender_training = self.player2_data["training_level"] if self.current_turn == self.player1 else self.player1_data["training_level"]
+        attacker_intimidation = self.player1_data["intimidation_level"] if self.current_turn == self.player1 else self.player2_data["intimidation_level"]
+        defender_intimidation = self.player2_data["intimidation_level"] if self.current_turn == self.player1 else self.player1_data["intimidation_level"]
         style = self.player1_data["fighting_style"] if self.current_turn == self.player1 else self.player2_data["fighting_style"]
 
         try:
-            miss_probability = self.calculate_miss_probability(attacker_stamina, attacker_training, defender_training, defender_stamina)
+            miss_probability = self.calculate_miss_probability(attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation)
             if random.random() < miss_probability:
                 miss_message = f"{attacker.display_name} missed their attack on {defender.display_name}!"
                 await self.update_health_bars(round_number, miss_message, None)
@@ -327,8 +333,10 @@ class FightingGame:
                 await asyncio.sleep(2)
                 await self.declare_winner_by_ko(round_message)
                 return True
+            
+            tko_probability = self.calculate_tko_probability(attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation)
 
-            if (self.player1_health < 20 or self.player2_health < 20) and random.random() < 0.4:
+            if (self.player1_health < 20 or self.player2_health < 20) and random.random() < tko_probability:
                 await asyncio.sleep(2)
                 if self.player1_health < 20:
                     await self.declare_winner_by_tko(round_message, self.player1)
@@ -344,7 +352,17 @@ class FightingGame:
             return True
 
 
+    def calculate_tko_probability(self, attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation):
+        base_tko_chance = self.BASE_TKO_PROBABILITY
+        # Factor in stamina, training and intimidation at 10% each
+        stamina_factor = (attacker_stamina - defender_stamina) * 0.01
+        training_factor = (attacker_training - defender_training) * 0.01
+        intimidation_factor = (attacker_intimidation - defender_intimidation) * 0.01
+        # Add up all factors
+        tko_probability = base_tko_chance + stamina_factor + training_factor + intimidation_factor
 
+        # Probability clamped between 0 and 0.75 (75%)
+        return max(0, min(0.75, tko_probability))
 
 
     async def declare_winner_by_ko(self, round_message):
