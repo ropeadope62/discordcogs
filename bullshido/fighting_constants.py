@@ -526,7 +526,7 @@ GRAPPLE_ACTIONS = [
     "completes", "nails", "executes", "finishes", "performs", "grabs", "attains", "pulls off", "applies", "transitions to", "forces"]
 
 GRAPPLE_KEYWORDS = [
-    "Choke", "Mount", "Triangle", "Kimura", "Omoplata", "Crucifix", "Guillotine", "Lock", "Bar", "Hold", "Submission", "Crank", "Takedown", "Suplex", "Slam", "Throw", "Drag", "Take", "Redirect", "Chokehold", "Single Leg", "Double Leg", "Hug", "Toss", "Fireman", "Piledriver", "Full Nelson", "Cradle", "Clinch", "Tackle"
+    "Choke", "Mount", "Triangle", "Kimura", "Omoplata", "Crucifix", "Guillotine", "Lock", "Bar", "Hold", "Submission", "Crank", "Takedown", "Suplex", "Slam", "Throw", "Drag", "Take", "Redirect", "Chokehold", "Single Leg", "Double Leg", "Hug", "Toss", "Fireman", "Piledriver", "Full Nelson", "Cradle", "Clinch", "Tackle", "Backbreaker"
 ]
 
 STRIKE_ACTIONS = [
@@ -832,6 +832,8 @@ INJURY_TREATMENT_COST = {
     "Cracked Rib": 6230,
     "Sprained Wrist": 1100,
     "Sprained Ankle": 1100,
+    "Sprained Left Ankle": 1100,
+    "Sprained Right Ankle": 1100,
     "Broken Left Ankle": 2100,
     "Broken Right Ankle": 2100, 
     "Deep Arm Cut": 1150,
