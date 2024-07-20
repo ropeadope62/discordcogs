@@ -4,6 +4,7 @@ import asyncio
 import discord
 import math
 import requests
+from discord import File, Webhook
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import os
@@ -162,11 +163,9 @@ class FightingGame:
 
         # Upload to Discord via Webhook
         async with aiohttp.ClientSession() as session:
-            webhook = discord.Webhook.from_url(self.WEBHOOK_URL, adapter=discord.AsyncWebhookAdapter(session))
-            await webhook.send(file=avatar_file)
-            # Retrieve the URL of the uploaded avatar
-            webhook_message = await webhook.fetch_message(webhook.id)
-            avatar_url = webhook_message.attachments[0].url
+            webhook = Webhook.from_url(self.WEBHOOK_URL, session=session)
+            response = await webhook.send(file=avatar_file, wait=True)
+            avatar_url = response.attachments[0].url
 
         return avatar_url
 
