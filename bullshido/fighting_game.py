@@ -211,8 +211,7 @@ class FightingGame:
         player2_avatar_url = await self.generate_and_upload_avatar(self.player2, self.player2_health, self.max_health)
 
         # Add player 1 information
-        embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health}", inline=True)
-        embed.add_field(name=" ", value=f"![{self.player1.display_name}]({player1_avatar_url})", inline=True)
+        embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health} ![avatar]({player1_avatar_url})", inline=True)
 
         # Add player 1 stamina and injuries
         embed.add_field(name=f"{self.player1.display_name}'s Stamina", value=player1_stamina_status, inline=False)
@@ -222,8 +221,7 @@ class FightingGame:
             embed.add_field(name=f"{self.player1.display_name} Permanent Injuries", value=", ".join(self.player1_data["permanent_injuries"]), inline=False)
 
         # Add player 2 information
-        embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}", inline=True)
-        embed.add_field(name=" ", value=f"![{self.player2.display_name}]({player2_avatar_url})", inline=True)
+        embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health} ![avatar]({player2_avatar_url})", inline=True)
 
         # Add player 2 stamina and injuries
         embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
@@ -242,6 +240,7 @@ class FightingGame:
             await self.embed_message.edit(embed=embed)
         else:
             self.embed_message = await self.channel.send(embed=embed)
+
 
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
