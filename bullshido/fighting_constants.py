@@ -350,7 +350,7 @@ STRIKES = {
                 "Liquor Leg Sweep": (6, 8),
                 "Staggering Punch": (7, 9),
                 "Rolling Fist": (8, 10),
-                "Lu Dongbin's Drunken Fist": (6, 8),
+                "Lu Dongbin's Drunken Fist": (7, 9),
                 "Lu Dongbin's Sword Dance": (7, 9),
                 "Lu Dongbin's Evil Dispel": (8, 10),
                 "Li Tieguai's Iron Cane Strike": (6, 8),
@@ -362,10 +362,10 @@ STRIKES = {
                 "Lan Caihe's Swaying Waist": (6, 8),
                 "Lan Caihe's Feminine Posture Strike": (5, 7),
                 "Lan Caihe's Bamboo Basket Attack": (7, 9),
-                "Zhang Guolao's Donkey Kick": (6, 8),
+                "Zhang Guolao's Donkey Kick": (6, 10),
                 "Zhang Guolao's Donkey Ride Strike": (5, 10),
                 "Zhang Guolao's Swift Double Kick": (9, 10),
-                "Cao Guojiu's Joint Lock": (6, 8),
+                "Cao Guojiu's Joint Lock": (6, 10),
                 "Cao Guojiu's Deadly Soft Point Attack": (7, 10),
                 "Cao Guojiu's Clever Counter": (6, 8),
                 "Han Xiangzi's Flute Strike": (6, 8),
@@ -488,7 +488,7 @@ BODY_PART_INJURIES = {
         "Broken Right Ankle", "Sprained Right Ankle"
     ],
     "jaw": [
-        "Broken Jaw"
+        "Broken Jaw", "Dislocated Jaw"
     ],
     "left eye": [
         "Detached Left Retina", "Cut Eye", "Left Corneal Abrasion"
@@ -532,7 +532,7 @@ GRAPPLE_KEYWORDS = [
 STRIKE_ACTIONS = [
     "throws", "slams", "nails", "whacks", "connects", "rips", "thuds", "crushes", "snaps", "smashes", 
     "pounds", "cracks", "hits", "drives", "lands", "bashes", "clobbers", "wallops", "hammers",
-"strikes", "belts", "mashes", "pummels", "slugs", "batters", "blasts", "bludgeons", "thumps", "thwacks",
+    "strikes", "belts", "mashes", "pummels", "slugs", "batters", "blasts", "bludgeons", "thumps", "thwacks",
     "wacks", "whams", "socks", "smacks", "beats", "whomps", "whips", "thwumps", "clangs", "claps", "donks"
 ]
 
@@ -937,7 +937,8 @@ INJURY_TREATMENT_COST = {
     "Hamstring Tear": 6200,
     "Achilles Rupture": 10500,
     "Hip Fracture": 10400,
-    "Cervical Fracture": 5200
+    "Cervical Fracture": 5200,
+    "Throat Contusion": 2400
 }
 
 
