@@ -164,8 +164,9 @@ class FightingGame:
         async with aiohttp.ClientSession() as session:
             webhook = discord.Webhook.from_url(self.WEBHOOK_URL, adapter=discord.AsyncWebhookAdapter(session))
             await webhook.send(file=avatar_file)
-            message = await webhook.fetch_message(webhook.id)
-            avatar_url = message.attachments[0].url
+            # Retrieve the URL of the uploaded avatar
+            webhook_message = await webhook.fetch_message(webhook.id)
+            avatar_url = webhook_message.attachments[0].url
 
         return avatar_url
 
@@ -242,6 +243,7 @@ class FightingGame:
             await self.embed_message.edit(embed=embed)
         else:
             self.embed_message = await self.channel.send(embed=embed)
+
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
         training_bonus = math.log10(training_level + 1) * self.training_weight
