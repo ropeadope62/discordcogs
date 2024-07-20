@@ -1,4 +1,5 @@
 import random
+import aiohttp
 import asyncio
 import discord
 import math
@@ -11,6 +12,7 @@ from .fighting_constants import (STRIKES, CRITICAL_RESULTS, CRITICAL_MESSAGES, B
 from .bullshido_ai import generate_hype
 class FightingGame:
     active_games = {}
+    WEBHOOK_URL = "https://ptb.discord.com/api/webhooks/1264078679026307133/C-mjG4H90DXpSdKT2FAXcVHLnZbQlIUUZE1SQFrajfLi2hZYvJnjE8cET0UcZvMBxiOR"
 
     def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog):
         self.bot = bot
@@ -142,14 +144,14 @@ class FightingGame:
     
     
         
-    async def generate_and_upload_avatar(self, player, health, max_health, channel):
+    async def generate_and_upload_avatar(self, player, health, max_health):
         avatar_bytes = await player.avatar.read()
         avatar_image = Image.open(BytesIO(avatar_bytes)).convert("RGBA")
 
         damage_percentage = 100 - ((health / max_health) * 100)
-        avatar_image = FightingGame.adjust_red_channel(avatar_image, damage_percentage)
+        avatar_image = self.adjust_red_channel(avatar_image, damage_percentage)
 
-        # Resize avatar for embed display
+        # Resize avatar to fit the embed
         avatar_image = avatar_image.resize((50, 50))
 
         buffer = BytesIO()
@@ -157,8 +159,13 @@ class FightingGame:
         buffer.seek(0)
 
         avatar_file = discord.File(fp=buffer, filename=f"{player.id}_avatar.png")
-        message = await channel.send(file=avatar_file)
-        avatar_url = message.attachments[0].url
+
+        # Upload to Discord via Webhook
+        async with aiohttp.ClientSession() as session:
+            webhook = discord.Webhook.from_url(self.WEBHOOK_URL, adapter=discord.AsyncWebhookAdapter(session))
+            await webhook.send(file=avatar_file)
+            message = await webhook.fetch_message(webhook.id)
+            avatar_url = message.attachments[0].url
 
         return avatar_url
 
@@ -200,12 +207,12 @@ class FightingGame:
         )
 
         # Generate and upload avatars
-        player1_avatar_url = await self.generate_and_upload_avatar(self.player1, self.player1_health, self.max_health, self.channel)
-        player2_avatar_url = await self.generate_and_upload_avatar(self.player2, self.player2_health, self.max_health, self.channel)
+        player1_avatar_url = await self.generate_and_upload_avatar(self.player1, self.player1_health, self.max_health)
+        player2_avatar_url = await self.generate_and_upload_avatar(self.player2, self.player2_health, self.max_health)
 
         # Add player 1 information
         embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health}", inline=True)
-        embed.add_field(name=" ", value=f"[​]({player1_avatar_url})", inline=True)  # Embed small image URL as a space character to keep it inline
+        embed.add_field(name=" ", value=f"![{self.player1.display_name}]({player1_avatar_url})", inline=True)
 
         # Add player 1 stamina and injuries
         embed.add_field(name=f"{self.player1.display_name}'s Stamina", value=player1_stamina_status, inline=False)
@@ -216,7 +223,7 @@ class FightingGame:
 
         # Add player 2 information
         embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}", inline=True)
-        embed.add_field(name=" ", value=f"[​]({player2_avatar_url})", inline=True)  # Embed small image URL as a space character to keep it inline
+        embed.add_field(name=" ", value=f"![{self.player2.display_name}]({player2_avatar_url})", inline=True)
 
         # Add player 2 stamina and injuries
         embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
