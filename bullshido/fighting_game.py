@@ -57,6 +57,14 @@ class FightingGame:
     @staticmethod
     def set_game_active(channel_id, status):
         FightingGame.active_games[channel_id] = status
+        
+    @staticmethod
+    def adjust_red_channel(image, damage_percentage):
+            image = image.convert("RGBA")
+            r, g, b, a = image.split()
+            r = r.point(lambda i: min(i + int(255 * (damage_percentage / 100)), 255))
+            image = Image.merge('RGBA', (r, g, b, a))
+            return image
 
     async def generate_fight_image(self):
         template_url = self.FIGHT_TEMPLATE_URL
@@ -131,6 +139,28 @@ class FightingGame:
         background.save(final_image_path)
 
         return final_image_path
+    
+    
+        
+    async def generate_and_upload_avatar(self, player, health, max_health, channel):
+        avatar_bytes = await player.avatar.read()
+        avatar_image = Image.open(BytesIO(avatar_bytes)).convert("RGBA")
+
+        damage_percentage = 100 - ((health / max_health) * 100)
+        avatar_image = FightingGame.adjust_red_channel(avatar_image, damage_percentage)
+
+        # Resize avatar for embed display
+        avatar_image = avatar_image.resize((50, 50))
+
+        buffer = BytesIO()
+        avatar_image.save(buffer, format="PNG")
+        buffer.seek(0)
+
+        avatar_file = discord.File(fp=buffer, filename=f"{player.id}_avatar.png")
+        message = await channel.send(file=avatar_file)
+        avatar_url = message.attachments[0].url
+
+        return avatar_url
 
     def create_health_bar(self, current_health, max_health):
         progress = current_health / max_health
@@ -153,7 +183,7 @@ class FightingGame:
         else:
             return "Exhausted"
 
-    async def update_health_bars(self, round_number, latest_message, round_result, fight_over=False, final_result = None):
+    async def update_health_bars(self, round_number, latest_message, round_result, fight_over=False, final_result=None):
         player1_health_bar = self.create_health_bar(self.player1_health, self.max_health)
         player2_health_bar = self.create_health_bar(self.player2_health, self.max_health)
         player1_stamina_status = self.get_stamina_status(self.player1_stamina)
@@ -163,18 +193,32 @@ class FightingGame:
             title = f"Round {round_number} - {self.player1.display_name} vs {self.player2.display_name}"
         else:
             title = final_result if final_result else f"Fight Concluded - {self.player1.display_name} vs {self.player2.display_name}"
+        
         embed = discord.Embed(
             title=title,
             color=0xFF0000
         )
-        embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health}", inline=False)
+
+        # Generate and upload avatars
+        player1_avatar_url = await self.generate_and_upload_avatar(self.player1, self.player1_health, self.max_health, self.channel)
+        player2_avatar_url = await self.generate_and_upload_avatar(self.player2, self.player2_health, self.max_health, self.channel)
+
+        # Add player 1 information
+        embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health}", inline=True)
+        embed.add_field(name=" ", value=f"[​]({player1_avatar_url})", inline=True)  # Embed small image URL as a space character to keep it inline
+
+        # Add player 1 stamina and injuries
         embed.add_field(name=f"{self.player1.display_name}'s Stamina", value=player1_stamina_status, inline=False)
         if self.player1_critical_injuries:
             embed.add_field(name=f"{self.player1.display_name} Injuries", value=", ".join(self.player1_critical_injuries), inline=False)
         if self.player1_data.get("permanent_injuries"):
             embed.add_field(name=f"{self.player1.display_name} Permanent Injuries", value=", ".join(self.player1_data["permanent_injuries"]), inline=False)
 
-        embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}", inline=False)
+        # Add player 2 information
+        embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}", inline=True)
+        embed.add_field(name=" ", value=f"[​]({player2_avatar_url})", inline=True)  # Embed small image URL as a space character to keep it inline
+
+        # Add player 2 stamina and injuries
         embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
         if self.player2_critical_injuries:
             embed.add_field(name=f"{self.player2.display_name} Injuries", value=", ".join(self.player2_critical_injuries), inline=False)
