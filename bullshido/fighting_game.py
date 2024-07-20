@@ -18,6 +18,8 @@ class FightingGame:
     def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog):
         self.bot = bot
         self.channel = channel
+        self.player1_avatar_url = None
+        self.player2_avatar_url = None
         self.player1 = player1
         self.player2 = player2
         self.player1_data = player1_data
@@ -169,6 +171,12 @@ class FightingGame:
 
         return avatar_url
 
+    async def ensure_avatar_urls(self):
+        if not self.player1_avatar_url:
+            self.player1_avatar_url = await self.generate_and_upload_avatar(self.player1, self.player1_health, self.max_health)
+        if not self.player2_avatar_url:
+            self.player2_avatar_url = await self.generate_and_upload_avatar(self.player2, self.player2_health, self.max_health)
+
     def create_health_bar(self, current_health, max_health):
         progress = current_health / max_health
         progress_bar_length = 30
@@ -191,6 +199,8 @@ class FightingGame:
             return "Exhausted"
 
     async def update_health_bars(self, round_number, latest_message, round_result, fight_over=False, final_result=None):
+        await self.ensure_avatar_urls()  # Ensure avatars are uploaded only once
+
         player1_health_bar = self.create_health_bar(self.player1_health, self.max_health)
         player2_health_bar = self.create_health_bar(self.player2_health, self.max_health)
         player1_stamina_status = self.get_stamina_status(self.player1_stamina)
@@ -206,13 +216,9 @@ class FightingGame:
             color=0xFF0000
         )
 
-        # Generate and upload avatars
-        player1_avatar_url = await self.generate_and_upload_avatar(self.player1, self.player1_health, self.max_health)
-        player2_avatar_url = await self.generate_and_upload_avatar(self.player2, self.player2_health, self.max_health)
-
         # Add player 1 information
         embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health}", inline=True)
-        embed.set_thumbnail(url=player1_avatar_url)  # Set thumbnail to player 1's avatar
+        embed.add_field(name=" ", value=f"![{self.player1.display_name}]({self.player1_avatar_url})", inline=True)
 
         # Add player 1 stamina and injuries
         embed.add_field(name=f"{self.player1.display_name}'s Stamina", value=player1_stamina_status, inline=False)
@@ -223,7 +229,7 @@ class FightingGame:
 
         # Add player 2 information
         embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}", inline=True)
-        embed.set_thumbnail(url=player2_avatar_url)  # Set thumbnail to player 2's avatar
+        embed.add_field(name=" ", value=f"![{self.player2.display_name}]({self.player2_avatar_url})", inline=True)
 
         # Add player 2 stamina and injuries
         embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
@@ -242,6 +248,7 @@ class FightingGame:
             await self.embed_message.edit(embed=embed)
         else:
             self.embed_message = await self.channel.send(embed=embed)
+
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
         training_bonus = math.log10(training_level + 1) * self.training_weight
