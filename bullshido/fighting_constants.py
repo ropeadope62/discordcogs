@@ -1561,7 +1561,7 @@ KO_VICTOR_MESSAGE = [
     "proved they're the ultimate knockout artist!"
 ]
 
-ROUND_RESULT_WIN = [
+ROUND_RESULTS_WIN = [
     "{round_winner} won that round handily!",
     "Easy round win for {round_winner}!",
     "{round_winner} won that round!",
