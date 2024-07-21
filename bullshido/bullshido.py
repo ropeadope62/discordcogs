@@ -70,11 +70,14 @@ class Bullshido(commands.Cog):
         
         self.config.register_user(**default_user)
         self.config.register_guild(**default_guild)
+        self.setup_logging()
+        self.bg_task = self.bot.loop.create_task(self.check_inactivity())
+        self.logger.info("Bullshido cog loaded.")
         
+    def setup_logging(self):
         self.logger = logging.getLogger("red.bullshido")
         self.logger.setLevel(logging.DEBUG)
 
-        # Check if handlers are already present before adding
         if not any(isinstance(handler, MemoryLogHandler) for handler in self.logger.handlers):
             self.memory_handler = MemoryLogHandler()
             self.logger.addHandler(self.memory_handler)
@@ -89,8 +92,6 @@ class Bullshido(commands.Cog):
             self.file_handler.setFormatter(formatter)
             self.logger.addHandler(self.file_handler)
         
-        self.bg_task = self.bot.loop.create_task(self.check_inactivity())
-        self.logger.info("Bullshido cog loaded.")
         
     async def has_sufficient_stamina(self, user):
         """ Check if the user has sufficient stamina to fight."""
@@ -663,6 +664,7 @@ class Bullshido(commands.Cog):
         except Exception as e:
             self.logger.error(f"Failed to start fight: {e}")
             await ctx.send(f"Failed to start the fight due to an error: {e}")
+
 
 
     @bullshido_group.command(name="train", description="Train daily to increase your Bullshido training level")

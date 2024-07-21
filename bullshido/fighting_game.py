@@ -474,6 +474,7 @@ class FightingGame:
 
         round_winner = None  # Ensure round_winner is defined
         round_result = "This round ended in a draw!"  # Default round result
+
         if damage_player1 > damage_player2:
             if damage_player1 - damage_player2 > 20:
                 self.player1_score += 10
@@ -512,6 +513,7 @@ class FightingGame:
             return True
 
         return False
+
 
 
 
