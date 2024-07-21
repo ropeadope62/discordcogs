@@ -477,23 +477,23 @@ class FightingGame:
             if damage_player1 - damage_player2 > 20:
                 self.player1_score += 10
                 self.player2_score += 8
-                round_winner = self.player1.display_name
+                round_winner = self.player1
                 round_result = random.choice(ROUND_RESULTS_WIN).format(winner=round_winner)
             else:
                 self.player1_score += 10
                 self.player2_score += 9
-                round_winner = self.player1.display_name
+                round_winner = self.player1
                 round_result = random.choice(ROUND_RESULTS_CLOSE).format(winner=round_winner)
         else:
             if damage_player2 > damage_player1 and damage_player2 - damage_player1 > 20:
                 self.player1_score += 8
                 self.player2_score += 10
-                round_winner = self.player2.display_name
+                round_winner = self.player2
                 round_result = random.choice(ROUND_RESULTS_WIN).format(winner=round_winner)
             else:
                 self.player1_score += 9
                 self.player2_score += 10
-                round_winner = self.player2.display_name
+                round_winner = self.player2
                 round_result = random.choice(ROUND_RESULTS_CLOSE).format(winner=round_winner)
                 
         self.bullshido_cog.logger.info(f"Round winner: {round_winner}")
