@@ -73,18 +73,21 @@ class Bullshido(commands.Cog):
         
         self.logger = logging.getLogger("red.bullshido")
         self.logger.setLevel(logging.DEBUG)
-        
-        self.memory_handler = MemoryLogHandler()
-        self.logger.addHandler(self.memory_handler)
+
+        # Check if handlers are already present before adding
+        if not any(isinstance(handler, MemoryLogHandler) for handler in self.logger.handlers):
+            self.memory_handler = MemoryLogHandler()
+            self.logger.addHandler(self.memory_handler)
         
         log_dir = os.path.expanduser("~/ScrapGPT/ScrapGPT/logs")
         os.makedirs(log_dir, exist_ok=True)
         log_file_path = os.path.join(log_dir, "bullshido.log")
 
-        self.file_handler = logging.FileHandler(log_file_path)
-        formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
-        self.file_handler.setFormatter(formatter)
-        self.logger.addHandler(self.file_handler)
+        if not any(isinstance(handler, logging.FileHandler) for handler in self.logger.handlers):
+            self.file_handler = logging.FileHandler(log_file_path)
+            formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s')
+            self.file_handler.setFormatter(formatter)
+            self.logger.addHandler(self.file_handler)
         
         self.bg_task = self.bot.loop.create_task(self.check_inactivity())
         self.logger.info("Bullshido cog loaded.")
