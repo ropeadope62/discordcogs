@@ -420,6 +420,31 @@ class Bullshido(commands.Cog):
         for chunk in [logs[i:i+10] for i in range(0, len(logs), 10)]:
             await ctx.send("```\n{}\n```".format("\n".join(chunk)))
             
+    @bullshidoset_group.command(name="grant_level", description="Grant a specific level to a user.")
+    @commands.is_owner()
+    async def grant_level(self, ctx: commands.Context, user: discord.Member, level: int):
+        """Grant a specific level to a user."""
+        user_data = await self.config.user(user).all()
+        user_data["level"] = level
+        user_data["xp"] = 0
+        user_data["level_points_to_distribute"] = level - 1  # Assuming 1 point per level
+        await self.config.user(user).set(user_data)
+        await ctx.send(f"Set {user.display_name} to level {level} with {user_data['level_points_to_distribute']} points to distribute.")
+
+    @bullshidoset_group.command(name="reset_level", description="Reset a user's level to 1.")
+    @commands.is_owner()
+    async def reset_level(self, ctx: commands.Context, user: discord.Member):
+        """Reset a user's level to 1."""
+        user_data = await self.config.user(user).all()
+        user_data["level"] = 1
+        user_data["xp"] = 0
+        user_data["level_points_to_distribute"] = 0
+        user_data["stamina_bonus"] = 0
+        user_data["health_bonus"] = 0
+        user_data["damage_bonus"] = 0
+        await self.config.user(user).set(user_data)
+        await ctx.send(f"Reset {user.display_name} to level 1.")
+            
     @bullshido_group.command(name="hype", description="Hype the fight between two opponents.")
     async def hype_fight(self, ctx, fighter1: discord.Member, fighter2: discord.Member):
         await ctx.defer()

@@ -24,10 +24,10 @@ class FightingGame:
         self.player2 = player2
         self.player1_data = player1_data
         self.player2_data = player2_data
-        self.player1_health = 100
-        self.player2_health = 100
-        self.player1_stamina = player1_data.get('stamina_level', 100)
-        self.player2_stamina = player2_data.get('stamina_level', 100)
+        self.player1_stamina = self.player1_data.get('stamina_level', 100) + (self.player1_data.get('stamina_bonus', 0) * 5)
+        self.player2_stamina = self.player2_data.get('stamina_level', 100) + (self.player2_data.get('stamina_bonus', 0) * 5)
+        self.player1_health = 100 + (self.player1_data.get('health_bonus', 0) * 10)
+        self.player2_health = 100 + (self.player2_data.get('health_bonus', 0) * 10)
         self.rounds = 3
         self.max_strikes_per_round = 5
         self.player1_score = 0
@@ -215,10 +215,10 @@ class FightingGame:
             self.embed_message = await self.channel.send(embed=embed)
 
 
-    def calculate_adjusted_damage(self, base_damage, training_level, diet_level):
+    def calculate_adjusted_damage(self, base_damage, training_level, diet_level, damage_bonus):
         training_bonus = math.log10(training_level + 1) * self.training_weight
         diet_bonus = math.log10(diet_level + 1) * self.diet_weight
-        adjusted_damage = base_damage * (1 + training_bonus + diet_bonus)
+        adjusted_damage = base_damage * (1 + training_bonus + diet_bonus + (damage_bonus * 0.05))
         return round(adjusted_damage)
 
     def get_strike_damage(self, style, attacker, defender, body_part):
@@ -234,7 +234,8 @@ class FightingGame:
         try:
             strike, damage_range = random.choice(list(STRIKES[style].items()))
             base_damage = random.randint(*damage_range)
-            modified_damage = self.calculate_adjusted_damage(base_damage, attacker['training_level'], attacker['nutrition_level'])
+            damage_bonus = attacker.get('damage_bonus', 0)  # Get attacker's damage bonus
+            modified_damage = self.calculate_adjusted_damage(base_damage, attacker['training_level'], attacker['nutrition_level'], damage_bonus)
             modifier = random.uniform(0.8, 1.3)
 
             is_critical_hit = random.random() < self.CRITICAL_CHANCE
@@ -403,6 +404,7 @@ class FightingGame:
         await self.update_health_bars(0, final_message, "KO Victory!", final_result=f"KO Victory for {winner.display_name}!")  # Update embed with KO result
         await self.record_result(winner, loser, "KO")
         FightingGame.set_game_active(self.channel.id, False)
+        await self.bullshido_cog.end_fight(winner, loser)
         
     async def add_permanent_injury(self, user: discord.Member, injury, body_part):
         """ Add a permanent injury to a user. """
@@ -425,6 +427,7 @@ class FightingGame:
         await self.update_health_bars(0, final_message, "TKO Victory!", final_result=f"TKO Victory for {winner.display_name}!")  # Update embed with TKO result
         await self.record_result(winner, loser, "TKO")
         FightingGame.set_game_active(self.channel.id, False)
+        await self.bullshido_cog.end_fight(winner, loser)
 
     async def record_result(self, winner, loser, result_type):
         try:
@@ -570,3 +573,4 @@ class FightingGame:
             await self.record_result(winner, loser, result_type)
 
         FightingGame.set_game_active(channel_id, False)
+        await self.bullshido_cog.end_fight(winner, loser)
