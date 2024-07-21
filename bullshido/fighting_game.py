@@ -373,8 +373,8 @@ class FightingGame:
 
             return False
         except Exception as e:
-            print(f"Error during play_turn: {e}")
-            print(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
+            self.bullshido_cog.logger.error(f"Error during play_turn: {e}")
+            self.bullshido_cog.logger.error(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
 
@@ -473,39 +473,37 @@ class FightingGame:
         self.bullshido_cog.logger.info(f"Damage Player1: {damage_player1}, Damage Player2: {damage_player2}")
 
         round_winner = None  # Ensure round_winner is defined
+        round_result = "This round ended in a draw!"  # Default round result
         if damage_player1 > damage_player2:
             if damage_player1 - damage_player2 > 20:
                 self.player1_score += 10
                 self.player2_score += 8
-                round_winner = self.player1
+                round_winner = self.player1.display_name
                 round_result = random.choice(ROUND_RESULTS_WIN).format(winner=round_winner)
             else:
                 self.player1_score += 10
                 self.player2_score += 9
-                round_winner = self.player1
+                round_winner = self.player1.display_name
                 round_result = random.choice(ROUND_RESULTS_CLOSE).format(winner=round_winner)
-        else:
-            if damage_player2 > damage_player1 and damage_player2 - damage_player1 > 20:
+        elif damage_player2 > damage_player1:
+            if damage_player2 - damage_player1 > 20:
                 self.player1_score += 8
                 self.player2_score += 10
-                round_winner = self.player2
+                round_winner = self.player2.display_name
                 round_result = random.choice(ROUND_RESULTS_WIN).format(winner=round_winner)
             else:
                 self.player1_score += 9
                 self.player2_score += 10
-                round_winner = self.player2
+                round_winner = self.player2.display_name
                 round_result = random.choice(ROUND_RESULTS_CLOSE).format(winner=round_winner)
-                
+
         self.bullshido_cog.logger.info(f"Round winner: {round_winner}")
 
         if round_winner is None:
             self.bullshido_cog.logger.warning(f"Round winner not determined correctly. Setting default value.")
             round_winner = "No clear winner"
-            round_result = "This round ended in a draw!"
 
         await self.update_health_bars(round_number, "Round Ended", round_result)
-
-        
 
         if self.player1_health <= 0 or self.player2_health <= 0:
             winner = self.player2 if self.player1_health <= 0 else self.player1
@@ -514,6 +512,7 @@ class FightingGame:
             return True
 
         return False
+
 
 
     async def start_game(self):
