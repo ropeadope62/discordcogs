@@ -466,6 +466,7 @@ class FightingGame:
 
         print(f"Ending Round {round_number} - Player1 Health: {player1_health_end}, Player2 Health: {player2_health_end}")
 
+        round_winner = None  # Ensure round_winner is defined
         if damage_player1 > damage_player2:
             if damage_player1 - damage_player2 > 20:
                 self.player1_score += 10
@@ -488,6 +489,12 @@ class FightingGame:
                 self.player2_score += 10
                 round_winner = self.player2.display_name
                 round_result = random.choice(ROUND_RESULTS_CLOSE).format(winner=round_winner)
+
+        if round_winner is None:
+            print(f"Debug: round_winner was None at the end of the round. Setting default value.")
+            # Handle edge case where round_winner is not assigned
+            round_winner = "No clear winner"
+            round_result = "This round ended in a draw!"
 
         await self.update_health_bars(round_number, "Round Ended", round_result)
 
