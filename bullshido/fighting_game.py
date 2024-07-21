@@ -9,7 +9,8 @@ from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import os
 from .fighting_constants import (STRIKES, CRITICAL_RESULTS, CRITICAL_MESSAGES, BODY_PARTS, GRAPPLE_KEYWORDS, GRAPPLE_ACTIONS, BODY_PART_INJURIES
-                                ,STRIKE_ACTIONS, TKO_MESSAGES, KO_MESSAGES, KO_VICTOR_MESSAGE, TKO_VICTOR_MESSAGE, REFEREE_STOPS, FIGHT_RESULT_LONG)
+                                ,STRIKE_ACTIONS, TKO_MESSAGES, KO_MESSAGES, KO_VICTOR_MESSAGE, TKO_VICTOR_MESSAGE, REFEREE_STOPS, FIGHT_RESULT_LONG,
+                                ROUND_RESULT_WIN, ROUND_RESULT_CLOSE, TKO_MESSAGE_FINALES)
 from .bullshido_ai import generate_hype
 class FightingGame:
     active_games = {}
@@ -405,6 +406,7 @@ class FightingGame:
         await self.record_result(winner, loser, "KO")
         FightingGame.set_game_active(self.channel.id, False)
         await self.bullshido_cog.end_fight(winner, loser)
+
         
     async def add_permanent_injury(self, user: discord.Member, injury, body_part):
         """ Add a permanent injury to a user. """
@@ -419,15 +421,16 @@ class FightingGame:
         tko_message_flavor = random.choice(TKO_MESSAGES).format(loser=loser.display_name)
         referee_stop_flavor = random.choice(REFEREE_STOPS)
         tko_victor_message = random.choice(TKO_VICTOR_MESSAGE)
-
+        tko_finale = random.choice(TKO_MESSAGE_FINALES)
         final_message = (
             f"{tko_message_flavor} {referee_stop_flavor}, {winner.display_name} wins the fight by TKO!\n"
-            f"{winner.display_name} {tko_victor_message}, Wow!"
+            f"{winner.display_name} {tko_victor_message}, {tko_finale}"
         )
         await self.update_health_bars(0, final_message, "TKO Victory!", final_result=f"TKO Victory for {winner.display_name}!")  # Update embed with TKO result
         await self.record_result(winner, loser, "TKO")
         FightingGame.set_game_active(self.channel.id, False)
         await self.bullshido_cog.end_fight(winner, loser)
+
 
     async def record_result(self, winner, loser, result_type):
         try:
@@ -467,25 +470,35 @@ class FightingGame:
             if damage_player1 - damage_player2 > 20:
                 self.player1_score += 10
                 self.player2_score += 8
-                round_result = f"{self.player1.display_name} won the round handily!"
+                round_winner = self.player1.display_name
+                round_result = random.choice(ROUND_RESULT_WIN).format(winner=round_winner)
             else:
                 self.player1_score += 10
                 self.player2_score += 9
-                round_result = f"{self.player1.display_name} had the edge this round!"
+                round_winner = self.player1.display_name
+                round_result = random.choice(ROUND_RESULT_CLOSE).format(winner=round_winner)
         else:
             if damage_player2 > damage_player1 and damage_player2 - damage_player1 > 20:
                 self.player1_score += 8
                 self.player2_score += 10
-                round_result = f"{self.player2.display_name} won the round handily!"
+                round_winner = self.player2.display_name
+                round_result = random.choice(ROUND_RESULT_WIN).format(winner=round_winner)
             else:
                 self.player1_score += 9
                 self.player2_score += 10
-                round_result = f"{self.player2.display_name} had the edge this round!"
+                round_winner = self.player2.display_name
+                round_result = random.choice(ROUND_RESULT_CLOSE).format(winner=round_winner)
 
-        await self.update_health_bars(round_number, "End of Round", round_result)
-        
+        await self.update_health_bars(round_number, "Round Ended", round_result)
+
+        if self.player1_health <= 0 or self.player2_health <= 0:
+            winner = self.player2 if self.player1_health <= 0 else self.player1
+            loser = self.player1 if self.player1_health <= 0 else self.player2
+            await self.bullshido_cog.end_fight(winner, loser)
+            return True
 
         return False
+
 
     async def start_game(self):
         channel_id = self.channel.id

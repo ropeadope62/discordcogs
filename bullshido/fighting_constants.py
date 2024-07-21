@@ -1561,6 +1561,37 @@ KO_VICTOR_MESSAGE = [
     "proved they're the ultimate knockout artist!"
 ]
 
+ROUND_RESULT_WIN = [
+    "{round_winner} won that round handily!",
+    "Easy round win for {round_winner}!",
+    "{round_winner} won that round!",
+    "That round is an easy win for {round_winner}!",
+    
+]
+
+ROUND_RESULTS_CLOSE = [
+    "{round_winner} had the edge this round!",
+    "{round_winner} narrowly took that round!",
+    "It looks like {round_winner} just won that round!",
+    "It looks like {round_winner} had the edge this round!",
+    "It looks like {round_winner} narrowly took that round!",
+    "{round_winner} may have done just enough to win that round!"
+    "{round_winner} looked like the one on top, just!",
+    "{round_winner} may have taken that round but it was close!"
+    
+]
+
+TKO_MESSAGE_FINALES = [
+    "Wow!",
+    "Nice!",
+    "Holy moly!",
+    "Oh my goodness!",
+    "Holy cow!",
+    "Oh my gosh!",
+    "Unbelievable!",
+    "Incredible!",
+    "Amazing!",
+]
 
 ACTION_COST = 10
 
