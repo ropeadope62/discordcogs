@@ -1565,7 +1565,7 @@ ROUND_RESULTS_WIN = [
     "{round_winner} won that round handily!",
     "Easy round win for {round_winner}!",
     "{round_winner} won that round!",
-    "That round is an easy win for {round_winner}!",
+    "That round is an easy win for {round_winner}!"
     
 ]
 
