@@ -497,12 +497,10 @@ class FightingGame:
                 self.player2_score += 10
                 round_winner = self.player2.display_name
                 round_result = random.choice(ROUND_RESULTS_CLOSE).format(winner=round_winner)
+        else:
+            round_winner = "Draw"
 
         self.bullshido_cog.logger.info(f"Round winner: {round_winner}")
-
-        if round_winner is None:
-            self.bullshido_cog.logger.warning(f"Round winner not determined correctly. Setting default value.")
-            round_winner = "No clear winner"
 
         await self.update_health_bars(round_number, "Round Ended", round_result)
 
@@ -513,7 +511,6 @@ class FightingGame:
             return True
 
         return False
-
 
 
 
