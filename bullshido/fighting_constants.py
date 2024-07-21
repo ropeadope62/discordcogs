@@ -1565,9 +1565,7 @@ ROUND_RESULTS_WIN = [
     "{round_winner} won that round handily!",
     "Easy round win for {round_winner}!",
     "{round_winner} won that round!",
-    "That round is an easy win for {round_winner}!"
-    
-]
+    "That round is an easy win for {round_winner}!"]
 
 ROUND_RESULTS_CLOSE = [
     "{round_winner} had the edge this round!",
@@ -1577,9 +1575,7 @@ ROUND_RESULTS_CLOSE = [
     "It looks like {round_winner} narrowly took that round!",
     "{round_winner} may have done just enough to win that round!"
     "{round_winner} looked like the one on top, just!",
-    "{round_winner} may have taken that round but it was close!"
-    
-]
+    "{round_winner} may have taken that round but it was close!"]
 
 TKO_MESSAGE_FINALES = [
     "Wow!",
