@@ -617,34 +617,50 @@ class Bullshido(commands.Cog):
             player1 = ctx.author
             player2 = opponent
 
+            # Retrieve player data
             player1_data = await self.config.user(player1).all()
             player2_data = await self.config.user(player2).all()
 
+            self.logger.info(f"Starting fight: {player1.display_name} vs {player2.display_name}")
+            self.logger.info(f"Player 1 Data: {player1_data}")
+            self.logger.info(f"Player 2 Data: {player2_data}")
+
+            # Check stamina - not fully implemented between fights
             if not await self.has_sufficient_stamina(player1):
-                await ctx.send(f"You are too tired to fight,  {player1.mention}.\n Try waiting some time for your stamina to recover, or buy some supplements to speed up your recovery.")
+                await ctx.send(f"You are too tired to fight, {player1.mention}.\nTry waiting some time for your stamina to recover, or buy some supplements to speed up your recovery.")
                 return
             if not await self.has_sufficient_stamina(player2):
                 await ctx.send("Your opponent does not have enough stamina to start the fight.")
                 return
 
-            if not player1_data['fighting_style'] or not player2_data['fighting_style']:
-                await ctx.send("Both players must have selected a fighting style before starting a fight.")
+            # Check if fighting styles are selected for each player
+            if not player1_data['fighting_style']:
+                await ctx.send(f"{player1.display_name}, you need to select a fighting style before you can fight.")
                 return
+            if not player2_data['fighting_style']:
+                await ctx.send(f"{player2.display_name} needs to select a fighting style before they can fight.")
+                return
+
+            # Prevent fighting oneself
             if player1 == player2:
                 await ctx.send("You cannot fight yourself, only your own demons! Try challenging another fighter.")
                 return
 
-            # Set up an instance of game session
+            # Set up an instance of the game session
             game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self)
             game.user_config = {
-            str(player1.id): player1_data,
-            str(player2.id): player2_data
+                str(player1.id): player1_data,
+                str(player2.id): player2_data
             }
+
+            # Start the game method
             await game.start_game()
+            self.logger.info("Game started successfully.")
 
         except Exception as e:
             self.logger.error(f"Failed to start fight: {e}")
             await ctx.send(f"Failed to start the fight due to an error: {e}")
+
 
     @bullshido_group.command(name="train", description="Train daily to increase your Bullshido training level")
     async def train(self, ctx: commands.Context):

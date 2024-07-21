@@ -452,6 +452,9 @@ class FightingGame:
         player1_health_start = self.player1_health
         player2_health_start = self.player2_health
 
+        self.bullshido_cog.logger.info(f"Starting Round {round_number}")
+        self.bullshido_cog.logger.info(f"Player1 Health: {self.player1_health}, Player2 Health: {self.player2_health}")
+
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
             ko_or_tko_occurred = await self.play_turn(self.embed_message, round_number)
             if ko_or_tko_occurred:
@@ -466,7 +469,8 @@ class FightingGame:
         damage_player1 = player2_health_start - player2_health_end
         damage_player2 = player1_health_start - player1_health_end
 
-        print(f"Ending Round {round_number} - Player1 Health: {player1_health_end}, Player2 Health: {player2_health_end}")
+        self.bullshido_cog.logger.info(f"Ending Round {round_number} - Player1 Health: {player1_health_end}, Player2 Health: {player2_health_end}")
+        self.bullshido_cog.logger.info(f"Damage Player1: {damage_player1}, Damage Player2: {damage_player2}")
 
         round_winner = None  # Ensure round_winner is defined
         if damage_player1 > damage_player2:
@@ -493,8 +497,7 @@ class FightingGame:
                 round_result = random.choice(ROUND_RESULTS_CLOSE).format(winner=round_winner)
 
         if round_winner is None:
-            print(f"Debug: round_winner was None at the end of the round. Setting default value.")
-            # Handle edge case where round_winner is not assigned
+            self.bullshido_cog.logger.warning(f"Round winner not determined correctly. Setting default value.")
             round_winner = "No clear winner"
             round_result = "This round ended in a draw!"
 
