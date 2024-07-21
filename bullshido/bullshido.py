@@ -148,12 +148,32 @@ class Bullshido(commands.Cog):
 
     async def prompt_stat_increase(self, user):
         embed = discord.Embed(
-            title="Level Up!",
+        title="Learning from your epic battles in the Bullshido Kumite, your power grows!",
             description="Choose a stat to increase:",
-            color=discord.Color.green()
+            color=discord.Color.red()
         )
         view = StatIncreaseView(self.config, user)
         await user.send(embed=embed, view=view)
+
+    async def increase_stat(self, user, stat):
+            user_data = await self.config.user(user).all()
+
+            if user_data["level_points_to_distribute"] <= 0:
+                return "You don't have any points to distribute."
+
+            if stat == "stamina":
+                user_data["stamina_bonus"] += 10
+            elif stat == "health":
+                user_data["health_bonus"] += 10
+            elif stat == "damage":
+                user_data["damage_bonus"] += 1
+            else:
+                return "Invalid stat."
+
+            user_data["level_points_to_distribute"] -= 1
+            await self.config.user(user).set(user_data)
+
+            return f"Your {stat} has been increased!"
 
     async def end_fight(self, winner, loser):
         await self.add_xp(winner, 10)
