@@ -10,7 +10,7 @@ from io import BytesIO
 import os
 from .fighting_constants import (STRIKES, CRITICAL_RESULTS, CRITICAL_MESSAGES, BODY_PARTS, GRAPPLE_KEYWORDS, GRAPPLE_ACTIONS, BODY_PART_INJURIES
                                 ,STRIKE_ACTIONS, TKO_MESSAGES, KO_MESSAGES, KO_VICTOR_MESSAGE, TKO_VICTOR_MESSAGE, REFEREE_STOPS, FIGHT_RESULT_LONG,
-                                ROUND_RESULT_WIN, ROUND_RESULT_CLOSE, TKO_MESSAGE_FINALES)
+                                ROUND_RESULTS_WIN, ROUND_RESULTS_CLOSE, TKO_MESSAGE_FINALES)
 from .bullshido_ai import generate_hype
 class FightingGame:
     active_games = {}
@@ -471,23 +471,23 @@ class FightingGame:
                 self.player1_score += 10
                 self.player2_score += 8
                 round_winner = self.player1.display_name
-                round_result = random.choice(ROUND_RESULT_WIN).format(winner=round_winner)
+                round_result = random.choice(ROUND_RESULTS_WIN).format(winner=round_winner)
             else:
                 self.player1_score += 10
                 self.player2_score += 9
                 round_winner = self.player1.display_name
-                round_result = random.choice(ROUND_RESULT_CLOSE).format(winner=round_winner)
+                round_result = random.choice(ROUND_RESULTS_CLOSE).format(winner=round_winner)
         else:
             if damage_player2 > damage_player1 and damage_player2 - damage_player1 > 20:
                 self.player1_score += 8
                 self.player2_score += 10
                 round_winner = self.player2.display_name
-                round_result = random.choice(ROUND_RESULT_WIN).format(winner=round_winner)
+                round_result = random.choice(ROUND_RESULTS_WIN).format(winner=round_winner)
             else:
                 self.player1_score += 9
                 self.player2_score += 10
                 round_winner = self.player2.display_name
-                round_result = random.choice(ROUND_RESULT_CLOSE).format(winner=round_winner)
+                round_result = random.choice(ROUND_RESULTS_CLOSE).format(winner=round_winner)
 
         await self.update_health_bars(round_number, "Round Ended", round_result)
 
