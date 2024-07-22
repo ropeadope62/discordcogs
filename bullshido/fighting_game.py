@@ -583,6 +583,6 @@ class FightingGame:
             await self.record_result(winner, loser, result_type)
 
         FightingGame.set_game_active(channel_id, False)
-        await self.bullshido_cog.end_fight(winner, loser)
+        await self.end_fight(winner, loser)
 
 
