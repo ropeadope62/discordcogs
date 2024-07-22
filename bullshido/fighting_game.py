@@ -521,6 +521,7 @@ class FightingGame:
 
 
 
+
     async def start_game(self):
         channel_id = self.channel.id
 
