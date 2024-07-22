@@ -512,10 +512,11 @@ class FightingGame:
         if self.player1_health <= 0 or self.player2_health <= 0:
             winner = self.player2 if self.player1_health <= 0 else self.player1
             loser = self.player1 if self.player1_health <= 0 else self.player2
-            await self.bullshido_cog.end_fight(winner, loser)
+            await self.end_fight(winner, loser)
             return True
 
         return False
+
 
 
     async def start_game(self):
