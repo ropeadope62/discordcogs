@@ -410,7 +410,7 @@ class FightingGame:
         await self.update_health_bars(0, final_message, "KO Victory!", final_result=f"KO Victory for {winner.display_name}!")  # Update embed with KO result
         await self.record_result(winner, loser, "KO")
         FightingGame.set_game_active(self.channel.id, False)
-        await self.bullshido_cog.end_fight(winner, loser)
+        await self.end_fight(winner, loser)
 
         
     async def add_permanent_injury(self, user: discord.Member, injury, body_part):
@@ -434,7 +434,7 @@ class FightingGame:
         await self.update_health_bars(0, final_message, "TKO Victory!", final_result=f"TKO Victory for {winner.display_name}!")  # Update embed with TKO result
         await self.record_result(winner, loser, "TKO")
         FightingGame.set_game_active(self.channel.id, False)
-        await self.bullshido_cog.end_fight(winner, loser)
+        await self.end_fight(winner, loser)
 
 
     async def record_result(self, winner, loser, result_type):
@@ -498,6 +498,7 @@ class FightingGame:
             round_result = random.choice(ROUND_RESULTS_WIN).format(winner=round_winner.display_name)
         else:
             round_winner = "Draw"
+            round_result = "That round was a draw!"
             self.player1_score += 9
             self.player2_score += 9
 
@@ -516,6 +517,7 @@ class FightingGame:
             return True
 
         return False
+
 
 
 
