@@ -187,10 +187,7 @@ class Bullshido(commands.Cog):
 
             return f"Your {stat} has been increased!"
 
-    async def end_fight(self, winner, loser):
-        self.logger.info(f"Ending fight between {winner} and {loser}.")
-        await self.add_xp(winner, 10)
-        await self.add_xp(loser, 5)
+    
     
     async def set_fighting_style(self, interaction: discord.Interaction, new_style: str):
         user = interaction.user

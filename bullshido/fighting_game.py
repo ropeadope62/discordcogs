@@ -244,8 +244,7 @@ class FightingGame:
             is_critical_hit = random.random() < self.CRITICAL_CHANCE
             if is_critical_hit:
                 modified_damage = base_damage * 2
-                possible_injuries = BODY_PART_INJURIES.get(body_part, [])
-                if possible_injuries:
+                if possible_injuries := BODY_PART_INJURIES.get(body_part, []):
                     critical_injury = random.choice(possible_injuries)
                     for result, injury in CRITICAL_RESULTS.items():
                         if injury == critical_injury:
@@ -264,7 +263,10 @@ class FightingGame:
             print(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
 
-
+    async def end_fight(self, winner, loser):
+        self.bullshido_cog.logger.info(f"Ending fight between {winner} and {loser}.")
+        await self.add_xp(winner, 10)
+        await self.add_xp(loser, 5)
 
     async def target_bodypart(self):
         bodypart = random.choice(BODY_PARTS)
@@ -518,8 +520,6 @@ class FightingGame:
         FightingGame.set_game_active(channel_id, True)
         fight_image_path = await self.generate_fight_image()
         user_config = await self.bullshido_cog.config.all_users()
-        print(f"user_config: {user_config}")  # Debug log
-        print(f"player1 ID: {self.player1.id}, player2 ID: {self.player2.id}")  # Debug log
         narrative = generate_hype(self.user_config, str(self.player1.id), str(self.player2.id), self.player1.display_name, self.player2.display_name)
 
         embed = discord.Embed(
@@ -540,6 +540,10 @@ class FightingGame:
             if not FightingGame.is_game_active(channel_id):
                 break
             await self.play_round(round_number)
+
+        # Initialize winner and loser to None
+        winner = None
+        loser = None
 
         if FightingGame.is_game_active(channel_id):
             if self.player1_health > self.player2_health:
@@ -580,3 +584,5 @@ class FightingGame:
 
         FightingGame.set_game_active(channel_id, False)
         await self.bullshido_cog.end_fight(winner, loser)
+
+
