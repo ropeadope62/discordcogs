@@ -379,6 +379,7 @@ class FightingGame:
             return True
 
 
+
     def calculate_tko_probability(self, attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation):
         base_tko_chance = self.BASE_TKO_PROBABILITY
         # Factor in stamina, training and intimidation at 10% each
@@ -472,35 +473,47 @@ class FightingGame:
         self.bullshido_cog.logger.info(f"Ending Round {round_number} - Player1 Health: {player1_health_end}, Player2 Health: {player2_health_end}")
         self.bullshido_cog.logger.info(f"Damage Player1: {damage_player1}, Damage Player2: {damage_player2}")
 
-        round_winner = None  # Ensure round_winner is defined
+        round_winner = None  # Initialize round_winner
+        print(f"Round winner initialized to {round_winner}")
         round_result = "This round ended in a draw!"  # Default round result
+
+        self.bullshido_cog.logger.info("Evaluating round winner...")
 
         if damage_player1 > damage_player2:
             if damage_player1 - damage_player2 > 20:
                 self.player1_score += 10
                 self.player2_score += 8
                 round_winner = self.player1.display_name
+                self.bullshido_cog.logger.debug(f"Round winner set to {round_winner}")
                 round_result = random.choice(ROUND_RESULTS_WIN).format(winner=round_winner)
             else:
                 self.player1_score += 10
                 self.player2_score += 9
                 round_winner = self.player1.display_name
+                self.bullshido_cog.logger.debug(f"Round winner set to {round_winner}")
                 round_result = random.choice(ROUND_RESULTS_CLOSE).format(winner=round_winner)
         elif damage_player2 > damage_player1:
             if damage_player2 - damage_player1 > 20:
                 self.player1_score += 8
                 self.player2_score += 10
                 round_winner = self.player2.display_name
+                self.bullshido_cog.logger.debug(f"Round winner set to {round_winner}")
                 round_result = random.choice(ROUND_RESULTS_WIN).format(winner=round_winner)
             else:
                 self.player1_score += 9
                 self.player2_score += 10
                 round_winner = self.player2.display_name
+                self.bullshido_cog.logger.debug(f"Round winner set to {round_winner}")
                 round_result = random.choice(ROUND_RESULTS_CLOSE).format(winner=round_winner)
         else:
             round_winner = "Draw"
+            self.bullshido_cog.logger.info(f"Round winner set to {round_winner}")
 
-        self.bullshido_cog.logger.info(f"Round winner: {round_winner}")
+        self.bullshido_cog.logger.info(f"Round winner determined: {round_winner}")
+
+        if round_winner is None:
+            self.bullshido_cog.logger.warning(f"Round winner not determined correctly. Setting default value.")
+            round_winner = "No clear winner"
 
         await self.update_health_bars(round_number, "Round Ended", round_result)
 
@@ -508,6 +521,7 @@ class FightingGame:
             winner = self.player2 if self.player1_health <= 0 else self.player1
             loser = self.player1 if self.player1_health <= 0 else self.player2
             await self.bullshido_cog.end_fight(winner, loser)
+            self.bullshido_cog.logger.info("Game ended, end_fight called.")
             return True
 
         return False

@@ -105,6 +105,7 @@ class Bullshido(commands.Cog):
         if "permanent_injuries" not in user_data:
             user_data["permanent_injuries"] = []
         user_data["permanent_injuries"].append(f"{injury}")
+        self.logger.info(f"Adding permanent injury {injury} to {user}.")
         await self.bullshido_cog.config.user(user).permanent_injuries.set(user_data["permanent_injuries"])
         
     
@@ -112,6 +113,7 @@ class Bullshido(commands.Cog):
 
     async def get_permanent_injuries(self, user: discord.Member):
         """Get the list of permanent injuries for a user."""
+        self.logger.info(f"Getting permanent injuries for {user}.")
         return await self.config.user(user).permanent_injuries()
 
     async def remove_permanent_injury(self, user: discord.Member, injury: str, body_part: str):
@@ -133,11 +135,14 @@ class Bullshido(commands.Cog):
         return commands.check(predicate)
     
     async def xp_for_next_level(self, level):
+        self.logger.info(f"Getting XP requirements for level {level}.")
         return XP_REQUIREMENTS.get(level, None)
     
     async def add_xp(self, user, xp):
         user_data = await self.config.user(user).all()
+        self.logger.info(f"Adding {xp} XP to {user}.")
         user_data["xp"] += xp
+        self.logger.info(f"User {user} now has {user_data['xp']} XP.")
         next_level_xp = await self.xp_for_next_level(user_data["level"])
 
         if next_level_xp and user_data["xp"] >= next_level_xp:
@@ -151,6 +156,7 @@ class Bullshido(commands.Cog):
         await self.config.user(user).set(user_data)
 
     async def prompt_stat_increase(self, user):
+        self.logger.info(f"Prompting {user} to increase a stat.")
         embed = discord.Embed(
         title="Learning from your epic battles in the Bullshido Kumite, your power grows!",
             description="Choose a stat to increase:",
@@ -160,6 +166,7 @@ class Bullshido(commands.Cog):
         await user.send(embed=embed, view=view)
 
     async def increase_stat(self, user, stat):
+            self.logger.info(f"Increasing {stat} for {user}.")
             user_data = await self.config.user(user).all()
 
             if user_data["level_points_to_distribute"] <= 0:
@@ -175,11 +182,13 @@ class Bullshido(commands.Cog):
                 return "Invalid stat."
 
             user_data["level_points_to_distribute"] -= 1
+            self.logger.info(f"{user} has increased their {stat}.")
             await self.config.user(user).set(user_data)
 
             return f"Your {stat} has been increased!"
 
     async def end_fight(self, winner, loser):
+        self.logger.info(f"Ending fight between {winner} and {loser}.")
         await self.add_xp(winner, 10)
         await self.add_xp(loser, 5)
     
@@ -335,6 +344,7 @@ class Bullshido(commands.Cog):
             await self.config.guild(guild).socialized_medicine.set(False)
             await self.config.guild(guild).socialized_medicine_payer_id.set(None)
             await ctx.send(f"Payment mode set to individual payment by each user.")
+            self.logger.info(f"Socialized medicine mode disabled.")
         else:
             if not single_payer:
                 await ctx.send("You need to mention a user who will be the single payer.")
@@ -342,12 +352,14 @@ class Bullshido(commands.Cog):
             await self.config.guild(guild).socialized_medicine.set(True)
             await self.config.guild(guild).socialized_medicine_payer_id.set(single_payer.id)
             await ctx.send(f"New provider of socialized medicine: {single_payer.display_name}.")
+            self.logger.info(f"Socialized medicine mode enabled with {single_payer} as the payer.")
 
     @bullshidoset_group.command(name="rounds", description="Set the number of rounds in a fight.")
     @commands.is_owner()
     async def set_rounds(self, ctx: commands.Context, rounds: int):
         """ Set the number of rounds in a fight."""
         await self.config.guild(ctx.guild).rounds.set(rounds)
+        self.logger.info(f"Number of rounds set to {rounds}.")
         await ctx.send(f"Number of rounds set to {rounds}.")
         
     @bullshidoset_group.command(name="critical_chance", description="Set the critical hit chance.")
@@ -355,6 +367,7 @@ class Bullshido(commands.Cog):
     async def set_critical_chance(self, ctx: commands.Context, critical_chance: float):
         """ Set the critical hit chance."""
         await self.config.guild(ctx.guild).critical_chance.set(critical_chance)
+        self.logger.info(f"Critical hit chance set to {critical_chance}.")
         await ctx.send(f"Critical hit chance set to {critical_chance}.")
         
     @bullshidoset_group.command(name="permanent_injury_chance", description="Set the permanent injury chance.")
@@ -362,6 +375,7 @@ class Bullshido(commands.Cog):
     async def set_permanent_injury_chance(self, ctx: commands.Context, permanent_injury_chance: float):
         """ Set the permanent injury chance. Permanent injuries occur upon critical hits."""
         await self.config.guild(ctx.guild).permanent_injury_chance.set(permanent_injury_chance)
+        self.logger.info(f"Permanent injury chance set to {permanent_injury_chance}.")
         await ctx.send(f"Permanent injury chance set to {permanent_injury_chance}.")
         
     @bullshidoset_group.command(name="max_strikes_per_round", description="Set the maximum number of strikes per round.")
@@ -369,6 +383,7 @@ class Bullshido(commands.Cog):
     async def set_max_strikes_per_round(self, ctx: commands.Context, max_strikes_per_round: int):
         """ Set the maximum number of strikes per player per round."""
         await self.config.guild(ctx.guild).max_strikes_per_round.set(max_strikes_per_round)
+        self.logger.info(f"Maximum number of strikes per round set to {max_strikes_per_round}.")
         await ctx.send(f"Maximum number of strikes per round set to {max_strikes_per_round}.")
         
     @bullshidoset_group.command(name="training_weight", description="Set the training weight.")
@@ -376,6 +391,7 @@ class Bullshido(commands.Cog):
     async def set_training_weight(self, ctx: commands.Context, training_weight: float):
         """Set the player training weight. This is used to calculate adjusted damage in the fight."""
         await self.config.guild(ctx.guild).training_weight.set(training_weight)
+        self.logger.info(f"Training weight set to {training_weight}.")
         await ctx.send(f"Training weight set to {training_weight}.")
         
     @bullshidoset_group.command(name="diet_weight", description="Set the diet weight.")
@@ -383,6 +399,7 @@ class Bullshido(commands.Cog):
     async def set_diet_weight(self, ctx: commands.Context, diet_weight: float):
         """ Set the player diet weight. This is used to calculated adjusted damage in the fight."""
         await self.config.guild(ctx.guild).diet_weight.set(diet_weight)
+        self.logger.info(f"Diet weight set to {diet_weight}.")
         await ctx.send(f"Diet weight set to {diet_weight}.")
         
     @bullshidoset_group.command(name="max_health", description="Set the maximum health.")
@@ -390,6 +407,7 @@ class Bullshido(commands.Cog):
     async def set_max_health(self, ctx: commands.Context, max_health: int):
         """ Set the player maximum health."""
         await self.config.guild(ctx.guild).max_health.set(max_health)
+        self.logger.info(f"Maximum health set to {max_health}.")
         await ctx.send(f"Maximum health set to {max_health}.")
         
     @bullshidoset_group.command(name="action_cost", description="Set the action cost.")
@@ -397,6 +415,7 @@ class Bullshido(commands.Cog):
     async def set_action_cost(self, ctx: commands.Context, action_cost: int):
         """ Set the action cost per strike before modifiers."""
         await self.config.guild(ctx.guild).action_cost.set(action_cost)
+        self.logger.info(f"Action cost set to {action_cost}.")
         await ctx.send(f"Action cost set to {action_cost}.")
     
     @bullshidoset_group.command(name="base_miss_probability", description="Set the base miss probability.")
@@ -404,6 +423,7 @@ class Bullshido(commands.Cog):
     async def set_base_miss_probability(self, ctx: commands.Context, base_miss_probability: float):
         """ Set the base miss probability per strike before modifiers."""
         await self.config.guild(ctx.guild).base_miss_probability.set(base_miss_probability)
+        self.logger.info(f"Base miss probability set to {base_miss_probability}.")
         await ctx.send(f"Base miss probability set to {base_miss_probability}.")
         
     @bullshidoset_group.command(name="base_stamina_cost", description="Set the base stamina cost.")
@@ -411,6 +431,7 @@ class Bullshido(commands.Cog):
     async def set_base_stamina_cost(self, ctx: commands.Context, base_stamina_cost: int):
         """ Set the base stamina cost per strike before modifiers."""
         await self.config.guild(ctx.guild).base_stamina_cost.set(base_stamina_cost)
+        self.logger.info(f"Base stamina cost set to {base_stamina_cost}.")
         await ctx.send(f"Base stamina cost set to {base_stamina_cost}.")
         
     @bullshido_group.command(name="log", description="Displays the log")
@@ -433,6 +454,7 @@ class Bullshido(commands.Cog):
         user_data["xp"] = 0
         user_data["level_points_to_distribute"] = level - 1  # Assuming 1 point per level
         await self.config.user(user).set(user_data)
+        self.logger.info(f"Granted level {level} to {user}.")
         await ctx.send(f"Set {user.display_name} to level {level} with {user_data['level_points_to_distribute']} points to distribute.")
 
     @bullshidoset_group.command(name="reset_level", description="Reset a user's level to 1.")
@@ -447,11 +469,13 @@ class Bullshido(commands.Cog):
         user_data["health_bonus"] = 0
         user_data["damage_bonus"] = 0
         await self.config.user(user).set(user_data)
+        self.logger.info(f"Reset {user} to level 1.")
         await ctx.send(f"Reset {user.display_name} to level 1.")
             
     @bullshido_group.command(name="hype", description="Hype the fight between two opponents.")
     async def hype_fight(self, ctx, fighter1: discord.Member, fighter2: discord.Member):
         await ctx.defer()
+        self.logger.info(f"Generating hype between {fighter1} and {fighter2}.")
         fighter1_id = fighter1.id
         fighter2_id = fighter2.id
 
@@ -486,7 +510,7 @@ class Bullshido(commands.Cog):
         """Lists the players with the 10 most permanent injuries."""
         users = await self.config.all_users()
         injury_counts = []
-
+        self.logger.info("Getting top 10 players with most permanent injuries.")
         for user_id, user_data in users.items():
             permanent_injuries = user_data.get("permanent_injuries", [])
             injury_count = len(permanent_injuries)
@@ -517,6 +541,7 @@ class Bullshido(commands.Cog):
             user = ctx.author
         user_data = await self.config.user(user).all()
         permanent_injuries = user_data.get("permanent_injuries", [])
+        self.logger.info(f"Getting permanent injuries for {user}.")
 
         if not permanent_injuries:
             await ctx.send("You have no permanent injuries.")
@@ -542,33 +567,40 @@ class Bullshido(commands.Cog):
 
         if injury not in permanent_injuries:
             await ctx.send(f"{user.display_name} does not have the specified injury: {injury}.")
+            self.logger.warning(f"{user} does not have the specified injury: {injury}.")
             return
 
         cost = INJURY_TREATMENT_COST.get(injury)
         if not cost:
             await ctx.send(f"The specified injury: {injury} is not recognized.")
+            self.logger.warning(f"The specified injury: {injury} is not recognized.")
             return
 
         if socialized_medicine_mode:
             socialized_medicine_payer = guild.get_member(socialized_medicine_payer_id)
             if socialized_medicine_mode:
                 await bank.withdraw_credits(socialized_medicine_payer, cost)
+                self.logger.info(f"{socialized_medicine_payer} has paid {cost} {currency} for treating {user}'s {injury}.")
                 await ctx.send(f"Through socialized medicine, {socialized_medicine_payer.display_name} has paid {cost} {currency} for treating {user.display_name}'s {injury}.")
             else:
+                self.logger.warning("Socialized medicine payer is not found. Please reconfigure the payment mode.")
                 await ctx.send("Socialized medicine payer is not found. Please reconfigure the payment mode.")
                 return
         else:
             await bank.withdraw_credits(user, cost)
+            self.logger.info(f"{user} has paid {cost} {currency} for their own {injury} treatment.")
             await ctx.send(f"{user.display_name} has paid {cost} {currency} for their own {injury} treatment.")
 
         # Code to remove the specified injury from user config
         permanent_injuries.remove(injury)
         await self.config.user(user).permanent_injuries.set(permanent_injuries)
+        self.logger.info(f"{user} has successfully treated their {injury}.")
         await ctx.send(f"{user.display_name}'s {injury} has been successfully treated.")
     
     @bullshido_group.command(name="rankings", description="Top fighters in the Bullshido Kumatae.", aliases = ["rank", "leaderboard", "lb"])
     async def rankings(self, ctx: commands.Context):
         """Displays the top 25 players based on win-loss ratio and their fight record."""
+        self.logger.info("Getting the top 25 players based on win-loss ratio.")
         server_name = ctx.guild.name
         users = await self.config.all_users()
         ranking_list = []
@@ -603,6 +635,7 @@ class Bullshido(commands.Cog):
     async def select_fighting_style(self, ctx: commands.Context):
         """Prompts the user to select their fighting style."""
         view = SelectFightingStyleView(self.set_fighting_style, ctx.author, ctx)
+        self.logger.info(f"Prompting {ctx.author} to select their fighting style.")
         await ctx.send("Please select your fighting style:", view=view)
         
     @bullshido_group.command(name="list_fighting_styles", description="List all available fighting styles")
@@ -611,12 +644,14 @@ class Bullshido(commands.Cog):
         styles = ["Karate", "Muay-Thai", "Aikido", "Boxing", "Kung-Fu", "Judo", "Taekwondo", "Wrestling", "Sambo", "MMA", "Capoeira", "Kickboxing", "Krav-Maga", "Brazilian Jiu-Jitsu"]
         embed = discord.Embed(title="Available Fighting Styles", description="\n".join(styles), color=0xFF0000)
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
+        self.logger.info(f"Listing available fighting styles.")
         await self.channel.send(embed=embed)
         
     @bullshido_group.command(name="fight", description="Start a fight with another player")
     async def fight(self, ctx: commands.Context, opponent: discord.Member):
         """Start a fight with another player."""
         await ctx.defer()
+        self.logger.info(f"{ctx.author} challenged {opponent} to a fight.")
         try:
             player1 = ctx.author
             player2 = opponent
@@ -632,22 +667,27 @@ class Bullshido(commands.Cog):
             # Check stamina - not fully implemented between fights
             if not await self.has_sufficient_stamina(player1):
                 await ctx.send(f"You are too tired to fight, {player1.mention}.\nTry waiting some time for your stamina to recover, or buy some supplements to speed up your recovery.")
+                self.logger.warning(f"{player1} does not have enough stamina to fight.")
                 return
             if not await self.has_sufficient_stamina(player2):
                 await ctx.send("Your opponent does not have enough stamina to start the fight.")
+                self.logger.warning(f"{player2} does not have enough stamina to fight.")
                 return
 
             # Check if fighting styles are selected for each player
             if not player1_data['fighting_style']:
                 await ctx.send(f"{player1.display_name}, you need to select a fighting style before you can fight.")
+                self.logger.info(f"{player1} does not have a fighting style selected.")
                 return
             if not player2_data['fighting_style']:
                 await ctx.send(f"{player2.display_name} needs to select a fighting style before they can fight.")
+                self.logger.info(f"{player2} does not have a fighting style selected.")
                 return
 
             # Prevent fighting oneself
             if player1 == player2:
                 await ctx.send("You cannot fight yourself, only your own demons! Try challenging another fighter.")
+                self.logger.warning(f"{player1} tried to fight themselves.")
                 return
 
             # Set up an instance of the game session
@@ -780,6 +820,7 @@ class Bullshido(commands.Cog):
     @commands.is_owner()
     async def reset_stats(self, ctx: commands.Context):
         """Reset the Bullshido Redbot Configuration values to default for all users."""
+        self.logger.info(f"{ctx.author} used the reset_stats command.")
         def check(m):
             return m.author == ctx.author and m.channel == ctx.channel and m.content.upper() == "YES"
 
@@ -813,9 +854,10 @@ class Bullshido(commands.Cog):
                         user_config = self.config.user_from_id(user_id)
                         for key, value in default_user.items():
                             await user_config.set_raw(key, value=value)
-
+                self.logger.info("All user stats have been reset to default.")
                 await ctx.send("All config values have been reset to default.")
         except asyncio.TimeoutError:
+            self.logger.warning("Reset operation cancelled due to timeout.")
             await ctx.send("Reset operation cancelled due to timeout.")
 
     @bullshido_group.command(name="reset_config", description="Resets Bullshido configuration to default values")
@@ -823,6 +865,7 @@ class Bullshido(commands.Cog):
     async def reset_config(self, ctx: commands.Context):
         """Resets Bullshido configuration to default values."""
         await self.config.clear_all_users()
+        self.logger.info(f"Cleared all user stats.")
         await ctx.send("Bullshido configuration has been reset to default values.")
 
     @bullshido_group.command(name="player_stats", description="Displays your wins and losses", aliases=["stats"])
@@ -830,6 +873,7 @@ class Bullshido(commands.Cog):
         """Displays your wins and losses."""
         if user is None:
             user = ctx.author
+            self.logger.info(f"{ctx.author} used the player_stats command.")
         
         wins = await self.config.user(user).wins()
         losses = await self.config.user(user).losses()
@@ -870,6 +914,7 @@ class Bullshido(commands.Cog):
     async def fight_record(self, ctx: commands.Context):
         """Displays the results of your last 10 fights."""
         user = ctx.author
+        self.logger.info(f"{ctx.author} used the fight_record command.")
         fight_history = await self.config.user(user).fight_history()
 
         if not fight_history:
@@ -910,6 +955,7 @@ class Bullshido(commands.Cog):
         }
     
     async def update_player_stats(self, user, win, result_type, opponent_name):
+        self.logger.debug(f"Updating stats for {user.display_name}")
         try:
             current_wins = await self.config.user(user).wins()
             current_losses = await self.config.user(user).losses()
@@ -946,10 +992,12 @@ class Bullshido(commands.Cog):
     async def clear_old_config(self, ctx: commands.Context):
         """Clears old configuration to avoid conflicts."""
         await self.config.clear_all_users()
+        self.logger.info(f"Cleared all user stats.")
         await ctx.send("Old Bullshido configuration has been cleared.")
         
     @bullshido_group.command(name="test_fight_image")
     async def display_fight_image(self, ctx: commands.Context, player1: discord.Member, player2: discord.Member):
+        self.logger.debug(f"Testing fight image generation between {player1} and {player2}")
         try:
             # Create a dummy player data for testing
             player1_data = {
