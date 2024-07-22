@@ -504,10 +504,6 @@ class FightingGame:
 
         self.bullshido_cog.logger.debug(f"Round winner set to {round_winner}")
 
-        if round_winner is None:
-            self.bullshido_cog.logger.warning("Round winner not determined correctly. Setting default value.")
-            round_winner = "No clear winner"
-
         await self.update_health_bars(round_number, "Round Ended", round_result)
 
         if self.player1_health <= 0 or self.player2_health <= 0:
@@ -517,6 +513,7 @@ class FightingGame:
             return True
 
         return False
+
 
 
 
