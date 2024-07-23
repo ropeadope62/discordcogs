@@ -265,8 +265,8 @@ class FightingGame:
 
     async def end_fight(self, winner, loser, ctx):
         self.bullshido_cog.logger.info(f"Ending fight between {winner} and {loser}.")
-        await self.bullshido_cog.add_xp(winner, 100)
-        await self.bullshido_cog.add_xp(loser, 50)
+        await self.bullshido_cog.add_xp(winner, 100, self.channel)
+        await self.bullshido_cog.add_xp(loser, 50, self.channel)
 
     async def target_bodypart(self):
         bodypart = random.choice(BODY_PARTS)
