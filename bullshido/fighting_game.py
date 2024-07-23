@@ -593,7 +593,7 @@ class FightingGame:
             for round_number in range(1, self.rounds + 1):
                 if not FightingGame.is_game_active(channel_id):
                     break
-                await self.play_round(round_number)
+                await self.play_round(round_number, ctx)
 
             winner, loser = None, None
             result_type = "DRAW"
