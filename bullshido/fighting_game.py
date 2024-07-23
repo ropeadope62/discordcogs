@@ -522,63 +522,56 @@ class FightingGame:
 
         return False
 
-
-
-
-
-
-
     async def start_game(self):
-        channel_id = self.channel.id
+        try:
+            channel_id = self.channel.id
 
-        if FightingGame.is_game_active(channel_id):
-            await self.channel.send("A game is already in progress in this channel.")
-            return
+            if FightingGame.is_game_active(channel_id):
+                await self.channel.send("A game is already in progress in this channel.")
+                return
 
-        guild = self.channel.guild
-        self.rounds = await self.bullshido_cog.config.guild(guild).rounds()
-        self.max_strikes_per_round = await self.bullshido_cog.config.guild(guild).max_strikes_per_round()
-        self.training_weight = await self.bullshido_cog.config.guild(guild).training_weight()
-        self.diet_weight = await self.bullshido_cog.config.guild(guild).diet_weight()
-        self.max_health = await self.bullshido_cog.config.guild(guild).max_health()
-        self.ACTION_COST = await self.bullshido_cog.config.guild(guild).action_cost()
-        self.BASE_MISS_PROBABILITY = await self.bullshido_cog.config.guild(guild).base_miss_probability()
-        self.BASE_STAMINA_COST = await self.bullshido_cog.config.guild(guild).base_stamina_cost()
-        self.CRITICAL_CHANCE = await self.bullshido_cog.config.guild(guild).critical_chance()
-        self.PERMANENT_INJURY_CHANCE = await self.bullshido_cog.config.guild(guild).permanent_injury_chance()
+            guild = self.channel.guild
+            self.rounds = await self.bullshido_cog.config.guild(guild).rounds()
+            self.max_strikes_per_round = await self.bullshido_cog.config.guild(guild).max_strikes_per_round()
+            self.training_weight = await self.bullshido_cog.config.guild(guild).training_weight()
+            self.diet_weight = await self.bullshido_cog.config.guild(guild).diet_weight()
+            self.max_health = await self.bullshido_cog.config.guild(guild).max_health()
+            self.ACTION_COST = await self.bullshido_cog.config.guild(guild).action_cost()
+            self.BASE_MISS_PROBABILITY = await self.bullshido_cog.config.guild(guild).base_miss_probability()
+            self.BASE_STAMINA_COST = await self.bullshido_cog.config.guild(guild).base_stamina_cost()
+            self.CRITICAL_CHANCE = await self.bullshido_cog.config.guild(guild).critical_chance()
+            self.PERMANENT_INJURY_CHANCE = await self.bullshido_cog.config.guild(guild).permanent_injury_chance()
 
-        self.player1_health = self.max_health
-        self.player2_health = self.max_health
+            self.player1_health = self.max_health
+            self.player2_health = self.max_health
 
-        FightingGame.set_game_active(channel_id, True)
-        fight_image_path = await self.generate_fight_image()
-        user_config = await self.bullshido_cog.config.all_users()
-        narrative = generate_hype(self.user_config, str(self.player1.id), str(self.player2.id), self.player1.display_name, self.player2.display_name)
+            FightingGame.set_game_active(channel_id, True)
+            fight_image_path = await self.generate_fight_image()
+            user_config = await self.bullshido_cog.config.all_users()
+            narrative = generate_hype(self.user_config, str(self.player1.id), str(self.player2.id), self.player1.display_name, self.player2.display_name)
 
-        embed = discord.Embed(
-            title=f"{self.player1.display_name} vs {self.player2.display_name}",
-            description=f"{narrative}",
-            color=0xFF0000
-        )
-        file = discord.File(fight_image_path, filename="fight_image.png")
-        
-        embed.set_image(url="attachment://fight_image.png")
-        
-        self.embed_message = await self.channel.send(file=file, embed=embed)
-        await asyncio.sleep(15)
+            embed = discord.Embed(
+                title=f"{self.player1.display_name} vs {self.player2.display_name}",
+                description=f"{narrative}",
+                color=0xFF0000
+            )
+            file = discord.File(fight_image_path, filename="fight_image.png")
+            embed.set_image(url="attachment://fight_image.png")
 
-        await self.update_health_bars(0, "The fight is about to begin!", "Ready? FIGHT!")
+            self.embed_message = await self.channel.send(file=file, embed=embed)
+            await asyncio.sleep(15)
 
-        for round_number in range(1, self.rounds + 1):
-            if not FightingGame.is_game_active(channel_id):
-                break
-            await self.play_round(round_number)
+            await self.update_health_bars(0, "The fight is about to begin!", "Ready? FIGHT!")
 
-        # Initialize winner and loser to None
-        winner = None
-        loser = None
+            for round_number in range(1, self.rounds + 1):
+                if not FightingGame.is_game_active(channel_id):
+                    break
+                await self.play_round(round_number)
 
-        if FightingGame.is_game_active(channel_id):
+            winner, loser = None, None
+            result_type = "DRAW"
+            final_message = "The fight is over! The fight is declared a draw!"
+
             if self.player1_health > self.player2_health:
                 winner = self.player1
                 loser = self.player2
@@ -587,35 +580,40 @@ class FightingGame:
                 winner = self.player2
                 loser = self.player1
                 result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
-            else:
+            elif self.player1_score != self.player2_score:
                 if self.player1_score > self.player2_score:
                     winner = self.player1
                     loser = self.player2
                     result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
-                elif self.player2_score > self.player1_score:
+                else:
                     winner = self.player2
                     loser = self.player1
                     result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
-                else:
-                    result_type = "DRAW"
-                    final_message = (
-                        f"The fight is over!\n"
-                        f"After 3 rounds, the fight is declared a draw!\n"
-                    )
-                    await self.update_health_bars(round_number, final_message, "Draw", final_result="The Fight Ended in A Draw!")
-                    FightingGame.set_game_active(channel_id, False)
-                    return
+            else:
+                winner = None
+                loser = None
+                result_type = "DRAW"
+                final_message = (
+                    f"The fight is over!\n"
+                    f"After 3 rounds, the fight is declared a draw!\n"
+                )
 
-            result_description = FIGHT_RESULT_LONG[result_type]
-            final_message = (
-                f"The fight is over!\n"
-                f"After 3 rounds, we go to the judges' scorecard for a decision.\n"
-                f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, by {result_description}, {winner.display_name}!"
-            )
-            await self.update_health_bars(round_number, final_message, "Decision Victory", final_result=f"Decision Victory for {winner.display_name}!")
+            if winner and loser:
+                result_description = FIGHT_RESULT_LONG[result_type]
+                final_message = (
+                    f"The fight is over!\n"
+                    f"After 3 rounds, we go to the judges' scorecard for a decision.\n"
+                    f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, by {result_description}, {winner.display_name}!"
+                )
+
+            await self.update_health_bars(round_number, final_message, "Decision Victory", final_result=f"Decision Victory for {winner.display_name if winner else 'No one'}!")
             await self.record_result(winner, loser, result_type)
 
-        FightingGame.set_game_active(channel_id, False)
-        await self.end_fight(winner, loser)
+            FightingGame.set_game_active(channel_id, False)
+            await self.end_fight(winner, loser)
+
+        except Exception as e:
+            self.bullshido_cog.logger.error(f"Error during start_game: {e}")
+            raise e
 
 
