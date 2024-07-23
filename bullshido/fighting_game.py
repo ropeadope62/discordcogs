@@ -6,7 +6,6 @@ import math
 import requests
 from discord import File, Webhook
 from PIL import Image, ImageDraw, ImageFont
-from .ui_elements import StatIncreaseView
 from io import BytesIO
 import os
 from .fighting_constants import (
@@ -268,34 +267,8 @@ class FightingGame:
         self.bullshido_cog.logger.info(f"Ending fight between {winner} and {loser}.")
         await self.bullshido_cog.add_xp(winner, 100)
         await self.bullshido_cog.add_xp(loser, 50)
-        await self.level_up(winner, ctx)
-        await self.level_up(loser, ctx)
-        
-    async def level_up(self, player, ctx):
-        user_data = await self.config.user(player).all()
-        xp = user_data["xp"]
-        level = user_data["level"]
-        next_level_xp = self.calculate_next_level_xp(level)
-
-        if xp >= next_level_xp:
-            user_data["level"] += 1
-            user_data["points_to_distribute"] += 5  # For example, add 5 points to distribute
-            await self.config.user(player).set(user_data)
-
-            # Send a message to the user about their new level
-            await ctx.send(
-                f"Congratulations {player.display_name}! You have reached level {user_data['level']}!\n"
-                f"You have {user_data['points_to_distribute']} points to distribute."
-            )
-
-            # Send the level-up view
-            await ctx.send(
-                f"{player.mention}, distribute your points:",
-                view=StatIncreaseView(self.config, player)
-            )
-            
-            self.bullshido_cog.logger.info(f"{player.display_name} leveled up to {user_data['level']}")
-
+        await self.bullshido_cog.level_up(winner, ctx)
+        await self.bullshido_cog.level_up(loser, ctx)
 
     async def target_bodypart(self):
         bodypart = random.choice(BODY_PARTS)

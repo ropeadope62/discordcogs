@@ -154,6 +154,32 @@ class Bullshido(commands.Cog):
             await self.prompt_stat_increase(user)
 
         await self.config.user(user).set(user_data)
+        
+    async def level_up(self, player, ctx):
+        user_data = await self.config.user(player).all()
+        xp = user_data["xp"]
+        level = user_data["level"]
+        next_level_xp = self.calculate_next_level_xp(level)
+
+        if xp >= next_level_xp:
+            user_data["level"] += 1
+            user_data["points_to_distribute"] += 5  # For example, add 5 points to distribute
+            await self.config.user(player).set(user_data)
+
+            # Send a message to the user about their new level
+            await ctx.send(
+                f"Congratulations {player.display_name}! You have reached level {user_data['level']}!\n"
+                f"You have {user_data['points_to_distribute']} points to distribute."
+            )
+
+            # Send the level-up view
+            await ctx.send(
+                f"{player.mention}, distribute your points:",
+                view=StatIncreaseView(self.config, player)
+            )
+            
+            self.logger.info(f"{player.display_name} leveled up to {user_data['level']}")
+
 
     async def prompt_stat_increase(self, user):
         self.logger.info(f"Prompting {user} to increase a stat.")
