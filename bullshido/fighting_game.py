@@ -549,7 +549,7 @@ class FightingGame:
         return False
 
 
-    async def start_game(self,ctx):
+    async def start_game(self, ctx):
         try:
             channel_id = self.channel.id
 

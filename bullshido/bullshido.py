@@ -695,7 +695,7 @@ class Bullshido(commands.Cog):
             }
 
             # Start the game method
-            await game.start_game()
+            await game.start_game(ctx)
             self.logger.info("Game started successfully.")
 
         except Exception as e:
