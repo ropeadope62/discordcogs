@@ -135,11 +135,13 @@ class Bullshido(commands.Cog):
         return commands.check(predicate)
     
     
-    async def add_xp(self, user: discord.Member, xp: int):
+    async def add_xp(self, user: discord.Member, xp: int, channel: discord.TextChannel):
         user_data = await self.config.user(user).all()
         new_xp = user_data["xp"] + xp
         await self.config.user(user).xp.set(new_xp)
-        await self.check_level_up(user, new_xp)
+        
+        if await self.check_level_up(user, new_xp):
+            await self.level_up(user, channel)
 
     async def check_level_up(self, user: discord.Member, current_xp: int):
         user_data = await self.config.user(user).all()
@@ -147,15 +149,17 @@ class Bullshido(commands.Cog):
         next_level_xp = XP_REQUIREMENTS.get(current_level + 1)
 
         if next_level_xp and current_xp >= next_level_xp:
-            await self.level_up(user, current_level + 1)
+            return True
+        return False
             
-    async def level_up(self, user: discord.Member, new_level: int, channel: discord.TextChannel):
+    async def level_up(self, user: discord.Member, channel: discord.TextChannel):
         user_data = await self.config.user(user).all()
-        new_points = 1 
+        new_level = user_data['level'] + 1
+        new_points = 1
+        
         await self.config.user(user).level.set(new_level)
         await self.config.user(user).level_points_to_distribute.set(user_data['level_points_to_distribute'] + new_points)
 
-        # Send the level up message in the channel
         if channel:
             embed = discord.Embed(
                 title="Level Up!",
