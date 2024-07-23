@@ -147,7 +147,7 @@ class Bullshido(commands.Cog):
 
         if next_level_xp and user_data["xp"] >= next_level_xp:
             user_data["level"] += 1
-            user_data["points_to_distribute"] += 1
+            user_data["level_points_to_distribute"] += 1
             user_data["xp"] -= next_level_xp
 
             await user.send(f"Your level has increased! You've reached level {user_data['level']}! You have 1 point to distribute to Stamina, Health, or Damage. Choose wisely..")
