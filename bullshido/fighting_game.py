@@ -422,7 +422,7 @@ class FightingGame:
         return max(0, min(0.75, tko_probability))
 
 
-    async def declare_winner_by_ko(self, round_message):
+    async def declare_winner_by_ko(self, round_message, ctx):
         if self.player1_health <= 0:
             winner = self.player2
             loser = self.player1
@@ -437,7 +437,7 @@ class FightingGame:
         await self.update_health_bars(0, final_message, "KO Victory!", final_result=f"KO Victory for {winner.display_name}!")  # Update embed with KO result
         await self.record_result(winner, loser, "KO")
         FightingGame.set_game_active(self.channel.id, False)
-        await self.end_fight(winner, loser)
+        await self.end_fight(winner, loser, ctx)
 
         
     async def add_permanent_injury(self, user: discord.Member, injury, body_part):
@@ -448,7 +448,7 @@ class FightingGame:
         user_data["permanent_injuries"].append(f"{injury}")
         await self.bullshido_cog.config.user(user).permanent_injuries.set(user_data["permanent_injuries"])
 
-    async def declare_winner_by_tko(self, round_message, loser):
+    async def declare_winner_by_tko(self, round_message, loser,ctx):
         winner = self.player1 if loser == self.player2 else self.player2
         tko_message_flavor = random.choice(TKO_MESSAGES).format(loser=loser.display_name)
         referee_stop_flavor = random.choice(REFEREE_STOPS)
@@ -461,7 +461,7 @@ class FightingGame:
         await self.update_health_bars(0, final_message, "TKO Victory!", final_result=f"TKO Victory for {winner.display_name}!")  # Update embed with TKO result
         await self.record_result(winner, loser, "TKO")
         FightingGame.set_game_active(self.channel.id, False)
-        await self.end_fight(winner, loser)
+        await self.end_fight(winner, loser, ctx)
 
 
     async def record_result(self, winner, loser, result_type):
@@ -477,7 +477,7 @@ class FightingGame:
         except Exception as e:
             print(f"An error occurred: {e}")
 
-    async def play_round(self, round_number):
+    async def play_round(self, round_number,ctx):
         strike_count = 0
         player1_health_start = self.player1_health
         player2_health_start = self.player2_health
@@ -543,13 +543,13 @@ class FightingGame:
         if self.player1_health <= 0 or self.player2_health <= 0:
             winner = self.player2 if self.player1_health <= 0 else self.player1
             loser = self.player1 if self.player1_health <= 0 else self.player2
-            await self.end_fight(winner, loser)
+            await self.end_fight(winner, loser, ctx)
             return True
 
         return False
 
 
-    async def start_game(self):
+    async def start_game(self,ctx):
         try:
             channel_id = self.channel.id
 
@@ -637,7 +637,7 @@ class FightingGame:
             await self.record_result(winner, loser, result_type)
 
             FightingGame.set_game_active(channel_id, False)
-            await self.end_fight(winner, loser)
+            await self.end_fight(winner, loser, ctx)
 
         except Exception as e:
             self.bullshido_cog.logger.error(f"Error during start_game: {e}")
