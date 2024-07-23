@@ -135,20 +135,20 @@ class Bullshido(commands.Cog):
         return commands.check(predicate)
     
     
-    async def add_xp(self, user: discord.Member, xp: int, channel: discord.TextChannel):
+    async def add_xp(self, user: discord.Member, xp: int):
         user_data = await self.config.user(user).all()
         new_xp = user_data["xp"] + xp
         await self.config.user(user).xp.set(new_xp)
-        await self.check_level_up(user, new_xp, channel)
+        await self.check_level_up(user, new_xp)
 
-    async def check_level_up(self, user: discord.Member, current_xp: int, channel: discord.TextChannel):
+    async def check_level_up(self, user: discord.Member, current_xp: int):
         user_data = await self.config.user(user).all()
         current_level = user_data['level']
         next_level_xp = XP_REQUIREMENTS.get(current_level + 1)
 
         if next_level_xp and current_xp >= next_level_xp:
-            await self.level_up(user, current_level + 1, channel)
-
+            await self.level_up(user, current_level + 1)
+            
     async def level_up(self, user: discord.Member, new_level: int, channel: discord.TextChannel):
         user_data = await self.config.user(user).all()
         new_points = 1 

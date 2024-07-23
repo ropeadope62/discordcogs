@@ -263,10 +263,10 @@ class FightingGame:
             print(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
 
-    async def end_fight(self, winner, loser,ctx):
+    async def end_fight(self, winner, loser, ctx):
         self.bullshido_cog.logger.info(f"Ending fight between {winner} and {loser}.")
-        await self.bullshido_cog.add_xp(winner, 100)
-        await self.bullshido_cog.add_xp(loser, 50)
+        await self.bullshido_cog.add_xp(winner, 100, channel)
+        await self.bullshido_cog.add_xp(loser, 50, channel)
         await self.bullshido_cog.level_up(winner, ctx)
         await self.bullshido_cog.level_up(loser, ctx)
 
@@ -504,8 +504,7 @@ class FightingGame:
             round_result = "Draw"
             self.player1_score += 9
             self.player2_score += 9
-
-        self.bullshido_cog.logger.debug(f"Round was a draw")
+            self.bullshido_cog.logger.debug(f"Round was a draw")
 
         if round_result is None:
             self.bullshido_cog.logger.warning("Round winner not determined correctly. Setting default value.")
