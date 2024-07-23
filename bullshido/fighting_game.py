@@ -485,7 +485,7 @@ class FightingGame:
                 self.player1_score += 10
                 self.player2_score += 8
             else:
-                round_result = random.choice(ROUND_RESULTS_WIN).format(winner=self.player1.display_name)
+                round_result = random.choice(ROUND_RESULTS_CLOSE).format(winner=self.player1.display_name)
                 self.player1_score += 10
                 self.player2_score += 9
             
@@ -495,7 +495,7 @@ class FightingGame:
                 self.player2_score += 10
                 self.player1_score += 8
             else:
-                round_result = random.choice(ROUND_RESULTS_WIN).format(winner=self.player2.display_name)
+                round_result = random.choice(ROUND_RESULTS_CLOSE).format(winner=self.player2.display_name)
                 self.player2_score += 10
                 self.player1_score += 9
         else:
