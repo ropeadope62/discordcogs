@@ -459,12 +459,16 @@ class FightingGame:
         self.bullshido_cog.logger.info(f"Player1 Health: {self.player1_health}, Player2 Health: {self.player2_health}")
 
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
-            ko_or_tko_occurred = await self.play_turn(self.embed_message, round_number)
-            if ko_or_tko_occurred:
-                return True
+            try:
+                ko_or_tko_occurred = await self.play_turn(self.embed_message, round_number)
+                if ko_or_tko_occurred:
+                    return True
 
-            strike_count += 1
-            await asyncio.sleep(random.uniform(3, 4))
+                strike_count += 1
+                await asyncio.sleep(random.uniform(3, 4))
+            except Exception as e:
+                self.bullshido_cog.logger.error(f"Error during play_turn: {e}")
+                raise e
 
         player1_health_end = self.player1_health
         player2_health_end = self.player2_health
@@ -504,6 +508,10 @@ class FightingGame:
 
         self.bullshido_cog.logger.debug(f"Round winner set to {round_winner}")
 
+        if round_winner is None:
+            self.bullshido_cog.logger.warning("Round winner not determined correctly. Setting default value.")
+            round_winner = "No clear winner"
+
         await self.update_health_bars(round_number, "Round Ended", round_result)
 
         if self.player1_health <= 0 or self.player2_health <= 0:
@@ -513,6 +521,7 @@ class FightingGame:
             return True
 
         return False
+
 
 
 
