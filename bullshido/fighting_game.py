@@ -498,13 +498,14 @@ class FightingGame:
                 round_result = random.choice(ROUND_RESULTS_CLOSE).format(winner=self.player2.display_name)
                 self.player2_score += 10
                 self.player1_score += 9
-        else:
-            round_result = "Draw"
+        elif damage_player1 == damage_player2:
+            round_result = f"The round was a draw"
             self.player1_score += 9
             self.player2_score += 9
             self.bullshido_cog.logger.debug(f"Round was a draw")
-
-        if round_result is None:
+        
+        else: 
+            round_result = None
             self.bullshido_cog.logger.warning("Round winner not determined correctly. Setting default value.")
             round_result = "No clear winner"
 
@@ -563,7 +564,8 @@ class FightingGame:
             for round_number in range(1, self.rounds + 1):
                 if not FightingGame.is_game_active(channel_id):
                     break
-                await self.play_round(round_number, ctx)
+                if await self.play_round(round_number, ctx):
+                    break
 
             winner, loser = None, None
             result_type = "DRAW"
@@ -587,8 +589,7 @@ class FightingGame:
                     loser = self.player1
                     result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
             else:
-                winner = None
-                loser = None
+                winner, loser = None, None
                 result_type = "DRAW"
                 final_message = (
                     f"The fight is over!\n"
@@ -608,8 +609,6 @@ class FightingGame:
 
             FightingGame.set_game_active(channel_id, False)
             await self.end_fight(winner, loser, ctx)
-            await self.bullshido_cog.add_xp(winner, 100, self.channel)
-            await self.bullshido_cog.add_xp(loser, 50, self.channel)
 
         except Exception as e:
             self.bullshido_cog.logger.error(f"Error during start_game: {e}")
