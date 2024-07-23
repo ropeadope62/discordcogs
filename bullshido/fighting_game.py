@@ -297,19 +297,17 @@ class FightingGame:
         return min(current_stamina + regeneration_rate, self.max_health)
 
     async def play_turn(self, round_message, round_number):
-        if not FightingGame.is_game_active(self.channel.id):
-            return True
-        attacker = self.player1 if self.current_turn == self.player1 else self.player2
-        defender = self.player2 if self.current_turn == self.player1 else self.player1
-        attacker_stamina = self.player1_stamina if self.current_turn == self.player1 else self.player2_stamina
-        defender_stamina = self.player2_stamina if self.current_turn == self.player1 else self.player1_stamina
-        attacker_training = self.player1_data["training_level"] if self.current_turn == self.player1 else self.player2_data["training_level"]
-        defender_training = self.player2_data["training_level"] if self.current_turn == self.player1 else self.player1_data["training_level"]
-        attacker_intimidation = self.player1_data["intimidation_level"] if self.current_turn == self.player1 else self.player2_data["intimidation_level"]
-        defender_intimidation = self.player2_data["intimidation_level"] if self.current_turn == self.player1 else self.player1_data["intimidation_level"]
-        style = self.player1_data["fighting_style"] if self.current_turn == self.player1 else self.player2_data["fighting_style"]
-
         try:
+            attacker = self.player1 if self.current_turn == self.player1 else self.player2
+            defender = self.player2 if self.current_turn == self.player1 else self.player1
+            attacker_stamina = self.player1_stamina if self.current_turn == self.player1 else self.player2_stamina
+            defender_stamina = self.player2_stamina if self.current_turn == self.player1 else self.player1_stamina
+            attacker_training = self.player1_data["training_level"] if self.current_turn == self.player1 else self.player2_data["training_level"]
+            defender_training = self.player2_data["training_level"] if self.current_turn == self.player1 else self.player1_data["training_level"]
+            attacker_intimidation = self.player1_data["intimidation_level"] if self.current_turn == self.player1 else self.player2_data["intimidation_level"]
+            defender_intimidation = self.player2_data["intimidation_level"] if self.current_turn == self.player1 else self.player1_data["intimidation_level"]
+            style = self.player1_data["fighting_style"] if self.current_turn == self.player1 else self.player2_data["fighting_style"]
+
             miss_probability = self.calculate_miss_probability(attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation)
             if random.random() < miss_probability:
                 miss_message = f"{attacker.display_name} missed their attack on {defender.display_name}!"
@@ -319,7 +317,7 @@ class FightingGame:
 
             bodypart = await self.target_bodypart()
             strike, damage, critical_message, conclude_message, critical_injury, targeted_bodypart = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender, bodypart)
-            
+
             if not strike:
                 await self.update_health_bars(round_number, "An error occurred during the turn: Failed to determine strike.", None)
                 return True
@@ -362,7 +360,7 @@ class FightingGame:
                 await asyncio.sleep(2)
                 await self.declare_winner_by_ko(round_message)
                 return True
-            
+
             tko_probability = self.calculate_tko_probability(attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation)
 
             if (self.player1_health < 20 or self.player2_health < 20) and random.random() < tko_probability:
