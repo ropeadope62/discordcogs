@@ -6,7 +6,7 @@ import math
 import requests
 from discord import File, Webhook
 from PIL import Image, ImageDraw, ImageFont
-from ui_elements import StatIncreaseView
+from .ui_elements import StatIncreaseView
 from io import BytesIO
 import os
 from .fighting_constants import (
