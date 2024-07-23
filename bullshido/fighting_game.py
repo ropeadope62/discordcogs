@@ -265,8 +265,8 @@ class FightingGame:
 
     async def end_fight(self, winner, loser, ctx):
         self.bullshido_cog.logger.info(f"Ending fight between {winner} and {loser}.")
-        await self.bullshido_cog.add_xp(winner, 100, channel)
-        await self.bullshido_cog.add_xp(loser, 50, channel)
+        await self.bullshido_cog.add_xp(winner, 100)
+        await self.bullshido_cog.add_xp(loser, 50)
         await self.bullshido_cog.level_up(winner, ctx)
         await self.bullshido_cog.level_up(loser, ctx)
 
