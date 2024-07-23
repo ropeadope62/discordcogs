@@ -611,6 +611,8 @@ class FightingGame:
 
             FightingGame.set_game_active(channel_id, False)
             await self.end_fight(winner, loser, ctx)
+            await self.bullshido_cog.add_xp(winner, 100, self.channel)
+            await self.bullshido_cog.add_xp(loser, 50, self.channel)
 
         except Exception as e:
             self.bullshido_cog.logger.error(f"Error during start_game: {e}")

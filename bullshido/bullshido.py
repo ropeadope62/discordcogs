@@ -135,39 +135,32 @@ class Bullshido(commands.Cog):
         return commands.check(predicate)
     
     
-    async def add_xp(self, user, xp):
+    async def add_xp(self, user: discord.Member, xp: int, channel: discord.TextChannel = None):
         user_data = await self.config.user(user).all()
-        self.logger.info(f"Adding {xp} XP to {user}.")
-        user_data["xp"] += xp
-        self.logger.info(f"User {user} now has {user_data['xp']} XP.")
-        next_level_xp = await self.xp_for_next_level(user_data["level"])
+        new_xp = user_data["xp"] + xp
+        await self.config.user(user).xp.set(new_xp)
+        await self.check_level_up(user, new_xp, channel)
 
-        if next_level_xp and user_data["xp"] >= next_level_xp:
-            user_data["level"] += 1
-            user_data["level_points_to_distribute"] += 1
-            user_data["xp"] -= next_level_xp
-
-            await user.send(f"Your level has increased! You've reached level {user_data['level']}! You have 1 point to distribute to Stamina, Health, or Damage. Choose wisely..")
-            await self.prompt_stat_increase(user)
-
-        await self.config.user(user).set(user_data)
-        
-    async def level_up(self, user: discord.Member, current_xp: int, channel: discord.TextChannel):
+    async def check_level_up(self, user: discord.Member, current_xp: int, channel: discord.TextChannel):
         user_data = await self.config.user(user).all()
         current_level = user_data['level']
-        next_level = current_level + 1
-        xp_for_next_level = XP_REQUIREMENTS.get(next_level)
+        next_level_xp = XP_REQUIREMENTS.get(current_level + 1)
 
-        if xp_for_next_level and current_xp >= xp_for_next_level:
-            new_points = 1  
-            await self.config.user(user).level.set(next_level)
-            await self.config.user(user).points_to_distribute.set(user_data['points_to_distribute'] + new_points)
+        if next_level_xp and current_xp >= next_level_xp:
+            await self.level_up(user, current_level + 1, channel)
 
-            # Send the level up message in the channel
+    async def level_up(self, user: discord.Member, new_level: int, channel: discord.TextChannel):
+        user_data = await self.config.user(user).all()
+        new_points = 1 
+        await self.config.user(user).level.set(new_level)
+        await self.config.user(user).level_points_to_distribute.set(user_data['level_points_to_distribute'] + new_points)
+
+        # Send the level up message in the channel
+        if channel:
             embed = discord.Embed(
                 title="Level Up!",
-                description=f"{user.mention}, you have leveled up to level {next_level}!\nYou have {new_points} new points to distribute.",
-                color=discord.Color.red()
+                description=f"{user.mention}, you have leveled up to level {new_level}!\nYou have {new_points} new points to distribute.",
+                color=discord.Color.green()
             )
             await channel.send(embed=embed, view=StatIncreaseView(self.config, user))
             
