@@ -644,63 +644,64 @@ class Bullshido(commands.Cog):
         self.logger.info(f"Listing available fighting styles.")
         await self.channel.send(embed=embed)
         
-    bullshido_group.command(name="fight", description="Start a fight with another player")
-async def fight(self, ctx: commands.Context, opponent: discord.Member):
-    """Start a fight with another player."""
-    await ctx.defer()
-    self.logger.info(f"{ctx.author} challenged {opponent} to a fight.")
-    try:
-        player1 = ctx.author
-        player2 = opponent
+    @bullshido_group.command(name="fight", description="Start a fight with another player")
+    async def fight(self, ctx: commands.Context, opponent: discord.Member):
+        """Start a fight with another player."""
+        await ctx.defer()
+        self.logger.info(f"{ctx.author} challenged {opponent} to a fight.")
+        try:
+            player1 = ctx.author
+            player2 = opponent
 
-        # Retrieve player data
-        player1_data = await self.config.user(player1).all()
-        player2_data = await self.config.user(player2).all()
+            # Retrieve player data
+            player1_data = await self.config.user(player1).all()
+            player2_data = await self.config.user(player2).all()
 
-        self.logger.info(f"Starting fight: {player1.display_name} vs {player2.display_name}")
-        self.logger.info(f"Player 1 Data: {player1_data}")
-        self.logger.info(f"Player 2 Data: {player2_data}")
+            self.logger.info(f"Starting fight: {player1.display_name} vs {player2.display_name}")
+            self.logger.info(f"Player 1 Data: {player1_data}")
+            self.logger.info(f"Player 2 Data: {player2_data}")
 
-        # Check stamina - not fully implemented between fights
-        if not await self.has_sufficient_stamina(player1):
-            await ctx.send(f"You are too tired to fight, {player1.mention}.\nTry waiting some time for your stamina to recover, or buy some supplements to speed up your recovery.")
-            self.logger.warning(f"{player1} does not have enough stamina to fight.")
-            return
-        if not await self.has_sufficient_stamina(player2):
-            await ctx.send("Your opponent does not have enough stamina to start the fight.")
-            self.logger.warning(f"{player2} does not have enough stamina to fight.")
-            return
+            # Check stamina - not fully implemented between fights
+            if not await self.has_sufficient_stamina(player1):
+                await ctx.send(f"You are too tired to fight, {player1.mention}.\nTry waiting some time for your stamina to recover, or buy some supplements to speed up your recovery.")
+                self.logger.warning(f"{player1} does not have enough stamina to fight.")
+                return
+            if not await self.has_sufficient_stamina(player2):
+                await ctx.send("Your opponent does not have enough stamina to start the fight.")
+                self.logger.warning(f"{player2} does not have enough stamina to fight.")
+                return
 
-        # Check if fighting styles are selected for each player
-        if not player1_data['fighting_style']:
-            await ctx.send(f"{player1.display_name}, you need to select a fighting style before you can fight.")
-            self.logger.info(f"{player1} does not have a fighting style selected.")
-            return
-        if not player2_data['fighting_style']:
-            await ctx.send(f"{player2.display_name} needs to select a fighting style before they can fight.")
-            self.logger.info(f"{player2} does not have a fighting style selected.")
-            return
+            # Check if fighting styles are selected for each player
+            if not player1_data['fighting_style']:
+                await ctx.send(f"{player1.display_name}, you need to select a fighting style before you can fight.")
+                self.logger.info(f"{player1} does not have a fighting style selected.")
+                return
+            if not player2_data['fighting_style']:
+                await ctx.send(f"{player2.display_name} needs to select a fighting style before they can fight.")
+                self.logger.info(f"{player2} does not have a fighting style selected.")
+                return
 
-        # Prevent fighting oneself
-        if player1 == player2:
-            await ctx.send("You cannot fight yourself, only your own demons! Try challenging another fighter.")
-            self.logger.warning(f"{player1} tried to fight themselves.")
-            return
+            # Prevent fighting oneself
+            if player1 == player2:
+                await ctx.send("You cannot fight yourself, only your own demons! Try challenging another fighter.")
+                self.logger.warning(f"{player1} tried to fight themselves.")
+                return
 
-        # Set up an instance of the game session
-        game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self)
-        game.user_config = {
-            str(player1.id): player1_data,
-            str(player2.id): player2_data
-        }
+            # Set up an instance of the game session
+            game = FightingGame(self.bot, ctx.channel, player1, player2, player1_data, player2_data, self)
+            game.user_config = {
+                str(player1.id): player1_data,
+                str(player2.id): player2_data
+            }
 
-        # Start the game method
-        await game.start_game()
-        self.logger.info("Game started successfully.")
+            # Start the game method
+            await game.start_game()
+            self.logger.info("Game started successfully.")
 
-    except Exception as e:
-        self.logger.error(f"Failed to start fight: {e}")
-        await ctx.send(f"Failed to start the fight due to an error: {e}")
+        except Exception as e:
+            self.logger.error(f"Failed to start fight: {e}")
+            await ctx.send(f"Failed to start the fight due to an error: {e}")
+
 
 
 
