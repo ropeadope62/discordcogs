@@ -135,7 +135,7 @@ class Bullshido(commands.Cog):
         return commands.check(predicate)
     
     
-    async def add_xp(self, user: discord.Member, xp: int, channel: discord.TextChannel = None):
+    async def add_xp(self, user: discord.Member, xp: int, channel: discord.TextChannel):
         user_data = await self.config.user(user).all()
         new_xp = user_data["xp"] + xp
         await self.config.user(user).xp.set(new_xp)
