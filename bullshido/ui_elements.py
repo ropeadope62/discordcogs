@@ -76,9 +76,15 @@ class SelectFightingStyleView(ui.View):
 
 class StatIncreaseView(discord.ui.View):
     def __init__(self, config, user):
-        super().__init__()
+        super().__init__(timeout=180)
         self.config = config
         self.user = user
+        
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return interaction.user == self.user
+    
+    async def on_stat_increase_selected(self, ctx, stat: str):
+        await ctx.bot.get_cog('Bullshido').increase_stat(ctx, stat)
 
     @discord.ui.button(label="Stamina", style=discord.ButtonStyle.primary)
     async def increase_stamina(self, interaction: discord.Interaction, button: discord.ui.Button):

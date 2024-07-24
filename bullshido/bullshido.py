@@ -185,20 +185,23 @@ class Bullshido(commands.Cog):
         view = StatIncreaseView(self.config, user)
         await channel.send(embed=embed, view=view)
 
-    async def increase_stat(self, user, stat):
+    async def increase_stat(self, interaction: discord.Interaction, stat):
         """Increase the user bonus stat for their selection"""
-        self.logger.info(f"Increasing {stat} for {user}.")
+        user = interaction.user
         user_data = await self.config.user(user).all()
-
+        self.logger.info(f"Increasing {stat} for {user}.")
         if user_data["level_points_to_distribute"] <= 0:
-            return "You don't have any points to distribute."
+            result = f"{user}, You do not have any points to distribute."
 
         if stat == "stamina":
             user_data["stamina_bonus"] += 10
+            result = f"{user} has chosen to increase their stamina. They will be more consistent in battle!"
         elif stat == "health":
             user_data["health_bonus"] += 10
+            result = f"{user} has chosen to increase their health. They will be more resilient in battle!"
         elif stat == "damage":
             user_data["damage_bonus"] += 1
+            result = f"{user} has chosen to increase their damage. Their strikes have become more powerful in battle!"
         else:
             return "Invalid stat."
 
@@ -206,10 +209,9 @@ class Bullshido(commands.Cog):
         self.logger.info(f"{user} has increased their {stat}.")
         await self.config.user(user).set(user_data)
 
-        return f"Your {stat} has been increased!"
+        await interaction.response.send_message(result)
 
-    
-    
+
     async def set_fighting_style(self, interaction: discord.Interaction, new_style: str):
         user = interaction.user
         user_data = await self.config.user(user).all()
