@@ -1912,6 +1912,9 @@ XP_REQUIREMENTS = {
     4: 1000,
     5: 1500,
 }
+
+KO_VICTOR_FLAVOR = [
+    "Wow!",
     "Nice!",
     "Holy moly!",
     "Oh my goodness!",
@@ -1930,5 +1933,4 @@ XP_REQUIREMENTS = {
     3: 600,
     4: 1000,
     5: 1500,
-}
 }

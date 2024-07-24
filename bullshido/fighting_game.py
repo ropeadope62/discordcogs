@@ -11,7 +11,7 @@ import os
 from .fighting_constants import (
     STRIKES, CRITICAL_RESULTS, CRITICAL_MESSAGES, BODY_PARTS, GRAPPLE_KEYWORDS, GRAPPLE_ACTIONS, BODY_PART_INJURIES,
     STRIKE_ACTIONS, TKO_MESSAGES, KO_MESSAGES, KO_VICTOR_MESSAGE, TKO_VICTOR_MESSAGE, REFEREE_STOPS, FIGHT_RESULT_LONG,
-    ROUND_RESULTS_WIN, ROUND_RESULTS_CLOSE, TKO_MESSAGE_FINALES
+    ROUND_RESULTS_WIN, ROUND_RESULTS_CLOSE, TKO_MESSAGE_FINALES, KO_VICTOR_FLAVOR
 )
 from .bullshido_ai import generate_hype
 class FightingGame:
@@ -401,9 +401,10 @@ class FightingGame:
             winner = self.player1
             loser = self.player2
         ko_message = random.choice(KO_MESSAGES).format(loser=loser.display_name)
-        ko_victor_flavor = random.choice(KO_VICTOR_MESSAGE)
+        ko_victor_message = random.choice(KO_VICTOR_MESSAGE)
+        ko_victor_flavor = random.choice(KO_VICTOR_FLAVOR)
         final_message = (
-            f"{ko_message} {winner.display_name} {ko_victor_flavor} "
+            f"{ko_message} {winner.display_name} {ko_victor_message}. {ko_victor_flavor}"
         )
         await self.update_health_bars(0, final_message, "KO Victory!", final_result=f"KO Victory for {winner.display_name}!")  # Update embed with KO result
         await self.record_result(winner, loser, "KO")
