@@ -174,42 +174,41 @@ class Bullshido(commands.Cog):
             await channel.send(embed=embed)
             await self.prompt_stat_increase(user, channel)
             
-    async def prompt_stat_increase(self, ctx,  user: discord.Member):
+    async def prompt_stat_increase(self, user: discord.Member, channel: discord.TextChannel):
         """Present the user with UI buttons to select their stat increase."""
         self.logger.info(f"Prompting {user} to increase a stat.")
         embed = discord.Embed(
-        title="Learning from your epic battles in the Bullshido Kumite, your power grows!",
+            title="Learning from your epic battles in the Bullshido Kumite, your power grows!",
             description="Choose a stat to increase:",
             color=discord.Color.red()
         )
-        view = StatIncreaseView(self.increase_stat, ctx.author, ctx)
-        await ctx.send(embed=embed, view=view)
+        view = StatIncreaseView(self, user)
+        await channel.send(embed=embed, view=view)
 
-    async def increase_stat(self, interaction: discord.Interaction, stat):
+    async def increase_stat(self, interaction: discord.Interaction, user: discord.Member, stat: str):
         """Increase the user bonus stat for their selection"""
-        user = interaction.user
         user_data = await self.config.user(user).all()
+        points_to_distribute = user_data['level_points_to_distribute']
+
         self.logger.info(f"Increasing {stat} for {user}.")
-        if user_data["level_points_to_distribute"] <= 0:
-            result = f"{user}, You do not have any points to distribute."
-
-        if stat == "stamina":
-            user_data["stamina_bonus"] += 10
-            result = f"{user} has chosen to increase their stamina. They will be more consistent in battle!"
-        elif stat == "health":
-            user_data["health_bonus"] += 10
-            result = f"{user} has chosen to increase their health. They will be more resilient in battle!"
-        elif stat == "damage":
-            user_data["damage_bonus"] += 1
-            result = f"{user} has chosen to increase their damage. Their strikes have become more powerful in battle!"
+        if points_to_distribute > 0:
+            if stat == "stamina":
+                user_data["stamina_bonus"] += 10
+                result = f"{user.mention} has chosen to increase their stamina. They will be more consistent in battle!"
+            elif stat == "health":
+                user_data["health_bonus"] += 10
+                result = f"{user.mention} has chosen to increase their health. They will be more resilient in battle!"
+            elif stat == "damage":
+                user_data["damage_bonus"] += 1
+                result = f"{user.mention} has chosen to increase their damage. Their strikes have become more powerful in battle!"
+            else:
+                return "Invalid stat."
+            await interaction.response.send_message(result, ephemeral=False)
+            user_data["level_points_to_distribute"] -= 1
+            self.logger.info(f"{user} has increased their {stat}.")
+            await self.config.user(user).set(user_data)
         else:
-            return "Invalid stat."
-
-        user_data["level_points_to_distribute"] -= 1
-        self.logger.info(f"{user} has increased their {stat}.")
-        await self.config.user(user).set(user_data)
-
-        await interaction.response.send_message(result)
+            await interaction.response.send_message(f"{user.mention}, you have no points to distribute.", ephemeral=False)
 
 
     async def set_fighting_style(self, interaction: discord.Interaction, new_style: str):
@@ -562,7 +561,7 @@ class Bullshido(commands.Cog):
         if points_to_distribute > 0:
             await self.prompt_stat_increase(user, ctx.channel)
         else:
-            await ctx.send(f"{user.mention}, you don't have any level points to distribute.")
+            await ctx.send(f"{user.mention}, you don't have any points to distribute.")
     
     @bullshido_group.command(name="injuries", description="View your permanent injuries that require treatment.", aliases=["injury", "inj"])
     async def permanent_injuries(self, ctx: commands.Context, user: discord.Member = None):

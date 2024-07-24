@@ -74,27 +74,23 @@ class SelectFightingStyleView(ui.View):
     async def handle_bjj(self, interaction: discord.Interaction, button: ui.Button):
         await self.on_fighting_style_selected(interaction, "Zui Quan")
 
-class StatIncreaseView(discord.ui.View):
-    def __init__(self, on_stat_increase_selected, user, ctx):
+class StatIncreaseView(ui.View):
+    def __init__(self, cog, user):
         super().__init__(timeout=180)
-        self.on_stat_increase_selected = on_stat_increase_selected
+        self.cog = cog
         self.user = user
-        self.ctx = ctx
-        
+
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return interaction.user == self.user
-    
-    async def on_stat_increase_selected(self, ctx, stat: str):
-        await ctx.bot.get_cog('Bullshido').increase_stat(ctx, stat)
 
-    @discord.ui.button(label="Stamina", style=discord.ButtonStyle.primary)
-    async def increase_stamina(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.on_stat_increase_selected(interaction, "stamina")
+    @ui.button(label="Increase Health", style=ButtonStyle.primary)
+    async def increase_strength(self, interaction: discord.Interaction, button: ui.Button):
+        await self.cog.increase_stat(interaction, self.user, "health")
 
-    @discord.ui.button(label="Health", style=discord.ButtonStyle.primary)
-    async def increase_health(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.on_stat_increase_selected(interaction, "health")
+    @ui.button(label="Increase Stamina", style=ButtonStyle.primary)
+    async def increase_agility(self, interaction: discord.Interaction, button: ui.Button):
+        await self.cog.increase_stat(interaction, self.user, "stamina")
 
-    @discord.ui.button(label="Damage", style=discord.ButtonStyle.primary)
-    async def increase_damage(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.on_stat_increase_selected(interaction, "damage")
+    @ui.button(label="Increase Damage", style=ButtonStyle.primary)
+    async def increase_stamina(self, interaction: discord.Interaction, button: ui.Button):
+        await self.cog.increase_stat(interaction, self.user, "damage")
