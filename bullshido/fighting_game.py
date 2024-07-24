@@ -479,8 +479,6 @@ class FightingGame:
 
         # Check for KO
         if self.player1_health <= 0 or self.player2_health <= 0:
-            winner = self.player2 if self.player1_health <= 0 else self.player1
-            loser = self.player1 if self.player1_health <= 0 else self.player2
             await self.declare_winner_by_ko(ctx)
             return True
 
@@ -492,8 +490,8 @@ class FightingGame:
             else:
                 await self.declare_winner_by_tko(ctx, self.player2)
             return True
-
-        return False
+        else: 
+            return False
 
     async def declare_winner_by_ko(self, ctx):
         if self.player1_health <= 0:
@@ -579,7 +577,7 @@ class FightingGame:
                 if not FightingGame.is_game_active(channel_id):
                     break
                 if await self.play_round(round_number, ctx):
-                    break
+                    return  # Exit if KO or TKO occurred
 
             winner, loser = None, None
             result_type = "DRAW"
@@ -607,22 +605,22 @@ class FightingGame:
                 result_type = "DRAW"
                 final_message = (
                     f"The fight is over!\n"
-                    f"After 3 rounds, the fight is declared a draw!\n"
+                    f"After {self.rounds} rounds, the fight is declared a draw!\n"
                 )
 
             if winner and loser:
                 result_description = FIGHT_RESULT_LONG[result_type]
                 final_message = (
                     f"The fight is over!\n"
-                    f"After 3 rounds, we go to the judges' scorecard for a decision.\n"
+                    f"After {self.rounds} rounds, we go to the judges' scorecard for a decision.\n"
                     f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, by {result_description}, {winner.display_name}!"
                 )
 
-            await self.update_health_bars(round_number, final_message, "Decision Victory", final_result=f"Decision Victory for {winner.display_name if winner else 'No one'}!")
+            await self.update_health_bars(self.rounds, final_message, "Decision Victory", final_result=f"Decision Victory for {winner.display_name if winner else 'No one'}!")
             await self.record_result(winner, loser, result_type)
 
             FightingGame.set_game_active(channel_id, False)
-            await self.end_fight(winner, loser, ctx)
+            await self.end_fight(winner, loser)
 
         except Exception as e:
             self.bullshido_cog.logger.error(f"Error during start_game: {e}")
