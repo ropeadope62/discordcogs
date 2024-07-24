@@ -46,7 +46,7 @@ class FightingGame:
             str(player1.id): player1_data,
             str(player2.id): player2_data
         }
-        self.max_health = 100
+        self.base_health = 100
         self.ACTION_COST = 10
         self.BASE_MISS_PROBABILITY = 0.15
         self.BASE_STAMINA_COST = 10
@@ -148,8 +148,8 @@ class FightingGame:
 
         return final_image_path
     
-    def create_health_bar(self, current_health, max_health):
-        progress = current_health / max_health
+    def create_health_bar(self, current_health, base_health):
+        progress = current_health / base_health
         progress_bar_length = 30
         progress_bar_filled = int(progress * progress_bar_length)
         progress_bar = "[" + ("=" * progress_bar_filled)
@@ -171,8 +171,8 @@ class FightingGame:
 
     async def update_health_bars(self, round_number, latest_message, round_result, fight_over=False, final_result=None):
 
-        player1_health_bar = self.create_health_bar(self.player1_health, self.max_health)
-        player2_health_bar = self.create_health_bar(self.player2_health, self.max_health)
+        player1_health_bar = self.create_health_bar(self.player1_health, self.base_health)
+        player2_health_bar = self.create_health_bar(self.player2_health, self.base_health)
         player1_stamina_status = self.get_stamina_status(self.player1_stamina)
         player2_stamina_status = self.get_stamina_status(self.player2_stamina)
 
@@ -221,7 +221,8 @@ class FightingGame:
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level, damage_bonus):
         training_bonus = math.log10(training_level + 1) * self.training_weight
         diet_bonus = math.log10(diet_level + 1) * self.diet_weight
-        adjusted_damage = base_damage * (1 + training_bonus + diet_bonus + (damage_bonus * 0.05))
+        total_damage_bonus = 1 + training_bonus + diet_bonus + (damage_bonus * 0.05)
+        adjusted_damage = base_damage * total_damage_bonus
         return round(adjusted_damage)
 
     def get_strike_damage(self, style, attacker, defender, body_part):
@@ -237,7 +238,7 @@ class FightingGame:
         try:
             strike, damage_range = random.choice(list(STRIKES[style].items()))
             base_damage = random.randint(*damage_range)
-            damage_bonus = attacker.get('damage_bonus', 0)  # Get attacker's damage bonus
+            damage_bonus = attacker.get('damage_bonus', 0)  # Get attacker's damage bonus from user config
             modified_damage = self.calculate_adjusted_damage(base_damage, attacker['training_level'], attacker['nutrition_level'], damage_bonus)
             modifier = random.uniform(0.8, 1.3)
 
@@ -265,8 +266,8 @@ class FightingGame:
 
     async def end_fight(self, winner, loser):
         self.bullshido_cog.logger.info(f"Ending fight between {winner} and {loser}.")
-        await self.bullshido_cog.add_xp(winner, 100, self.channel)
-        await self.bullshido_cog.add_xp(loser, 50, self.channel)
+        await self.bullshido_cog.add_xp(winner, 10, self.channel)
+        await self.bullshido_cog.add_xp(loser, 5, self.channel)
 
     async def target_bodypart(self):
         bodypart = random.choice(BODY_PARTS)
@@ -290,11 +291,11 @@ class FightingGame:
         intimidation_factor = (defender_intimidation - attacker_intimidation) * 0.01
         miss_probability += intimidation_factor
 
-        return min(max(miss_probability, 0.05), 0.5)
+        return min(max(miss_probability, 0.05), 0.25)
 
     def regenerate_stamina(self, current_stamina, training_level, diet_level):
         regeneration_rate = (training_level + diet_level) / 20
-        return min(current_stamina + regeneration_rate, self.max_health)
+        return min(current_stamina + regeneration_rate, self.base_health)
 
     async def play_turn(self, round_message, round_number):
         try:
@@ -545,15 +546,34 @@ class FightingGame:
             self.max_strikes_per_round = await self.bullshido_cog.config.guild(guild).max_strikes_per_round()
             self.training_weight = await self.bullshido_cog.config.guild(guild).training_weight()
             self.diet_weight = await self.bullshido_cog.config.guild(guild).diet_weight()
-            self.max_health = await self.bullshido_cog.config.guild(guild).max_health()
+            self.base_health = await self.bullshido_cog.config.guild(guild).base_health()
             self.ACTION_COST = await self.bullshido_cog.config.guild(guild).action_cost()
             self.BASE_MISS_PROBABILITY = await self.bullshido_cog.config.guild(guild).base_miss_probability()
             self.BASE_STAMINA_COST = await self.bullshido_cog.config.guild(guild).base_stamina_cost()
             self.CRITICAL_CHANCE = await self.bullshido_cog.config.guild(guild).critical_chance()
             self.PERMANENT_INJURY_CHANCE = await self.bullshido_cog.config.guild(guild).permanent_injury_chance()
+            
+            player1_data = await self.bullshido_cog.config.user(self.player1).all()
+            player2_data = await self.bullshido_cog.config.user(self.player2).all()
 
-            self.player1_health = self.max_health
-            self.player2_health = self.max_health
+            # Get the bonus values from the user config for each player, default to 0 if not present
+            player1_health_bonus = player1_data.get("health_bonus", 0)
+            player1_stamina_bonus = player1_data.get("stamina_bonus", 0)
+            player1_damage_bonus = player1_data.get("damage_bonus", 0)
+
+            player2_health_bonus = player2_data.get("health_bonus", 0)
+            player2_stamina_bonus = player2_data.get("stamina_bonus", 0)
+            player2_damage_bonus = player2_data.get("damage_bonus", 0)
+
+            # Apply bonuses to player stats
+            self.player1_health = self.base_health + player1_health_bonus
+            self.player2_health = self.base_health + player2_health_bonus
+
+            self.player1_stamina = self.base_health + player1_stamina_bonus
+            self.player2_stamina = self.base_health + player2_stamina_bonus
+
+            self.player1_damage_bonus = player1_damage_bonus
+            self.player2_damage_bonus = player2_damage_bonus
 
             FightingGame.set_game_active(channel_id, True)
             fight_image_path = await self.generate_fight_image()
