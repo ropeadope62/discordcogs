@@ -384,6 +384,151 @@ BODY_PARTS = [
 ]
 BODY_PART_INJURIES = {
     "head": [
+        "Concussion", "Fractured Skull", "Cracked Skull", "Head Contusion", "Head Whiplash", "Brain Bleed", "Brain Swell",
+        "Fractured Cranium", "Head Fracture", "Eye Socket Fracture", "Orbital Bone Fracture", "Cheekbone Fracture"
+    ],
+    "chest": [
+        "Punctured Lung", "Shattered Rib", "Collapsed Lung", "Internal Bleeding", "Ruptured Spleen", "Cracked Rib",
+        "Bruised Rib", "Bruised Kidney", "Lung Contusion", "Cracked Sternum", "Bruised Sternum", "Solar Plexus Contusion"
+    ],
+    "left arm": [
+        "Dislocated Left Shoulder", "Fractured Left Arm", "Broken Left Arm", "Broken Left Collarbone", "Broken Left Wrist",
+        "Broken Left Shoulder", "Sprained Wrist", "Deep Arm Cut", "Broken Elbow", "Torn Muscle", "Torn Ligament", "Severed Tendon", 
+        "Torn Rotator Cuff", "Bicep Tear", "Tricep Tear", "Broken Finger", "Broken Hand", "Knuckle Fracture", "Broken Thumb", "Wrist Dislocation"
+    ],
+    "right arm": [
+        "Dislocated Right Shoulder", "Fractured Right Arm", "Broken Right Arm", "Broken Right Collarbone", "Broken Right Wrist",
+        "Broken Right Shoulder", "Sprained Wrist", "Deep Arm Cut", "Broken Elbow", "Torn Muscle", "Torn Ligament", "Severed Tendon", 
+        "Torn Rotator Cuff", "Bicep Tear", "Tricep Tear", "Broken Finger", "Broken Hand", "Knuckle Fracture", "Broken Thumb", "Wrist Dislocation"
+    ],
+    "nose": [
+        "Broken Nose", "Bloody Nose", "Cut Lip"
+    ],
+    "neck": [
+        "Neck Strain", "Neck Fracture", "Whiplash", "Sprained Neck", "Cervical Fracture", "Spinal Disc Herniation"
+    ],
+    "left ear": [
+        "Damaged Eardrum", "Ruptured Eardrum"
+    ],
+    "right ear": [
+        "Damaged Eardrum", "Ruptured Eardrum"
+    ],
+    "teeth": [
+        "Broken Teeth", "Chipped Tooth", "Cracked Tooth", "Broken Tooth"
+    ],
+    "left leg": [
+        "Fractured Left Leg", "Broken Left Leg", "Broken Ankle", "Broken Toe", "Broken Shin", "Broken Thigh",
+        "Broken Kneecap", "Broken Left Foot", "Sprained Ankle", "Deep Leg Cut", "Dislocated Knee", "Fractured Pelvis", 
+        "Torn Meniscus", "Fractured Patella", "Torn Achilles Tendon", "Hamstring Tear", "Quadriceps Tear", "Sprained Left Ankle",
+        "Torn Left ACL", "Torn Left MCL", "Torn Left PCL", "Torn Left LCL", "Sprained Left Knee", "Hip Dislocation", "Femur Fracture"
+    ],
+    "right leg": [
+        "Fractured Right Leg", "Broken Right Leg", "Broken Ankle", "Broken Toe", "Broken Shin", "Broken Thigh",
+        "Broken Kneecap", "Broken Right Foot", "Sprained Ankle", "Deep Leg Cut", "Dislocated Knee", "Fractured Pelvis", 
+        "Torn Meniscus", "Fractured Patella", "Torn Achilles Tendon", "Hamstring Tear", "Quadriceps Tear", "Sprained Right Ankle",
+        "Torn Right ACL", "Torn Right MCL", "Torn Right PCL", "Torn Right LCL", "Sprained Right Knee", "Hip Dislocation", "Femur Fracture"
+    ],
+    "right foot": [
+        "Broken Right Foot", "Sprained Ankle", "Broken Toe", "Broken Right Ankle", "Broken Big Toe", "Broken Pinky Toe"
+    ],
+    "left foot": [
+        "Broken Left Foot", "Sprained Ankle", "Broken Toe", "Broken Left Ankle", "Broken Big Toe", "Broken Pinky Toe"
+    ],
+    "liver": [
+        "Liver Contusion", "Liver Rupture", "Internal Bleeding"
+    ],
+    "kidneys": [
+        "Bruised Kidney", "Ruptured Kidney", "Internal Bleeding"
+    ],
+    "spine": [
+        "Spinal Fracture", "Spinal Cord Injury", "Spinal Cord Rupture", "Internal Bleeding", "Ruptured Spleen",
+        "Fractured Vertebra", "Fractured Coccyx"
+    ],
+    "clavicle": [
+        "Broken Clavicle", "Fractured Clavicle", "Cracked Clavicle"
+    ],
+    "left hip": [
+        "Fractured Left Hip", "Broken Left Hip", "Bruised Left Hip", "Hip Fracture"
+    ],
+    "right hip": [
+        "Fractured Right Hip", "Broken Right Hip", "Bruised Right Hip", "Hip Fracture"
+    ],
+    "left knee": [
+        "Dislocated Left Knee", "Fractured Left Knee", "Torn Left ACL", "Torn Left MCL", "Torn Left PCL", "Torn Left LCL", "Sprained Left Knee"
+    ],
+    "right knee": [
+        "Dislocated Right Knee", "Fractured Right Knee", "Torn Right ACL", "Torn Right MCL", "Torn Right PCL", "Torn Right LCL", "Sprained Right Knee"
+    ],
+    "solar plexus": [
+        "Solar Plexus Contusion", "Cracked Sternum", "Bruised Sternum"
+    ],
+    "cranium": [
+        "Fractured Cranium", "Head Contusion", "Head Fracture"
+    ],
+    "kisser": [
+        "Split Lip", "Busted Lip", "Cracked Tooth", "Broken Tooth", "Chipped Tooth", "Cut Lip"
+    ],
+    "chin": [
+        "Broken Jaw", "Dislocated Jaw", "Cracked Jaw", "Bruised Jaw", "Cut Chin"
+    ],
+    "left shoulder": [
+        "Dislocated Left Shoulder", "Fractured Left Shoulder", "Broken Left Collarbone", "Broken Left Shoulder"
+    ],
+    "right shoulder": [
+        "Dislocated Right Shoulder", "Fractured Right Shoulder", "Broken Right Collarbone", "Broken Right Shoulder"
+    ],
+    "ass": [
+        "Bruised Buttock", "Bruised Left Buttock", "Bruised Right Buttock"
+    ],
+    "crotch": [
+        "Groin Strain", "Testicular Rupture", "Testicular Tortion", "Testicular Contusion", "Internal Bleeding"
+    ],
+    "ribs": [
+        "Broken Rib", "Cracked Rib", "Bruised Rib", "Shattered Rib"
+    ],
+    "spinal column": [
+        "Spinal Fracture", "Spinal Cord Injury", "Ruptured Spleen", "Spinal Disc Herniation"
+    ],
+    "left ankle": [
+        "Broken Left Ankle", "Sprained Left Ankle"
+    ],
+    "right ankle": [
+        "Broken Right Ankle", "Sprained Right Ankle"
+    ],
+    "jaw": [
+        "Broken Jaw", "Dislocated Jaw", "Jaw Dislocation"
+    ],
+    "left eye": [
+        "Detached Left Retina", "Cut Eye", "Left Corneal Abrasion", "Black Eye"
+    ],
+    "right eye": [
+        "Detached Right Retina", "Cut Eye", "Right Corneal Abrasion", "Black Eye"
+    ],
+    "stomach": [
+        "Internal Bleeding", "Stomach Contusion", "Gastric Abrasion", "Punctured Intestine"
+    ],
+    "temple": [
+        "Concussion", "Brain Bleed", "Brain Swell"
+    ],
+    "forehead": [
+        "Cut Forehead", "Concussion", "Forehead Abrasion", "Forehead Contusion"
+    ],
+    "mid-section": [
+        "Internal Bleeding", "Gastroesophageal Reflux", "Gastroesophageal Abrasion", "Gastroesophageal Contusion"
+    ],
+    "throat": [
+        "Throat Contusion", "Smashed Windpipe", "Collapsed Trachea", "Internal Bleeding", "Collapsed Bronchus"
+    ],
+    "ribcage": [
+        "Broken Rib", "Cracked Rib", "Punctured Lung", "Shattered Rib", "Internal Bleeding"
+    ],
+    "butt": [
+        "Bruised Buttock", "Bruised Left Buttock", "Bruised Right Buttock"
+    ],
+    "pelvis": [
+        "Fractured Pelvis", "Hip Fracture"
+    ],
+    "head": [
         "Concussion", "Fractured Skull", "Cracked Skull", "Head Contusion", "Head Whiplash"
     ],
     "chest": [
@@ -421,7 +566,7 @@ BODY_PART_INJURIES = {
         "Fractured Right Leg", "Broken Right Leg", "Broken Ankle", "Broken Toe", "Broken Shin", "Broken Thigh",
         "Broken Kneecap", "Broken Right Foot", "Sprained Ankle", "Deep Leg Cut", "Dislocated Knee", "Fractured Pelvis"
     ],
-    "right foot": [
+        "right foot": [
         "Broken Right Foot", "Sprained Ankle", "Broken Toe", "Broken Right Ankle", "Broken Big Toe", "Broken Pinky Toe"
     ],
     "left foot": [
@@ -431,19 +576,19 @@ BODY_PART_INJURIES = {
         "Liver Contusion", "Liver Rupture", "Internal Bleeding"
     ],
     "kidneys": [
-        "Bruised Kidney", "Kidney Rupture", "Internal Bleeding"
+        "Bruised Kidney", "Ruptured Kidney", "Internal Bleeding"
     ],
     "spine": [
-        "Spinal Fracture", "Spinal Cord Injury", "Spinal Cord Rupture", "Internal Bleeding", "Ruptured Spleen"
+        "Spinal Fracture", "Spinal Cord Injury", "Spinal Cord Rupture", "Internal Bleeding", "Ruptured Spleen", "Spinal Disc Herniation", "Fractured Vertebra"
     ],
     "clavicle": [
         "Broken Clavicle", "Fractured Clavicle", "Cracked Clavicle"
     ],
     "left hip": [
-        "Fractured Left Hip", "Broken Left Hip", "Bruised Left Hip"
+        "Fractured Left Hip", "Broken Left Hip", "Bruised Left Hip", "Hip Dislocation", "Hip Fracture"
     ],
     "right hip": [
-        "Fractured Right Hip", "Broken Right Hip", "Bruised Right Hip"
+        "Fractured Right Hip", "Broken Right Hip", "Bruised Right Hip", "Hip Dislocation", "Hip Fracture"
     ],
     "left knee": [
         "Dislocated Left Knee", "Fractured Left Knee", "Torn Left ACL", "Torn Left MCL", "Torn Left PCL", "Torn Left LCL", "Sprained Left Knee"
@@ -516,8 +661,7 @@ BODY_PART_INJURIES = {
     ],
     "butt": [
         "Bruised Buttock", "Bruised Left Buttock", "Bruised Right Buttock"
-    ]
-}
+    ]}
 
 
 
@@ -766,6 +910,156 @@ CRITICAL_RESULTS = {
     "{defender} is dealing with a gastroesophageal contusion!": "Gastroesophageal Contusion",
     "{defender} is clutching a smashed windpipe!": "Smashed Windpipe",
     "{defender} is suffering from a collapsed trachea!": "Collapsed Trachea",
+    "{defender} has an eye socket fracture!": "Eye Socket Fracture",
+    "{defender} has an orbital bone fracture!": "Orbital Bone Fracture",
+    "{defender} has a cheekbone fracture!": "Cheekbone Fracture",
+    "{defender} has a broken thumb!": "Broken Thumb",
+    "{defender} has a knuckle fracture!": "Knuckle Fracture",
+    "{defender} has a torn meniscus!": "Torn Meniscus",
+    "{defender} has a fractured patella!": "Fractured Patella",
+    "{defender} has a torn Achilles tendon!": "Torn Achilles Tendon",
+    "{defender} has a spinal disc herniation!": "Spinal Disc Herniation",
+    "{defender} has a collapsed bronchus!": "Collapsed Bronchus",
+    "{defender} has a punctured intestine!": "Punctured Intestine",
+    "{defender} has a fractured vertebra!": "Fractured Vertebra",
+    "{defender} has a ruptured kidney!": "Ruptured Kidney",
+    "{defender} has a lung contusion!": "Lung Contusion",
+    "{defender} has a fractured coccyx!": "Fractured Coccyx",
+    "{defender} has a hip dislocation!": "Hip Dislocation",
+    "{defender} has a femur fracture!": "Femur Fracture",
+    "{defender} has a wrist dislocation!": "Wrist Dislocation",
+    "{defender} has a severed tendon!": "Severed Tendon",
+    "{defender} has a torn rotator cuff!": "Torn Rotator Cuff",
+    "{defender} has a bicep tear!": "Bicep Tear",
+    "{defender} has a tricep tear!": "Tricep Tear",
+    "{defender} has a quadriceps tear!": "Quadriceps Tear",
+    "{defender} has a hamstring tear!": "Hamstring Tear",
+    "{defender} has an Achilles rupture!": "Achilles Rupture",
+    "{defender} has a cervical fracture!": "Cervical Fracture",
+    "{defender} has a throat contusion!": "Throat Contusion",
+    "{defender} is gasping for air!": "Punctured Lung",
+    "{defender} suffers a broken nose!": "Broken Nose",
+    "{defender} has a shattered rib!": "Shattered Rib",
+    "{defender} winces in pain from a dislocated left shoulder!": "Dislocated Left Shoulder",
+    "{defender} winces in pain from a dislocated right shoulder!": "Dislocated Right Shoulder",
+    "{defender} holds their broken jaw!": "Broken Jaw",
+    "{defender} appears dazed from a concussion!": "Concussion",
+    "{defender} struggles with a broken right leg!": "Broken Right Leg",
+    "{defender} struggles with a broken left leg!": "Broken Left Leg",
+    "{defender} clutches their broken right arm!": "Broken Right Arm",
+    "{defender} clutches their broken left arm!": "Broken Left Arm",
+    "{defender}'s right arm is tweaked!": "Fractured Right Arm",
+    "{defender}'s left arm is tweaked!": "Fractured Left Arm",
+    "{defender}'s right leg is tweaked! Ouch!": "Fractured Right Leg",
+    "{defender}'s left leg is tweaked! Ouch!": "Fractured Left Leg",
+    "{defender} winces from a broken left collarbone!": "Broken Left Collarbone",
+    "{defender} winces from a broken right collarbone!": "Broken Right Collarbone",
+    "{defender} struggles with a broken left wrist!": "Broken Left Wrist",
+    "{defender} struggles with a broken right wrist!": "Broken Right Wrist",
+    "{defender} stumbles from a broken left ankle!": "Broken Ankle",
+    "{defender} stumbles from a broken right ankle!": "Broken Ankle",
+    "{defender} grimaces with a broken finger!": "Broken Finger",
+    "{defender} grimaces with a broken toe!": "Broken Toe",
+    "{defender} clutches their broken rib!": "Broken Rib",
+    "{defender} is in pain from a broken shin!": "Broken Shin",
+    "{defender} limps with a broken thigh!": "Broken Thigh",
+    "{defender} cries out from a broken kneecap!": "Broken Kneecap",
+    "{defender} struggles to stand with a broken left foot!": "Broken Left Foot",
+    "{defender} struggles to stand with a broken right foot!": "Broken Right Foot",
+    "{defender} holds their broken hand!": "Broken Hand",
+    "{defender} has a cut over their eye!": "Cut Eye",
+    "{defender} is sporting a black eye!": "Black Eye",
+    "{defender} has a bloody nose!": "Bloody Nose",
+    "{defender}'s nose is smashed and bloody!": "Broken Nose",
+    "{defender} has a bloody lip!": "Cut Lip",
+    "{defender} has a bloody ear!": "Damaged Eardrum",
+    "{defender} spits blood from a cut mouth!": "Cut Mouth",
+    "{defender} has a bloody forehead!": "Cut Forehead",
+    "{defender} wipes blood from their cheek!": "Bloody Cheek",
+    "{defender} suffers a detached left retina!": "Detached Left Retina",
+    "{defender} suffers a detached right retina!": "Detached Right Retina",
+    "{defender}'s left shoulder is in agony and appears broken!": "Broken Left Shoulder",
+    "{defender}'s right shoulder is in agony and appears broken!": "Broken Right Shoulder",
+    "{defender} has broken teeth!": "Broken Teeth",
+    "{defender} is left with a fractured skull!": "Fractured Skull",
+    "{defender} is left with a collapsed lung!": "Collapsed Lung",
+    "{defender} is experiencing internal bleeding!": "Internal Bleeding",
+    "{defender} is left with a ruptured spleen!": "Ruptured Spleen",
+    "{defender} is dealing with a torn muscle!": "Torn Muscle",
+    "{defender} is in agony from a dislocated knee!": "Dislocated Knee",
+    "{defender} is suffering from a fractured pelvis!": "Fractured Pelvis",
+    "{defender} is left with a split lip!": "Split Lip",
+    "{defender} is clutching a cracked rib!": "Cracked Rib",
+    "{defender} is dealing with a sprained wrist!": "Sprained Wrist",
+    "{defender} is limping with a sprained ankle!": "Sprained Ankle",
+    "{defender} has a deep cut on the arm!": "Deep Arm Cut",
+    "{defender} has a deep cut on the leg!": "Deep Leg Cut",
+    "{defender} is suffering from a torn ligament!": "Torn Ligament",
+    "{defender} is wincing from a bruised rib!": "Bruised Rib",
+    "{defender} is suffering from a bruised kidney!": "Bruised Kidney",
+    "{defender} is left with a broken elbow!": "Broken Elbow",
+    "{defender} is suffering from a ruptured eardrum!": "Ruptured Eardrum",
+    "{defender} has a cracked skull!": "Cracked Skull",
+    "{defender} is dealing with a head contusion!": "Head Contusion",
+    "{defender} suffers from head whiplash!": "Head Whiplash",
+    "{defender} is in pain from a neck strain!": "Neck Strain",
+    "{defender} is suffering from a neck fracture!": "Neck Fracture",
+    "{defender} is experiencing whiplash!": "Whiplash",
+    "{defender} has a chipped tooth!": "Chipped Tooth",
+    "{defender} has a broken big toe!": "Broken Big Toe",
+    "{defender} has a broken pinky toe!": "Broken Pinky Toe",
+    "{defender} is experiencing a liver contusion!": "Liver Contusion",
+    "{defender} is dealing with a liver rupture!": "Liver Rupture",
+    "{defender} has a spinal fracture!": "Spinal Fracture",
+    "{defender} is suffering from a spinal cord injury!": "Spinal Cord Injury",
+    "{defender} is left with a spinal cord rupture!": "Spinal Cord Rupture",
+    "{defender} suffers from a fractured clavicle!": "Fractured Clavicle",
+    "{defender} has a cracked clavicle!": "Cracked Clavicle",
+    "{defender} is in pain from a fractured left hip!": "Fractured Left Hip",
+    "{defender} is dealing with a broken left hip!": "Broken Left Hip",
+    "{defender} has a bruised left hip!": "Bruised Left Hip",
+    "{defender} is in pain from a fractured right hip!": "Fractured Right Hip",
+    "{defender} is dealing with a broken right hip!": "Broken Right Hip",
+    "{defender} has a bruised right hip!": "Bruised Right Hip",
+    "{defender} is suffering from a torn left ACL!": "Torn Left ACL",
+    "{defender} is suffering from a torn left MCL!": "Torn Left MCL",
+    "{defender} is suffering from a torn left PCL!": "Torn Left PCL",
+    "{defender} is suffering from a torn left LCL!": "Torn Left LCL",
+    "{defender} is suffering from a sprained left knee!": "Sprained Left Knee",
+    "{defender} is suffering from a torn right ACL!": "Torn Right ACL",
+    "{defender} is suffering from a torn right MCL!": "Torn Right MCL",
+    "{defender} is suffering from a torn right PCL!": "Torn Right PCL",
+    "{defender} is suffering from a torn right LCL!": "Torn Right LCL",
+    "{defender} is suffering from a sprained right knee!": "Sprained Right Knee",
+    "{defender} is wincing from a solar plexus contusion!": "Solar Plexus Contusion",
+    "{defender} is clutching a cracked sternum!": "Cracked Sternum",
+    "{defender} is wincing from a bruised sternum!": "Bruised Sternum",
+    "{defender} suffers a fractured cranium!": "Fractured Cranium",
+    "{defender} is dealing with a head fracture!": "Head Fracture",
+    "{defender} has a busted lip!": "Busted Lip",
+    "{defender} is dealing with a cracked tooth!": "Cracked Tooth",
+    "{defender} has a broken tooth!": "Broken Tooth",
+    "{defender} has a dislocated jaw!": "Dislocated Jaw",
+    "{defender} is suffering from a cracked jaw!": "Cracked Jaw",
+    "{defender} has a bruised jaw!": "Bruised Jaw",
+    "{defender} has a cut on the chin!": "Cut Chin",
+    "{defender} has a groin strain!": "Groin Strain",
+    "{defender} is dealing with a testicular rupture!": "Testicular Rupture",
+    "{defender} is suffering from testicular torsion!": "Testicular Tortion",
+    "{defender} is experiencing a testicular contusion!": "Testicular Contusion",
+    "{defender} has a left corneal abrasion!": "Left Corneal Abrasion",
+    "{defender} has a right corneal abrasion!": "Right Corneal Abrasion",
+    "{defender} has a stomach contusion!": "Stomach Contusion",
+    "{defender} is dealing with a gastric abrasion!": "Gastric Abrasion",
+    "{defender} is suffering from a brain bleed!": "Brain Bleed",
+    "{defender} is dealing with brain swelling!": "Brain Swell",
+    "{defender} is suffering from a forehead abrasion!": "Forehead Abrasion",
+    "{defender} is dealing with a forehead contusion!": "Forehead Contusion",
+    "{defender} is dealing with gastroesophageal reflux!": "Gastroesophageal Reflux",
+    "{defender} has a gastroesophageal abrasion!": "Gastroesophageal Abrasion",
+    "{defender} is dealing with a gastroesophageal contusion!": "Gastroesophageal Contusion",
+    "{defender} is clutching a smashed windpipe!": "Smashed Windpipe",
+    "{defender} is suffering from a collapsed trachea!": "Collapsed Trachea",
     "{defender} is suffering from a spinal cord injury!": "Spinal Cord Injury",
     "{defender} has a deep arm cut!": "Deep Arm Cut",
     "{defender} has a deep leg cut!": "Deep Leg Cut",
@@ -775,7 +1069,27 @@ CRITICAL_RESULTS = {
     "{defender} is left with a broken elbow!": "Broken Elbow",
     "{defender} is suffering from a ruptured eardrum!": "Ruptured Eardrum",
     "{defender} has a cracked skull!": "Cracked Skull",
+    "{defender} is clutching a smashed windpipe!": "Smashed Windpipe",
+    "{defender} is suffering from a collapsed trachea!": "Collapsed Trachea",
+    "{defender} is suffering from a spinal cord injury!": "Spinal Cord Injury",
+    "{defender} has a deep arm cut!": "Deep Arm Cut",
+    "{defender} has a deep leg cut!": "Deep Leg Cut",
+    "{defender} is suffering from a torn ligament!": "Torn Ligament",
+    "{defender} is wincing from a bruised rib!": "Bruised Rib",
+    "{defender} is suffering from a bruised kidney!": "Bruised Kidney",
+    "{defender} is left with a broken elbow!": "Broken Elbow",
+    "{defender} is suffering from a ruptured eardrum!": "Ruptured Eardrum",
+    "{defender} has a cracked skull!": "Cracked Skull",
+    "{defender} is dealing with a head contusion!": "Head Contusion",
+    "{defender} suffers from head whiplash!": "Head Whiplash",
+    "{defender} is in pain from a neck strain!": "Neck Strain",
+    "{defender} is suffering from a neck fracture!": "Neck Fracture",
+    "{defender} is experiencing whiplash!": "Whiplash",
+    "{defender} has a chipped tooth!": "Chipped Tooth",
+    "{defender} has a broken big toe!": "Broken Big Toe",
+    "{defender} has a broken pinky toe!": "Broken Pinky Toe"
 }
+
 
 
 INJURY_TREATMENT_COST = {
@@ -1597,4 +1911,24 @@ XP_REQUIREMENTS = {
     3: 600,
     4: 1000,
     5: 1500,
+}
+    "Nice!",
+    "Holy moly!",
+    "Oh my goodness!",
+    "Holy cow!",
+    "Oh my gosh!",
+    "Unbelievable!",
+    "Incredible!",
+    "Amazing!",
+]
+
+ACTION_COST = 10
+
+XP_REQUIREMENTS = {
+    1: 100,
+    2: 300,
+    3: 600,
+    4: 1000,
+    5: 1500,
+}
 }
