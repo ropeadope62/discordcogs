@@ -263,7 +263,7 @@ class FightingGame:
             print(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
 
-    async def end_fight(self, winner, loser, ctx):
+    async def end_fight(self, winner, loser):
         self.bullshido_cog.logger.info(f"Ending fight between {winner} and {loser}.")
         await self.bullshido_cog.add_xp(winner, 100, self.channel)
         await self.bullshido_cog.add_xp(loser, 50, self.channel)
@@ -356,13 +356,14 @@ class FightingGame:
 
             await self.update_health_bars(round_number, message, None)
 
+            # Check for KO
             if self.player1_health <= 0 or self.player2_health <= 0:
                 await asyncio.sleep(2)
                 await self.declare_winner_by_ko(round_message)
                 return True
 
+            # Check for TKO
             tko_probability = self.calculate_tko_probability(attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation)
-
             if (self.player1_health < 20 or self.player2_health < 20) and random.random() < tko_probability:
                 await asyncio.sleep(2)
                 if self.player1_health < 20:
@@ -378,22 +379,7 @@ class FightingGame:
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
 
-
-
-    def calculate_tko_probability(self, attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation):
-        base_tko_chance = self.BASE_TKO_PROBABILITY
-        # Factor in stamina, training and intimidation at 10% each
-        stamina_factor = (attacker_stamina - defender_stamina) * 0.01
-        training_factor = (attacker_training - defender_training) * 0.01
-        intimidation_factor = (attacker_intimidation - defender_intimidation) * 0.01
-        # Add up all factors
-        tko_probability = base_tko_chance + stamina_factor + training_factor + intimidation_factor
-
-        # Probability clamped between 0 and 0.75 (75%)
-        return max(0, min(0.75, tko_probability))
-
-
-    async def declare_winner_by_ko(self, round_message, ctx):
+    async def declare_winner_by_ko(self, round_message):
         if self.player1_health <= 0:
             winner = self.player2
             loser = self.player1
@@ -409,18 +395,9 @@ class FightingGame:
         await self.update_health_bars(0, final_message, "KO Victory!", final_result=f"KO Victory for {winner.display_name}!")  # Update embed with KO result
         await self.record_result(winner, loser, "KO")
         FightingGame.set_game_active(self.channel.id, False)
-        await self.end_fight(winner, loser, ctx)
+        await self.end_fight(winner, loser)
 
-        
-    async def add_permanent_injury(self, user: discord.Member, injury, body_part):
-        """ Add a permanent injury to a user. """
-        user_data = self.user_config[str(user.id)]
-        if "permanent_injuries" not in user_data:
-            user_data["permanent_injuries"] = []
-        user_data["permanent_injuries"].append(f"{injury}")
-        await self.bullshido_cog.config.user(user).permanent_injuries.set(user_data["permanent_injuries"])
-
-    async def declare_winner_by_tko(self, round_message, loser,ctx):
+    async def declare_winner_by_tko(self, round_message, loser):
         winner = self.player1 if loser == self.player2 else self.player2
         tko_message_flavor = random.choice(TKO_MESSAGES).format(loser=loser.display_name)
         referee_stop_flavor = random.choice(REFEREE_STOPS)
@@ -433,7 +410,30 @@ class FightingGame:
         await self.update_health_bars(0, final_message, "TKO Victory!", final_result=f"TKO Victory for {winner.display_name}!")  # Update embed with TKO result
         await self.record_result(winner, loser, "TKO")
         FightingGame.set_game_active(self.channel.id, False)
-        await self.end_fight(winner, loser, ctx)
+        await self.end_fight(winner, loser)
+
+
+
+    def calculate_tko_probability(self, attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation):
+        base_tko_chance = self.BASE_TKO_PROBABILITY
+        # Factor in stamina, training and intimidation at 10% each
+        stamina_factor = (attacker_stamina - defender_stamina) * 0.01
+        training_factor = (attacker_training - defender_training) * 0.01
+        intimidation_factor = (attacker_intimidation - defender_intimidation) * 0.01
+        # Add up all factors
+        tko_probability = base_tko_chance + stamina_factor + training_factor + intimidation_factor
+
+        # Probability clamped between 0 and 0.75 (75%)
+        return max(0, min(0.75, tko_probability))
+
+        
+    async def add_permanent_injury(self, user: discord.Member, injury, body_part):
+        """ Add a permanent injury to a user. """
+        user_data = self.user_config[str(user.id)]
+        if "permanent_injuries" not in user_data:
+            user_data["permanent_injuries"] = []
+        user_data["permanent_injuries"].append(f"{injury}")
+        await self.bullshido_cog.config.user(user).permanent_injuries.set(user_data["permanent_injuries"])
 
 
     async def record_result(self, winner, loser, result_type):
