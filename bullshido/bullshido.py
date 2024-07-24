@@ -136,23 +136,28 @@ class Bullshido(commands.Cog):
     
     
     async def add_xp(self, user: discord.Member, xp: int, channel: discord.TextChannel):
+        """Add xp to the user config for the fight result and call check_level_up. If check_level_up returns True, call level_up"""
         user_data = await self.config.user(user).all()
         new_xp = user_data["xp"] + xp
         await self.config.user(user).xp.set(new_xp)
         
-        if await self.check_level_up(user, new_xp):
+        if await self.check_level_up(user, new_xp, channel):
             await self.level_up(user, channel)
 
-    async def check_level_up(self, user: discord.Member, current_xp: int):
+    async def check_level_up(self, user: discord.Member, new_xp: int, channel: discord.TextChannel):
+        """Check if the users new_xp reaches the next level, if so, return True"""
         user_data = await self.config.user(user).all()
         current_level = user_data['level']
         next_level_xp = XP_REQUIREMENTS.get(current_level + 1)
 
-        if next_level_xp and current_xp >= next_level_xp:
+        if next_level_xp and new_xp >= next_level_xp:
+            await self.level_up(user, channel)
             return True
         return False
+
             
     async def level_up(self, user: discord.Member, channel: discord.TextChannel):
+        """Increase the user level in the config and grant them level points to distribute."""
         user_data = await self.config.user(user).all()
         new_level = user_data['level'] + 1
         new_points = 1
@@ -164,11 +169,13 @@ class Bullshido(commands.Cog):
             embed = discord.Embed(
                 title="Level Up!",
                 description=f"{user.mention}, you have leveled up to level {new_level}!\nYou have {new_points} new points to distribute.",
-                color=discord.Color.green()
+                color=discord.Color.red()
             )
-            await channel.send(embed=embed, view=StatIncreaseView(self.config, user))
+            await channel.send(embed=embed)
+            await self.prompt_stat_increase(user, channel)
             
-    async def prompt_stat_increase(self, user):
+    async def prompt_stat_increase(self, user: discord.Member, channel: discord.TextChannel):
+        """Present the user with UI buttons to select their stat increase."""
         self.logger.info(f"Prompting {user} to increase a stat.")
         embed = discord.Embed(
         title="Learning from your epic battles in the Bullshido Kumite, your power grows!",
@@ -176,29 +183,30 @@ class Bullshido(commands.Cog):
             color=discord.Color.red()
         )
         view = StatIncreaseView(self.config, user)
-        await user.send(embed=embed, view=view)
+        await channel.send(embed=embed, view=view)
 
     async def increase_stat(self, user, stat):
-            self.logger.info(f"Increasing {stat} for {user}.")
-            user_data = await self.config.user(user).all()
+        """Increase the user bonus stat for their selection"""
+        self.logger.info(f"Increasing {stat} for {user}.")
+        user_data = await self.config.user(user).all()
 
-            if user_data["level_points_to_distribute"] <= 0:
-                return "You don't have any points to distribute."
+        if user_data["level_points_to_distribute"] <= 0:
+            return "You don't have any points to distribute."
 
-            if stat == "stamina":
-                user_data["stamina_bonus"] += 10
-            elif stat == "health":
-                user_data["health_bonus"] += 10
-            elif stat == "damage":
-                user_data["damage_bonus"] += 1
-            else:
-                return "Invalid stat."
+        if stat == "stamina":
+            user_data["stamina_bonus"] += 10
+        elif stat == "health":
+            user_data["health_bonus"] += 10
+        elif stat == "damage":
+            user_data["damage_bonus"] += 1
+        else:
+            return "Invalid stat."
 
-            user_data["level_points_to_distribute"] -= 1
-            self.logger.info(f"{user} has increased their {stat}.")
-            await self.config.user(user).set(user_data)
+        user_data["level_points_to_distribute"] -= 1
+        self.logger.info(f"{user} has increased their {stat}.")
+        await self.config.user(user).set(user_data)
 
-            return f"Your {stat} has been increased!"
+        return f"Your {stat} has been increased!"
 
     
     
@@ -543,6 +551,16 @@ class Bullshido(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    @bullshido_group.command(name="distribute_points", description="If you have unspent level points to distribute, spend them on bonuses.")
+    async def distribute_points(self, ctx: commands.Context):
+        user = ctx.author
+        user_data = await self.config.user(user).all()
+        points_to_distribute = user_data['level_points_to_distribute']
+
+        if points_to_distribute > 0:
+            await self.prompt_stat_increase(user, ctx.channel)
+        else:
+            await ctx.send(f"{user.mention}, you don't have any level points to distribute.")
     
     @bullshido_group.command(name="injuries", description="View your permanent injuries that require treatment.", aliases=["injury", "inj"])
     async def permanent_injuries(self, ctx: commands.Context, user: discord.Member = None):
