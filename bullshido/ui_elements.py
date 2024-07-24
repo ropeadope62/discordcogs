@@ -75,10 +75,11 @@ class SelectFightingStyleView(ui.View):
         await self.on_fighting_style_selected(interaction, "Zui Quan")
 
 class StatIncreaseView(discord.ui.View):
-    def __init__(self, config, user):
+    def __init__(self, on_stat_increase_selected, user, ctx):
         super().__init__(timeout=180)
-        self.config = config
+        self.on_stat_increase_selected = on_stat_increase_selected
         self.user = user
+        self.ctx = ctx
         
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return interaction.user == self.user
@@ -88,12 +89,12 @@ class StatIncreaseView(discord.ui.View):
 
     @discord.ui.button(label="Stamina", style=discord.ButtonStyle.primary)
     async def increase_stamina(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.increase_stat(interaction, "stamina")
+        await self.on_stat_increase_selected(interaction, "stamina")
 
     @discord.ui.button(label="Health", style=discord.ButtonStyle.primary)
     async def increase_health(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.increase_stat(interaction, "health")
+        await self.on_stat_increase_selected(interaction, "health")
 
     @discord.ui.button(label="Damage", style=discord.ButtonStyle.primary)
     async def increase_damage(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.increase_stat(interaction, "damage")
+        await self.on_stat_increase_selected(interaction, "damage")
