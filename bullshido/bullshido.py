@@ -58,7 +58,7 @@ class Bullshido(commands.Cog):
             "max_strikes_per_round": 5,
             "training_weight": 0.15,
             "diet_weight": 0.15,
-            "max_health": 100,
+            "base_health": 100,
             "action_cost": 10,
             "base_miss_probability": 0.15,
             "base_stamina_cost": 10,
@@ -315,8 +315,8 @@ class Bullshido(commands.Cog):
                 inline=False
             )
             embed.add_field(
-                name="Max Health:",
-                value=f"{await self.config.guild(ctx.guild).max_health()}",
+                name="Base Health:",
+                value=f"{await self.config.guild(ctx.guild).base_health()}",
                 inline=False
             )
             embed.add_field(
@@ -421,13 +421,13 @@ class Bullshido(commands.Cog):
         self.logger.info(f"Diet weight set to {diet_weight}.")
         await ctx.send(f"Diet weight set to {diet_weight}.")
         
-    @bullshidoset_group.command(name="max_health", description="Set the maximum health.")
+    @bullshidoset_group.command(name="base_health", description="Set the maximum health.")
     @commands.is_owner()
-    async def set_max_health(self, ctx: commands.Context, max_health: int):
-        """ Set the player maximum health."""
-        await self.config.guild(ctx.guild).max_health.set(max_health)
-        self.logger.info(f"Maximum health set to {max_health}.")
-        await ctx.send(f"Maximum health set to {max_health}.")
+    async def set_base_health(self, ctx: commands.Context, base_health: int):
+        """ Set the player base health."""
+        await self.config.guild(ctx.guild).base_health.set(base_health)
+        self.logger.info(f"Base health set to {base_health}.")
+        await ctx.send(f"Base health set to {base_health}.")
         
     @bullshidoset_group.command(name="action_cost", description="Set the action cost.")
     @commands.is_owner()
