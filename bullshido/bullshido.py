@@ -174,7 +174,7 @@ class Bullshido(commands.Cog):
             await channel.send(embed=embed)
             await self.prompt_stat_increase(user, channel)
             
-    async def prompt_stat_increase(self, user: discord.Member, channel: discord.TextChannel):
+    async def prompt_stat_increase(self, ctx,  user: discord.Member, channel: discord.TextChannel):
         """Present the user with UI buttons to select their stat increase."""
         self.logger.info(f"Prompting {user} to increase a stat.")
         embed = discord.Embed(
@@ -182,7 +182,7 @@ class Bullshido(commands.Cog):
             description="Choose a stat to increase:",
             color=discord.Color.red()
         )
-        view = StatIncreaseView(self.config, user)
+        view = StatIncreaseView(self.increase_stat, ctx.author, ctx)
         await channel.send(embed=embed, view=view)
 
     async def increase_stat(self, interaction: discord.Interaction, stat):
