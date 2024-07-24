@@ -378,42 +378,7 @@ class FightingGame:
             self.bullshido_cog.logger.error(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
-
-    async def declare_winner_by_ko(self, round_message):
-        if self.player1_health <= 0:
-            winner = self.player2
-            loser = self.player1
-        else:
-            winner = self.player1
-            loser = self.player2
-        ko_message = random.choice(KO_MESSAGES).format(loser=loser.display_name)
-        ko_victor_message = random.choice(KO_VICTOR_MESSAGE)
-        ko_victor_flavor = random.choice(KO_VICTOR_FLAVOR)
-        final_message = (
-            f"{ko_message} {winner.display_name} {ko_victor_message}. {ko_victor_flavor}"
-        )
-        await self.update_health_bars(0, final_message, "KO Victory!", final_result=f"KO Victory for {winner.display_name}!")  # Update embed with KO result
-        await self.record_result(winner, loser, "KO")
-        FightingGame.set_game_active(self.channel.id, False)
-        await self.end_fight(winner, loser)
-
-    async def declare_winner_by_tko(self, round_message, loser):
-        winner = self.player1 if loser == self.player2 else self.player2
-        tko_message_flavor = random.choice(TKO_MESSAGES).format(loser=loser.display_name)
-        referee_stop_flavor = random.choice(REFEREE_STOPS)
-        tko_victor_message = random.choice(TKO_VICTOR_MESSAGE)
-        tko_finale = random.choice(TKO_MESSAGE_FINALES)
-        final_message = (
-            f"{tko_message_flavor} {referee_stop_flavor}, {winner.display_name} wins the fight by TKO!\n"
-            f"{winner.display_name} {tko_victor_message}, {tko_finale}"
-        )
-        await self.update_health_bars(0, final_message, "TKO Victory!", final_result=f"TKO Victory for {winner.display_name}!")  # Update embed with TKO result
-        await self.record_result(winner, loser, "TKO")
-        FightingGame.set_game_active(self.channel.id, False)
-        await self.end_fight(winner, loser)
-
-
-
+        
     def calculate_tko_probability(self, attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation):
         base_tko_chance = self.BASE_TKO_PROBABILITY
         # Factor in stamina, training and intimidation at 10% each
@@ -449,7 +414,7 @@ class FightingGame:
         except Exception as e:
             print(f"An error occurred: {e}")
 
-    async def play_round(self, round_number,ctx):
+    async def play_round(self, round_number, ctx):
         strike_count = 0
         player1_health_start = self.player1_health
         player2_health_start = self.player2_health
@@ -512,13 +477,61 @@ class FightingGame:
 
         await self.update_health_bars(round_number, "Round Ended", round_result)
 
+        # Check for KO
         if self.player1_health <= 0 or self.player2_health <= 0:
             winner = self.player2 if self.player1_health <= 0 else self.player1
             loser = self.player1 if self.player1_health <= 0 else self.player2
-            await self.end_fight(winner, loser, ctx)
+            await self.declare_winner_by_ko(ctx)
+            return True
+
+        # Check for TKO
+        tko_probability = self.calculate_tko_probability(self.player1_stamina, self.player1_data["training_level"], self.player2_data["training_level"], self.player2_stamina, self.player1_data["intimidation_level"], self.player2_data["intimidation_level"])
+        if (self.player1_health < 20 or self.player2_health < 20) and random.random() < tko_probability:
+            if self.player1_health < 20:
+                await self.declare_winner_by_tko(ctx, self.player1)
+            else:
+                await self.declare_winner_by_tko(ctx, self.player2)
             return True
 
         return False
+
+    async def declare_winner_by_ko(self, ctx):
+        if self.player1_health <= 0:
+            winner = self.player2
+            loser = self.player1
+        else:
+            winner = self.player1
+            loser = self.player2
+        ko_message = random.choice(KO_MESSAGES).format(loser=loser.display_name)
+        ko_victor_message = random.choice(KO_VICTOR_MESSAGE)
+        ko_victor_flavor = random.choice(KO_VICTOR_FLAVOR)
+        final_message = (
+            f"{ko_message} {winner.display_name} {ko_victor_message}. {ko_victor_flavor}"
+        )
+        await self.update_health_bars(0, final_message, "KO Victory!", final_result=f"KO Victory for {winner.display_name}!")  # Update embed with KO result
+        await self.record_result(winner, loser, "KO")
+        FightingGame.set_game_active(self.channel.id, False)
+        await self.end_fight(winner, loser)
+
+    async def declare_winner_by_tko(self, ctx, loser):
+        winner = self.player1 if loser == self.player2 else self.player2
+        tko_message_flavor = random.choice(TKO_MESSAGES).format(loser=loser.display_name)
+        referee_stop_flavor = random.choice(REFEREE_STOPS)
+        tko_victor_message = random.choice(TKO_VICTOR_MESSAGE)
+        tko_finale = random.choice(TKO_MESSAGE_FINALES)
+        final_message = (
+            f"{tko_message_flavor} {referee_stop_flavor}, {winner.display_name} wins the fight by TKO!\n"
+            f"{winner.display_name} {tko_victor_message}, {tko_finale}"
+        )
+        await self.update_health_bars(0, final_message, "TKO Victory!", final_result=f"TKO Victory for {winner.display_name}!")  # Update embed with TKO result
+        await self.record_result(winner, loser, "TKO")
+        FightingGame.set_game_active(self.channel.id, False)
+        await self.end_fight(winner, loser)
+
+    async def end_fight(self, winner, loser):
+        self.bullshido_cog.logger.info(f"Ending fight between {winner.display_name} and {loser.display_name}.")
+        await self.bullshido_cog.add_xp(winner, 100, self.channel)
+        await self.bullshido_cog.add_xp(loser, 50, self.channel)
 
 
     async def start_game(self, ctx):
