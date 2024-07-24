@@ -910,10 +910,15 @@ class Bullshido(commands.Cog):
         level = await self.config.user(user).level()
         training_level = await self.config.user(user).training_level()
         nutrition_level = await self.config.user(user).nutrition_level()
+        health_bonus = await self.config.user(user).health_bonus()
+        player_health = 100 + health_bonus
         morale = await self.config.user(user).morale()
         intimidation_level = await self.config.user(user).intimidation_level()
         fighting_style = await self.config.user(user).fighting_style()
         stamina = await self.config.user(user).stamina_level()
+        stamina_bonus = await self.config.user(user).stamina_bonus()
+        player_stamina = stamina + stamina_bonus
+        player_damage_bonus = await self.config.user(user).damage_bonus()
         level_up_points_to_distribute = await self.config.user(user).level_points_to_distribute()
 
         total_wins = sum(wins.values())
@@ -935,9 +940,11 @@ class Bullshido(commands.Cog):
         embed.add_field(name="Level", value=level, inline=True)
         embed.add_field(name="Training Level", value=training_level, inline=True)
         embed.add_field(name="Nutrition Level", value=nutrition_level, inline=True)
+        embed.add_field(name="Health", value=player_health, inline=True)
         embed.add_field(name="Morale", value=morale, inline=True)
         embed.add_field(name="Intimidation Level", value=intimidation_level, inline=True)
-        embed.add_field(name="Stamina", value=stamina, inline=True)
+        embed.add_field(name="Damage Bonus", value=player_damage_bonus, inline=True)
+        embed.add_field(name="Stamina", value=player_stamina, inline=True)
         embed.add_field(name="Level Points to Distribute", value=level_up_points_to_distribute, inline=True)
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
         await ctx.send(embed=embed)
