@@ -224,6 +224,24 @@ class FightingGame:
         total_damage_bonus = 1 + training_bonus + diet_bonus + (damage_bonus * 0.05)
         adjusted_damage = base_damage * total_damage_bonus
         return round(adjusted_damage)
+    
+    def is_critical_hit(self, attacker_data, defender_data):
+        critical_chance = self.CRITICAL_CHANCE
+
+        # Adjust critical chance based on attacker and defender stats
+        attacker_training = attacker_data.get("training_level", 0)
+        defender_training = defender_data.get("training_level", 0)
+        attacker_intimidation = attacker_data.get("intimidation_level", 0)
+        defender_intimidation = defender_data.get("intimidation_level", 0)
+
+        # based on difference in training and intimidation, adjust as needed
+        critical_chance += 0.01 * (attacker_training - defender_training)
+        critical_chance += 0.01 * (attacker_intimidation - defender_intimidation)
+
+        # Clamp critical chance to a reasonable rate 
+        critical_chance = max(0, min(critical_chance, 0.3))
+
+        return random.random() < critical_chance
 
     def get_strike_damage(self, style, attacker, defender, body_part):
         strike = ""
@@ -283,7 +301,7 @@ class FightingGame:
             miss_probability += 0.05
 
         if defender_stamina > 50:
-            miss_probability -= 0.05
+            miss_probability += 0.05
 
         miss_probability -= 0.01 * math.log10(attacker_training + 1)
         miss_probability += 0.01 * math.log10(defender_training + 1)
@@ -382,11 +400,9 @@ class FightingGame:
         
     def calculate_tko_probability(self, attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation):
         base_tko_chance = self.BASE_TKO_PROBABILITY
-        # Factor in stamina, training and intimidation at 10% each
         stamina_factor = (attacker_stamina - defender_stamina) * 0.01
         training_factor = (attacker_training - defender_training) * 0.01
         intimidation_factor = (attacker_intimidation - defender_intimidation) * 0.01
-        # Add up all factors
         tko_probability = base_tko_chance + stamina_factor + training_factor + intimidation_factor
 
         # Probability clamped between 0 and 0.75 (75%)
