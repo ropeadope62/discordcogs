@@ -900,7 +900,7 @@ class Bullshido(commands.Cog):
 
     @bullshido_group.command(name="player_stats", description="Displays your wins and losses", aliases=["stats"])
     async def player_stats(self, ctx: commands.Context, user: discord.Member = None):
-        """Displays your wins and losses."""
+        """Displays your fighting stats and player attributes."""
         if user is None:
             user = ctx.author
             self.logger.info(f"{ctx.author} used the player_stats command.")
