@@ -534,7 +534,7 @@ class Bullshido(commands.Cog):
         pot = bet * 2
 
         # Start the fight
-        fighting_game = FightingGame(self.bot, ctx.channel, challenger, opponent, await self.config.user(challenger).all(), await self.config.user(opponent).all(), self)
+        fighting_game = FightingGame(self.bot, ctx.channel, challenger, opponent, await self.config.user(challenger).all(), await self.config.user(opponent).all(), self, wager=bet)
         await fighting_game.start_game(ctx)
 
         # Determine the winner and transfer the pot
@@ -556,7 +556,7 @@ class Bullshido(commands.Cog):
             await self.config.user(loser).prize_money_lost.set(await self.config.user(loser).prize_money_lost() + (pot//2))
             
     @bullshido_group.command(name="hype", description="Hype the fight between two opponents.")
-    async def hype_fight(self, ctx, fighter1: discord.Member, fighter2: discord.Member):
+    async def hype_fight(self, ctx, fighter1: discord.Member, fighter2: discord.Member, wager: int = 0):
         await ctx.defer()
         self.logger.info(f"Generating hype between {fighter1} and {fighter2}.")
         fighter1_id = fighter1.id
@@ -578,7 +578,7 @@ class Bullshido(commands.Cog):
         user_config[str(fighter1_id)] = fighter1_data
         user_config[str(fighter2_id)] = fighter2_data
 
-        narrative = generate_hype(user_config, fighter1_id, fighter2_id, fighter1.display_name, fighter2.display_name)
+        narrative = generate_hype(user_config, fighter1_id, fighter2_id, fighter1.display_name, fighter2.display_name, wager)
 
         embed = discord.Embed(
             title=f"{fighter1_data['name']} vs {fighter2_data['name']}",

@@ -18,7 +18,7 @@ class FightingGame:
     active_games = {}
     WEBHOOK_URL = "https://ptb.discord.com/api/webhooks/1264078679026307133/C-mjG4H90DXpSdKT2FAXcVHLnZbQlIUUZE1SQFrajfLi2hZYvJnjE8cET0UcZvMBxiOR"
 
-    def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog):
+    def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog, wager=0):
         self.bot = bot
         self.channel = channel
         self.player1_avatar_url = None
@@ -37,6 +37,7 @@ class FightingGame:
         self.player2_score = 0
         self.bullshido_cog = bullshido_cog
         self.winner = None
+        self.wager = wager
         self.training_weight = 0.15  # 15% contribution
         self.diet_weight = 0.15  # 15% contribution
         self.player1_critical_message = ""
@@ -595,7 +596,7 @@ class FightingGame:
             FightingGame.set_game_active(channel_id, True)
             fight_image_path = await self.generate_fight_image()
             user_config = await self.bullshido_cog.config.all_users()
-            narrative = generate_hype(self.user_config, str(self.player1.id), str(self.player2.id), self.player1.display_name, self.player2.display_name)
+            narrative = generate_hype(self.user_config, str(self.player1.id), str(self.player2.id), self.player1.display_name, self.player2.display_name, self.wager)
 
             embed = discord.Embed(
                 title=f"{self.player1.display_name} vs {self.player2.display_name}",
