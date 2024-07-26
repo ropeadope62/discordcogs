@@ -1015,6 +1015,8 @@ class Bullshido(commands.Cog):
         embed.add_field(name="Damage Bonus", value=player_damage_bonus, inline=True)
         embed.add_field(name="Stamina", value=player_stamina, inline=True)
         embed.add_field(name="Level Points to Distribute", value=level_up_points_to_distribute, inline=True)
+        embed.add_field(name="Prize Money Won", value=prize_money_won, inline=True)
+        embed.add_field(name="Prize Money Lost", value=prize_money_lost, inline=True)
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
         await ctx.send(embed=embed)
 
