@@ -13,8 +13,8 @@ def generate_hype(user_config, attacker_id, defender_id, attacker_name, defender
     relevant_keys = ['training_level', 'nutrition_level', 'wins', 'losses', 'fighting_style', 'intimidation_level']
     
     # Check if fighters have fought before
-    if 'fighting_history' in user_config[str(attacker_id)] and 'fighting_history' in user_config[str(defender_id)]:
-        fighting_history = user_config[str(attacker_id)]['fighting_history']
+    if 'fight_history' in user_config[str(attacker_id)] and 'fight_history' in user_config[str(defender_id)]:
+        fighting_history = user_config[str(attacker_id)]['fight_history']
         for fight in fighting_history:
             if fight['opponent_id'] == defender_id:
                 relevant_keys.extend(fight['relevant_keys'])
@@ -35,7 +35,7 @@ def generate_hype(user_config, attacker_id, defender_id, attacker_name, defender
         f"Generate some funny hype about the upcoming match between {attacker_name} and {defender_name}. "
         f"{attacker_name}'s stats: {attacker_data}. "
         f"{defender_name}'s stats: {defender_data}. "
-        "Keep your response under 300 characters. Include some of their stats in the response and mention the results of their last fight and the name of the person they beat."
+        "Keep your response under 300 characters. Include some of their stats in the response and mention the results of their last fight."
     )
 
     response = client.chat.completions.create(
