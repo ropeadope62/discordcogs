@@ -45,6 +45,8 @@ class Bullshido(commands.Cog):
             "morale": 100,
             "intimidation_level": 0,
             "stamina_level": 100,
+            "prize_money_won": 0,
+            "prize_money_lost": 0,
             "last_interaction": None,
             "last_command_used": None,
             "last_train": None,
@@ -537,6 +539,7 @@ class Bullshido(commands.Cog):
 
         # Determine the winner and transfer the pot
         winner = fighting_game.winner
+        
         if winner is None:
             await ctx.send("The fight ended in a draw. The bet is returned to both players.")
             await bank.deposit_credits(challenger, bet)
@@ -545,10 +548,13 @@ class Bullshido(commands.Cog):
             await bank.deposit_credits(challenger, pot)
             await ctx.send(f"{challenger.mention} wins the fight and takes the pot of {pot} {currency}!")
         else:
+            loser = opponent if winner == challenger else challenger
             await bank.deposit_credits(opponent, pot)
             await ctx.send(f"{opponent.mention} wins the fight and takes the pot of {pot} {currency}!")
         
-        
+            await self.config.user(winner).prize_money_won.set(await self.config.user(winner).prize_money_won() + (pot//2))
+            await self.config.user(loser).prize_money_lost.set(await self.config.user(loser).prize_money_lost() + (pot//2))
+            
     @bullshido_group.command(name="hype", description="Hype the fight between two opponents.")
     async def hype_fight(self, ctx, fighter1: discord.Member, fighter2: discord.Member):
         await ctx.defer()
@@ -613,8 +619,7 @@ class Bullshido(commands.Cog):
     @bullshido_group.command(name="distribute_points", description="If you have unspent level points to distribute, spend them on bonuses.")
     async def distribute_points(self, ctx: commands.Context):
         user = ctx.author
-        user_data = await self.config.user(user).all()
-        points_to_distribute = user_data['level_points_to_distribute']
+        points_to_distribute = await self.config.user(user).level_points_to_distribute()
 
         if points_to_distribute > 0:
             await self.prompt_stat_increase(user, ctx.channel)
@@ -871,6 +876,10 @@ class Bullshido(commands.Cog):
             inline=False
         )
         embed.add_field(
+            name="Starting a Fight with a Wager",
+            value="Challenge another player to a fight for a wager using `/bullshido fight @player <wager>`. The opponent will have 30 seconds to accept the challenge. When the fight ends, the winner is paid out the wagers.",
+        )
+        embed.add_field(
             name="Winning and Losing",
             value="Winning a fight increases your wins and morale and may also increase your intimidation level. Losing decreases your morale. Keep training and dieting to improve your chances in future fights.",
             inline=False
@@ -978,6 +987,8 @@ class Bullshido(commands.Cog):
         player_stamina = stamina + stamina_bonus
         player_damage_bonus = await self.config.user(user).damage_bonus()
         level_up_points_to_distribute = await self.config.user(user).level_points_to_distribute()
+        prize_money_won = await self.config.user(user).prize_money_won()
+        prize_money_lost = await self.config.user(user).prize_money_lost()
 
         total_wins = sum(wins.values())
         total_losses = sum(losses.values())
