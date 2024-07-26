@@ -44,7 +44,7 @@ def generate_hype(user_config, attacker_id, defender_id, attacker_name, defender
 
     # Create a concise prompt
     prompt = (
-        f"Hype the upcoming match between {attacker_name} and {defender_name}. "
+        f"Hype the upcoming match between {attacker_name} and {defender_name} with a sense of humor. "
         f"{attacker_summary}. "
         f"{defender_summary}. "
         "Keep it under 300 characters and mention their last fight results if available. Mention some stats between the two fighters."
