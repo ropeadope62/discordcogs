@@ -36,6 +36,7 @@ class FightingGame:
         self.player1_score = 0
         self.player2_score = 0
         self.bullshido_cog = bullshido_cog
+        self.winner = None
         self.training_weight = 0.15  # 15% contribution
         self.diet_weight = 0.15  # 15% contribution
         self.player1_critical_message = ""
@@ -619,23 +620,14 @@ class FightingGame:
             result_type = "DRAW"
             final_message = "The fight is over! The fight is declared a draw!"
 
-            if self.player1_health > self.player2_health:
+            if self.player1_score > self.player2_score:
                 winner = self.player1
                 loser = self.player2
                 result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
-            elif self.player2_health > self.player1_health:
+            elif self.player2_score > self.player1_score:
                 winner = self.player2
                 loser = self.player1
                 result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
-            elif self.player1_score != self.player2_score:
-                if self.player1_score > self.player2_score:
-                    winner = self.player1
-                    loser = self.player2
-                    result_type = "UD" if abs(self.player1_score - self.player2_score) > 2 else "SD"
-                else:
-                    winner = self.player2
-                    loser = self.player1
-                    result_type = "UD" if abs(self.player2_score - self.player1_score) > 2 else "SD"
             else:
                 winner, loser = None, None
                 result_type = "DRAW"
@@ -657,6 +649,8 @@ class FightingGame:
 
             FightingGame.set_game_active(channel_id, False)
             await self.end_fight(winner, loser)
+
+            self.winner = winner  # Set the winner attribute based on the fight score
 
         except Exception as e:
             self.bullshido_cog.logger.error(f"Error during start_game: {e}")

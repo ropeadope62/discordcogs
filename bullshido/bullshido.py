@@ -491,23 +491,25 @@ class Bullshido(commands.Cog):
         self.logger.info(f"Reset {user} to level 1.")
         await ctx.send(f"Reset {user.display_name} to level 1.")
         
-    @bullshido_group.command(name="challenge", description="Challenge an opponent to combat for a wager.")
-    async def challenge(self, ctx: commands.context, opponent: discord.Member, bet: int ):
-        """ Challenge an opponent and place a wager on the fight."""
+    @bullshido_group.command(name="challenge", description="Challenge another player to a fight with a bet.")
+    async def challenge(self, ctx: commands.Context, opponent: discord.Member, bet: int):
+        """Challenge another player to a fight with a bet."""
         challenger = ctx.author
         currency = await bank.get_currency_name(ctx.guild)
-        
-        # Check if the challenger has enough credits 
-        if not await bank.can_spend(challenger,bet):
-            await ctx.send(f"{challenger.mention}, your mouth is writing cheques you can't cash - you don't have enough {currency} to wager.")
-            
+
+        # Check if the challenger has enough credits
+        if not await bank.can_spend(challenger, bet):
+            await ctx.send(f"{challenger.mention}, you don't have enough {currency} to place this bet.")
+            return
+
         # Check if the opponent has enough credits
         if not await bank.can_spend(opponent, bet):
-            await ctx.send(f"{opponent.mention} doesn't have enough {currency} to accept this wager.")
-            
-        # Send a challenge message 
-        challenge_message = await ctx.send(f"{opponent.mention}, do you accept this challenge for {bet} {currency}?")
-        
+            await ctx.send(f"{opponent.mention} doesn't have enough {currency} to place this bet.")
+            return
+
+        # Send the challenge message
+        challenge_message = await ctx.send(f"{opponent.mention}, you have been challenged by {challenger.mention} to a fight who has put up {bet} {currency}. Do you accept? (yes/no)")
+
         def check(m):
             return m.author == opponent and m.channel == ctx.channel and m.content.lower() in ["yes", "no"]
 
@@ -515,32 +517,36 @@ class Bullshido(commands.Cog):
             # Wait for the opponent to accept or decline the challenge
             response = await self.bot.wait_for("message", check=check, timeout=30.0)
         except asyncio.TimeoutError:
-            await ctx.send(f"{opponent.mention} did not respond in time. Challenge canceled.")
+            await ctx.send(f"{opponent.mention} did not respond to the challenge...")
             return
 
         if response.content.lower() == "no":
-            await ctx.send(f"{opponent.mention} declined the challenge. Challenge canceled.")
+            await ctx.send(f"{opponent.mention} declined the challenge...")
             return
-        
+
         # Deduct the bet amount from both users
         await bank.withdraw_credits(challenger, bet)
         await bank.withdraw_credits(opponent, bet)
-        
-        # Create the pot 
+
+        # Store the total pot
         pot = bet * 2
-        
+
         # Start the fight
         fighting_game = FightingGame(self.bot, ctx.channel, challenger, opponent, await self.config.user(challenger).all(), await self.config.user(opponent).all(), self)
         await fighting_game.start_game(ctx)
 
         # Determine the winner and transfer the pot
         winner = fighting_game.winner
-        if winner == challenger:
+        if winner is None:
+            await ctx.send("The fight ended in a draw. The bet is returned to both players.")
+            await bank.deposit_credits(challenger, bet)
+            await bank.deposit_credits(opponent, bet)
+        elif winner == challenger:
             await bank.deposit_credits(challenger, pot)
-            await ctx.send(f"{challenger.mention} was victorious and takes all! This bout earned them {pot} {currency}.")
+            await ctx.send(f"{challenger.mention} wins the fight and takes the pot of {pot} {currency}!")
         else:
             await bank.deposit_credits(opponent, pot)
-            await ctx.send(f"{opponent.mention} was victorious and takes all! This bout earned them {pot} {currency}.")
+            await ctx.send(f"{opponent.mention} wins the fight and takes the pot of {pot} {currency}!")
         
         
     @bullshido_group.command(name="hype", description="Hype the fight between two opponents.")
