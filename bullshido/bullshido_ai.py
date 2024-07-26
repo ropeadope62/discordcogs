@@ -16,7 +16,7 @@ def generate_hype(user_config, attacker_id, defender_id, attacker_name, defender
     if 'fight_history' in user_config[str(attacker_id)] and 'fight_history' in user_config[str(defender_id)]:
         fighting_history = user_config[str(attacker_id)]['fight_history']
         for fight in fighting_history:
-            if fight['opponent_id'] == defender_id:
+            if fight['defender_id'] == defender_id:
                 relevant_keys.extend(fight['relevant_keys'])
                 break
 
