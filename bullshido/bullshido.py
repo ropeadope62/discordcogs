@@ -506,7 +506,7 @@ class Bullshido(commands.Cog):
             await ctx.send(f"{opponent.mention} doesn't have enough {currency} to accept this wager.")
             
         # Send a challenge message 
-        challenge_message = await ctx.send(f"{opponent.mention}, do you accept this challenge for {challenger.bet} {currency}?")
+        challenge_message = await ctx.send(f"{opponent.mention}, do you accept this challenge for {bet} {currency}?")
         
         def check(m):
             return m.author == opponent and m.channel == ctx.channel and m.content.lower() in ["yes", "no"]
