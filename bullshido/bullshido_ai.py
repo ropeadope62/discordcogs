@@ -60,7 +60,7 @@ def generate_hype(user_config, attacker_id, defender_id, attacker_name, defender
 
     return response.choices[0].message.content
 
-def generate_hype_challenge(user_config, attacker_id, defender_id, attacker_name, defender_name):
+def generate_hype_challenge(user_config, attacker_id, defender_id, attacker_name, defender_name, wager: int=0):
     # Define relevant keys
     relevant_keys = ['training_level', 'nutrition_level', 'wins', 'losses', 'fighting_style', 'intimidation_level']
     

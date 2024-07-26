@@ -13,12 +13,12 @@ from .fighting_constants import (
     STRIKE_ACTIONS, TKO_MESSAGES, KO_MESSAGES, KO_VICTOR_MESSAGE, TKO_VICTOR_MESSAGE, REFEREE_STOPS, FIGHT_RESULT_LONG,
     ROUND_RESULTS_WIN, ROUND_RESULTS_CLOSE, TKO_MESSAGE_FINALES, KO_VICTOR_FLAVOR
 )
-from .bullshido_ai import generate_hype
+from .bullshido_ai import generate_hype, generate_hype_challenge
 class FightingGame:
     active_games = {}
     WEBHOOK_URL = "https://ptb.discord.com/api/webhooks/1264078679026307133/C-mjG4H90DXpSdKT2FAXcVHLnZbQlIUUZE1SQFrajfLi2hZYvJnjE8cET0UcZvMBxiOR"
 
-    def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog, wager=0):
+    def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog, wager=0, challenge=False):
         self.bot = bot
         self.channel = channel
         self.player1_avatar_url = None
@@ -38,6 +38,7 @@ class FightingGame:
         self.bullshido_cog = bullshido_cog
         self.winner = None
         self.wager = wager
+        self.challenge = challenge
         self.training_weight = 0.15  # 15% contribution
         self.diet_weight = 0.15  # 15% contribution
         self.player1_critical_message = ""
@@ -596,8 +597,11 @@ class FightingGame:
             FightingGame.set_game_active(channel_id, True)
             fight_image_path = await self.generate_fight_image()
             user_config = await self.bullshido_cog.config.all_users()
-            narrative = generate_hype(self.user_config, str(self.player1.id), str(self.player2.id), self.player1.display_name, self.player2.display_name, self.wager)
-
+            if self.challenge: 
+                narrative = generate_hype_challenge(self.user_config, str(self.player1.id), str(self.player2.id), self.player1.display_name, self.player2.display_name, self.wager)
+            else: 
+                narrative = generate_hype_challenge(self.user_config, str(self.player1.id), str(self.player2.id), self.player1.display_name, self.player2.display_name)
+            
             embed = discord.Embed(
                 title=f"{self.player1.display_name} vs {self.player2.display_name}",
                 description=f"{narrative}",
