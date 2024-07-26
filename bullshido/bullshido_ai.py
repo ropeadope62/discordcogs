@@ -35,7 +35,7 @@ def generate_hype(user_config, attacker_id, defender_id, attacker_name, defender
         f"Generate some funny hype about the upcoming match between {attacker_name} and {defender_name}. "
         f"{attacker_name}'s stats: {attacker_data}. "
         f"{defender_name}'s stats: {defender_data}. "
-        "Keep your response under 200 characters. Include some of their stats in the response and mention the results of their last fight."
+        "Keep your response under 300 characters. Include some of their stats in the response and mention the results of their last fight and the name of the person they beat."
     )
 
     response = client.chat.completions.create(
