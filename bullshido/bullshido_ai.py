@@ -22,7 +22,7 @@ def generate_hype(user_config, attacker_id, defender_id, attacker_name, defender
             if fight['opponent'] == defender_name:
                 # Extract relevant data for attacker and defender from the past fight
                 attacker_data = {key: fight.get(key) for key in relevant_keys if key in fight}
-                defender_data = {key: user_config[str(defender_name)].get(key) for key in relevant_keys}
+                defender_data = {key: user_config[str(defender_id)].get(key) for key in relevant_keys}
                 break
 
     # If no past fight data is found, use the general data
