@@ -29,20 +29,19 @@ class FightingGame:
         self.player2_data = player2_data
         self.player1_damage_adjustments = self.precalculate_damage_adjustments(player1_data)
         self.player2_damage_adjustments = self.precalculate_damage_adjustments(player2_data)
-        self.player1_stamina = self.player1_data.get('stamina_level', 100) + (self.player1_data.get('stamina_bonus', 0) * 5)
-        self.player2_stamina = self.player2_data.get('stamina_level', 100) + (self.player2_data.get('stamina_bonus', 0) * 5)
-        self.player1_health = 100 + (self.player1_data.get('health_bonus', 0) * 10)
-        self.player2_health = 100 + (self.player2_data.get('health_bonus', 0) * 10)
-        self.rounds = 3
-        self.max_strikes_per_round = 5
+        
+        # Initialize cached settings
+        cached_settings = self.bullshido_cog.cached_settings
+        self.rounds = cached_settings['rounds']
+        self.max_strikes_per_round = cached_settings['max_strikes_per_round']
         self.player1_score = 0
         self.player2_score = 0
         self.bullshido_cog = bullshido_cog
         self.winner = None
         self.wager = wager
         self.challenge = challenge
-        self.training_weight = 0.15  # 15% contribution
-        self.diet_weight = 0.15  # 15% contribution
+        self.training_weight = cached_settings['training_weight']  
+        self.diet_weight = cached_settings['diet_weight']
         self.player1_critical_message = ""
         self.player2_critical_message = ""
         self.player1_critical_injuries = []
@@ -51,13 +50,22 @@ class FightingGame:
             str(player1.id): player1_data,
             str(player2.id): player2_data
         }
-        self.base_health = 100
-        self.ACTION_COST = 10
-        self.BASE_MISS_PROBABILITY = 0.15
-        self.BASE_STAMINA_COST = 10
+        self.base_health = cached_settings['base_health']
+        self.ACTION_COST = cached_settings['action_cost']
+        self.BASE_MISS_PROBABILITY = cached_settings['base_miss_probability']
+        self.BASE_STAMINA_COST = cached_settings['base_stamina_cost']
+        self.CRITICAL_CHANCE = cached_settings['critical_chance']
+        self.PERMANENT_INJURY_CHANCE = cached_settings['permanent_injury_chance']
         self.FIGHT_TEMPLATE_URL = "https://i.ibb.co/MSprvBG/bullshido-template.png"
         self.BASE_TKO_PROBABILITY = 0.5
         self.embed_message = None
+        
+        # Initialize player stats
+        self.player1_stamina = self.player1_data.get('stamina_level', 100) + (self.player1_data.get('stamina_bonus', 0) * 5)
+        self.player2_stamina = self.player2_data.get('stamina_level', 100) + (self.player2_data.get('stamina_bonus', 0) * 5)
+        self.player1_health = self.base_health + (self.player1_data.get('health_bonus', 0) * 10)
+        self.player2_health = self.base_health + (self.player2_data.get('health_bonus', 0) * 10)
+        
         if player1_data['training_level'] >= player2_data['training_level']:
             self.current_turn = player1
         else:

@@ -35,6 +35,7 @@ class Bullshido(commands.Cog):
         asyncio.create_task(self.cache_settings())
         self.update_queue = {}
         self.update_lock = asyncio.Lock()
+        self.update_task.start()
         default_user = {
             "fighting_style": None,
             "wins": {"UD": 0, "SD": 0, "TKO": 0, "KO": 0},
