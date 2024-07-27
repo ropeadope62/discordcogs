@@ -27,21 +27,19 @@ class FightingGame:
         self.player2 = player2
         self.player1_data = player1_data
         self.player2_data = player2_data
+        self.bullshido_cog = bullshido_cog
         self.player1_damage_adjustments = self.precalculate_damage_adjustments(player1_data)
         self.player2_damage_adjustments = self.precalculate_damage_adjustments(player2_data)
         
         # Initialize cached settings
-        cached_settings = self.bullshido_cog.cached_settings
-        self.rounds = cached_settings['rounds']
-        self.max_strikes_per_round = cached_settings['max_strikes_per_round']
+        
         self.player1_score = 0
         self.player2_score = 0
-        self.bullshido_cog = bullshido_cog
+        
         self.winner = None
         self.wager = wager
         self.challenge = challenge
-        self.training_weight = cached_settings['training_weight']  
-        self.diet_weight = cached_settings['diet_weight']
+         
         self.player1_critical_message = ""
         self.player2_critical_message = ""
         self.player1_critical_injuries = []
@@ -50,8 +48,13 @@ class FightingGame:
             str(player1.id): player1_data,
             str(player2.id): player2_data
         }
+        cached_settings = self.bullshido_cog.cached_settings
         self.base_health = cached_settings['base_health']
         self.ACTION_COST = cached_settings['action_cost']
+        self.rounds = cached_settings['rounds']
+        self.max_strikes_per_round = cached_settings['max_strikes_per_round']
+        self.training_weight = cached_settings['training_weight'] 
+        self.diet_weight = cached_settings['diet_weight']
         self.BASE_MISS_PROBABILITY = cached_settings['base_miss_probability']
         self.BASE_STAMINA_COST = cached_settings['base_stamina_cost']
         self.CRITICAL_CHANCE = cached_settings['critical_chance']
@@ -59,7 +62,7 @@ class FightingGame:
         self.FIGHT_TEMPLATE_URL = "https://i.ibb.co/MSprvBG/bullshido-template.png"
         self.BASE_TKO_PROBABILITY = 0.5
         self.embed_message = None
-        
+    
         # Initialize player stats
         self.player1_stamina = self.player1_data.get('stamina_level', 100) + (self.player1_data.get('stamina_bonus', 0) * 5)
         self.player2_stamina = self.player2_data.get('stamina_level', 100) + (self.player2_data.get('stamina_bonus', 0) * 5)

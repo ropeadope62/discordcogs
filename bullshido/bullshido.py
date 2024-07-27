@@ -793,8 +793,8 @@ class Bullshido(commands.Cog):
             player2 = opponent
 
             # Retrieve player data
-            player1_data = await self.config.user(player1).all()
-            player2_data = await self.config.user(player2).all()
+            player1_data = await self.cache_settings(player1.id)
+            player2_data = await self.cache_settings(player2.id)
 
             self.logger.info(f"Starting fight: {player1.display_name} vs {player2.display_name}")
             self.logger.info(f"Player 1 Data: {player1_data}")
