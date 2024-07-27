@@ -32,6 +32,7 @@ class Bullshido(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=123123451514345671215451351235890, force_registration=True)
         self.cached_settings = {}
+        self.cached_user_settings = {}
         asyncio.create_task(self.cache_settings())
         self.update_queue = {}
         self.update_lock = asyncio.Lock()
