@@ -99,6 +99,7 @@ class Bullshido(commands.Cog):
     
     async def cache_user_settings(self, user_id):
         user_data = await self.config.user_from_id(user_id).all()
+        self.cached_user_settings[user_id] = user_data
         return user_data
     
     def setup_logging(self):

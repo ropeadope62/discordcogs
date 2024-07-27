@@ -53,12 +53,12 @@ class FightingGame:
         self.max_strikes_per_round = cached_settings.get('max_strikes_per_round', 5)
         self.training_weight = cached_settings.get('training_weight', 0.15)
         self.diet_weight = cached_settings.get('diet_weight', 0.15)
-        self.base_health = cached_settings.get('base_health', 100)
+        self.BASE_HEALTH = cached_settings.get('BASE_HEALTH', 100)
         self.action_cost = cached_settings.get('action_cost', 10)
-        self.base_miss_probability = cached_settings.get('base_miss_probability', 0.15)
-        self.base_stamina_cost = cached_settings.get('base_stamina_cost', 10)
+        self.BASE_MISS_PROBABILITY = cached_settings.get('base_miss_probability', 0.15)
+        self.BASE_STAMINA_COST = cached_settings.get('base_stamina_cost', 10)
         self.critical_chance = cached_settings.get('critical_chance', 0.1)
-        self.permanent_injury_chance = cached_settings.get('permanent_injury_chance', 0.5)
+        self.PERMANENT_INJURY_CHANCE = cached_settings.get('permanent_injury_chance', 0.5)
         self.FIGHT_TEMPLATE_URL = "https://i.ibb.co/MSprvBG/bullshido-template.png"
         self.BASE_TKO_PROBABILITY = 0.5
         self.embed_message = None
@@ -66,8 +66,8 @@ class FightingGame:
         # Initialize player stats
         self.player1_stamina = self.player1_data.get('stamina_level', 100) + (self.player1_data.get('stamina_bonus', 0) * 5)
         self.player2_stamina = self.player2_data.get('stamina_level', 100) + (self.player2_data.get('stamina_bonus', 0) * 5)
-        self.player1_health = self.base_health + (self.player1_data.get('health_bonus', 0) * 10)
-        self.player2_health = self.base_health + (self.player2_data.get('health_bonus', 0) * 10)
+        self.player1_health = self.BASE_HEALTH + (self.player1_data.get('health_bonus', 0) * 10)
+        self.player2_health = self.BASE_HEALTH + (self.player2_data.get('health_bonus', 0) * 10)
         
         if player1_data['training_level'] >= player2_data['training_level']:
             self.current_turn = player1
@@ -181,8 +181,8 @@ class FightingGame:
 
         return final_image_path
     
-    def create_health_bar(self, current_health, base_health):
-        progress = current_health / base_health
+    def create_health_bar(self, current_health, BASE_HEALTH):
+        progress = current_health / BASE_HEALTH
         filled_length = int(progress * 30)
         bar = '=' * filled_length + '=' * (30 - filled_length)
         return f"[{bar[:filled_length]}🔴{bar[filled_length+1:]}]"
@@ -198,8 +198,8 @@ class FightingGame:
             return "Exhausted"
 
     async def update_health_bars(self, round_number, latest_message, round_result, fight_over=False, final_result=None):
-        player1_health_bar = self.create_health_bar(self.player1_health, self.base_health)
-        player2_health_bar = self.create_health_bar(self.player2_health, self.base_health)
+        player1_health_bar = self.create_health_bar(self.player1_health, self.BASE_HEALTH)
+        player2_health_bar = self.create_health_bar(self.player2_health, self.BASE_HEALTH)
         player1_stamina_status = self.get_stamina_status(self.player1_stamina)
         player2_stamina_status = self.get_stamina_status(self.player2_stamina)
 
@@ -325,7 +325,7 @@ class FightingGame:
 
     def regenerate_stamina(self, current_stamina, training_level, diet_level):
         regeneration_rate = (training_level + diet_level) / 20
-        return min(current_stamina + regeneration_rate, self.base_health)
+        return min(current_stamina + regeneration_rate, self.BASE_HEALTH)
 
     async def play_turn(self, round_message, round_number):
         try:
@@ -574,7 +574,7 @@ class FightingGame:
             self.max_strikes_per_round = await self.bullshido_cog.config.guild(guild).max_strikes_per_round()
             self.training_weight = await self.bullshido_cog.config.guild(guild).training_weight()
             self.diet_weight = await self.bullshido_cog.config.guild(guild).diet_weight()
-            self.base_health = await self.bullshido_cog.config.guild(guild).base_health()
+            self.BASE_HEALTH = await self.bullshido_cog.config.guild(guild).BASE_HEALTH()
             self.ACTION_COST = await self.bullshido_cog.config.guild(guild).action_cost()
             self.BASE_MISS_PROBABILITY = await self.bullshido_cog.config.guild(guild).base_miss_probability()
             self.BASE_STAMINA_COST = await self.bullshido_cog.config.guild(guild).base_stamina_cost()
@@ -594,11 +594,11 @@ class FightingGame:
             player2_damage_bonus = player2_data.get("damage_bonus", 0)
 
             # Apply bonuses to player stats
-            self.player1_health = self.base_health + player1_health_bonus
-            self.player2_health = self.base_health + player2_health_bonus
+            self.player1_health = self.BASE_HEALTH + player1_health_bonus
+            self.player2_health = self.BASE_HEALTH + player2_health_bonus
 
-            self.player1_stamina = self.base_health + player1_stamina_bonus
-            self.player2_stamina = self.base_health + player2_stamina_bonus
+            self.player1_stamina = self.BASE_HEALTH + player1_stamina_bonus
+            self.player2_stamina = self.BASE_HEALTH + player2_stamina_bonus
 
             self.player1_damage_bonus = player1_damage_bonus
             self.player2_damage_bonus = player2_damage_bonus
