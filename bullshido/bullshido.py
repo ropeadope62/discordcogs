@@ -97,6 +97,10 @@ class Bullshido(commands.Cog):
             'permanent_injury_chance': await self.config.guild(guild).permanent_injury_chance(),
         }
     
+    async def cache_user_settings(self, user_id):
+        user_data = await self.config.user_from_id(user_id).all()
+        return user_data
+    
     def setup_logging(self):
         self.logger = logging.getLogger("red.bullshido")
         self.logger.setLevel(logging.DEBUG)
@@ -573,12 +577,13 @@ class Bullshido(commands.Cog):
 
         # Store the total pot
         pot = bet * 2
-
+        challenger_data = await self.cache_user_settings(challenger.id)
+        opponent_data = await self.cache_user_settings(opponent.id)
         # Start the fight
-        fighting_game = FightingGame(self.bot, ctx.channel, challenger, opponent, await self.config.user(challenger).all(), await self.config.user(opponent).all(), self, wager=bet, challenge=True)
+        fighting_game = FightingGame(self.bot, ctx.channel, challenger, opponent, challenger_data, opponent_data, self, wager=bet, challenge=True)
         await fighting_game.start_game(ctx)
 
-        # Determine the winner and transfer the pot
+# Determine the winner and transfer the pot
         winner = fighting_game.winner
         
         if winner is None:
