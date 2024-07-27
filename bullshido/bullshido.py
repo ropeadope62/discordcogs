@@ -577,9 +577,8 @@ class Bullshido(commands.Cog):
 
         # Store the total pot
         pot = bet * 2
-        challenger_data = await self.cache_user_settings(challenger.id)
-        opponent_data = await self.cache_user_settings(opponent.id)
-        # Start the fight
+        challenger_data = self.cached_user_settings.get(challenger.id) or await self.cache_user_settings(challenger.id)
+        opponent_data = self.cached_user_settings.get(opponent.id) or await self.cache_user_settings(opponent.id)
         fighting_game = FightingGame(self.bot, ctx.channel, challenger, opponent, challenger_data, opponent_data, self, wager=bet, challenge=True)
         await fighting_game.start_game(ctx)
 
@@ -798,8 +797,8 @@ class Bullshido(commands.Cog):
             player2 = opponent
 
             # Retrieve player data
-            player1_data = await self.cache_user_settings(player1.id)
-            player2_data = await self.cache_user_settings(player2.id)
+            player1_data = self.cached_user_settings.get(player1.id) or await self.cache_user_settings(player1.id)
+            player2_data = self.cached_user_settings.get(player2.id) or await self.cache_user_settings(player2.id)
 
             self.logger.info(f"Starting fight: {player1.display_name} vs {player2.display_name}")
             self.logger.info(f"Player 1 Data: {player1_data}")
