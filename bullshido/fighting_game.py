@@ -5,7 +5,6 @@ import discord
 import math
 import requests
 from discord import File, Webhook
-from discord.ext import tasks
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import os
@@ -22,8 +21,6 @@ class FightingGame:
     def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog, wager=0, challenge=False):
         self.bot = bot
         self.channel = channel
-        self.update_queue = {}
-        self.update_lock = asyncio.Lock()
         self.player1_avatar_url = None
         self.player2_avatar_url = None
         self.player1 = player1
@@ -81,27 +78,6 @@ class FightingGame:
             r = r.point(lambda i: min(i + int(255 * (damage_percentage / 100)), 255))
             image = Image.merge('RGBA', (r, g, b, a))
             return image
-
-    async def queue_update(self, user, data):
-        async with self.update_lock:
-            if user.id not in self.update_queue:
-                self.update_queue[user.id] = {}
-            self.update_queue[user.id].update(data)
-
-    async def process_updates(self):
-        async with self.update_lock:
-            for user_id, data in self.update_queue.items():
-                user = self.bot.get_user(user_id)
-                if user:
-                    await self.config.user(user).set(data)
-            self.update_queue.clear()
-
-    @tasks.loop(minutes=5)
-    async def update_task(self):
-        await self.process_updates()
-
-    def cog_unload(self):
-        self.update_task.cancel()
 
     def precalculate_damage_adjustments(self, player_data):
         training_bonus = math.log10(player_data['training_level'] + 1) * self.training_weight

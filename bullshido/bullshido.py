@@ -2,6 +2,7 @@ import discord
 import asyncio
 from redbot.core import commands, Config, bank
 from discord import Interaction
+from discord.ext import tasks
 from .ui_elements import SelectFightingStyleView, StatIncreaseView
 from .fighting_game import FightingGame
 from datetime import datetime, timedelta
@@ -32,6 +33,8 @@ class Bullshido(commands.Cog):
         self.config = Config.get_conf(self, identifier=123123451514345671215451351235890, force_registration=True)
         self.cached_settings = {}
         asyncio.create_task(self.cache_settings())
+        self.update_queue = {}
+        self.update_lock = asyncio.Lock()
         default_user = {
             "fighting_style": None,
             "wins": {"UD": 0, "SD": 0, "TKO": 0, "KO": 0},
@@ -111,7 +114,27 @@ class Bullshido(commands.Cog):
             self.file_handler.setFormatter(formatter)
             self.logger.addHandler(self.file_handler)
         
-        
+    async def queue_update(self, user, data):
+        async with self.update_lock:
+            if user.id not in self.update_queue:
+                self.update_queue[user.id] = {}
+            self.update_queue[user.id].update(data)
+
+    async def process_updates(self):
+        async with self.update_lock:
+            for user_id, data in self.update_queue.items():
+                user = self.bot.get_user(user_id)
+                if user:
+                    await self.config.user(user).set(data)
+            self.update_queue.clear()
+
+    @tasks.loop(minutes=5)
+    async def update_task(self):
+        await self.process_updates()
+
+    def cog_unload(self):
+        self.update_task.cancel()
+    
     async def has_sufficient_stamina(self, user):
         """ Check if the user has sufficient stamina to fight."""
         self.logger.info(f"Checking if {user} has sufficient stamina...")
