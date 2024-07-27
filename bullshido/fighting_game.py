@@ -49,16 +49,16 @@ class FightingGame:
             str(player2.id): player2_data
         }
         cached_settings = self.bullshido_cog.cached_settings
-        self.base_health = cached_settings['base_health']
-        self.ACTION_COST = cached_settings['action_cost']
-        self.rounds = cached_settings['rounds']
-        self.max_strikes_per_round = cached_settings['max_strikes_per_round']
-        self.training_weight = cached_settings['training_weight'] 
-        self.diet_weight = cached_settings['diet_weight']
-        self.BASE_MISS_PROBABILITY = cached_settings['base_miss_probability']
-        self.BASE_STAMINA_COST = cached_settings['base_stamina_cost']
-        self.CRITICAL_CHANCE = cached_settings['critical_chance']
-        self.PERMANENT_INJURY_CHANCE = cached_settings['permanent_injury_chance']
+        self.rounds = cached_settings.get('rounds', 3)
+        self.max_strikes_per_round = cached_settings.get('max_strikes_per_round', 5)
+        self.training_weight = cached_settings.get('training_weight', 0.15)
+        self.diet_weight = cached_settings.get('diet_weight', 0.15)
+        self.base_health = cached_settings.get('base_health', 100)
+        self.action_cost = cached_settings.get('action_cost', 10)
+        self.base_miss_probability = cached_settings.get('base_miss_probability', 0.15)
+        self.base_stamina_cost = cached_settings.get('base_stamina_cost', 10)
+        self.critical_chance = cached_settings.get('critical_chance', 0.1)
+        self.permanent_injury_chance = cached_settings.get('permanent_injury_chance', 0.5)
         self.FIGHT_TEMPLATE_URL = "https://i.ibb.co/MSprvBG/bullshido-template.png"
         self.BASE_TKO_PROBABILITY = 0.5
         self.embed_message = None
