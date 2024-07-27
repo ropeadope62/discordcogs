@@ -5,6 +5,7 @@ import discord
 import math
 import requests
 from discord import File, Webhook
+from discord.ext import tasks
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 import os
@@ -21,12 +22,16 @@ class FightingGame:
     def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog, wager=0, challenge=False):
         self.bot = bot
         self.channel = channel
+        self.update_queue = {}
+        self.update_lock = asyncio.Lock()
         self.player1_avatar_url = None
         self.player2_avatar_url = None
         self.player1 = player1
         self.player2 = player2
         self.player1_data = player1_data
         self.player2_data = player2_data
+        self.player1_damage_adjustments = self.precalculate_damage_adjustments(player1_data)
+        self.player2_damage_adjustments = self.precalculate_damage_adjustments(player2_data)
         self.player1_stamina = self.player1_data.get('stamina_level', 100) + (self.player1_data.get('stamina_bonus', 0) * 5)
         self.player2_stamina = self.player2_data.get('stamina_level', 100) + (self.player2_data.get('stamina_bonus', 0) * 5)
         self.player1_health = 100 + (self.player1_data.get('health_bonus', 0) * 10)
@@ -77,6 +82,44 @@ class FightingGame:
             image = Image.merge('RGBA', (r, g, b, a))
             return image
 
+    async def queue_update(self, user, data):
+        async with self.update_lock:
+            if user.id not in self.update_queue:
+                self.update_queue[user.id] = {}
+            self.update_queue[user.id].update(data)
+
+    async def process_updates(self):
+        async with self.update_lock:
+            for user_id, data in self.update_queue.items():
+                user = self.bot.get_user(user_id)
+                if user:
+                    await self.config.user(user).set(data)
+            self.update_queue.clear()
+
+    @tasks.loop(minutes=5)
+    async def update_task(self):
+        await self.process_updates()
+
+    def cog_unload(self):
+        self.update_task.cancel()
+
+    def precalculate_damage_adjustments(self, player_data):
+        training_bonus = math.log10(player_data['training_level'] + 1) * self.training_weight
+        diet_bonus = math.log10(player_data['nutrition_level'] + 1) * self.diet_weight
+        damage_bonus = player_data.get('damage_bonus', 0) * 0.05
+        total_damage_bonus = 1 + training_bonus + diet_bonus + damage_bonus
+        
+        damage_adjustments = {}
+        for style, strikes in STRIKES.items():
+            damage_adjustments[style] = {}
+            for strike, damage_range in strikes.items():
+                min_damage, max_damage = damage_range
+                adjusted_min = round(min_damage * total_damage_bonus)
+                adjusted_max = round(max_damage * total_damage_bonus)
+                damage_adjustments[style][strike] = (adjusted_min, adjusted_max)
+        
+        return damage_adjustments
+    
     async def generate_fight_image(self):
         template_url = self.FIGHT_TEMPLATE_URL
         response = requests.get(template_url)
@@ -153,14 +196,9 @@ class FightingGame:
     
     def create_health_bar(self, current_health, base_health):
         progress = current_health / base_health
-        progress_bar_length = 30
-        progress_bar_filled = int(progress * progress_bar_length)
-        progress_bar = "[" + ("=" * progress_bar_filled)
-        progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
-        if progress_bar_filled < progress_bar_length:
-            marker = "🔴"
-            progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
-        return progress_bar
+        filled_length = int(progress * 30)
+        bar = '=' * filled_length + '=' * (30 - filled_length)
+        return f"[{bar[:filled_length]}🔴{bar[filled_length+1:]}]"
 
     def get_stamina_status(self, stamina):
         if stamina >= 75:
@@ -173,36 +211,24 @@ class FightingGame:
             return "Exhausted"
 
     async def update_health_bars(self, round_number, latest_message, round_result, fight_over=False, final_result=None):
-
         player1_health_bar = self.create_health_bar(self.player1_health, self.base_health)
         player2_health_bar = self.create_health_bar(self.player2_health, self.base_health)
         player1_stamina_status = self.get_stamina_status(self.player1_stamina)
         player2_stamina_status = self.get_stamina_status(self.player2_stamina)
 
-        if FightingGame.is_game_active(self.channel.id):
-            title = f"Round {round_number} - {self.player1.display_name} vs {self.player2.display_name}"
-        else:
-            title = final_result if final_result else f"Fight Concluded - {self.player1.display_name} vs {self.player2.display_name}"
+        embed = self.embed_message.embeds[0] if self.embed_message else discord.Embed(color=0xFF0000)
         
-        embed = discord.Embed(
-            title=title,
-            color=0xFF0000
-        )
-
-        # Add player 1 information
+        embed.title = f"Round {round_number} - {self.player1.display_name} vs {self.player2.display_name}" if FightingGame.is_game_active(self.channel.id) else final_result or f"Fight Concluded - {self.player1.display_name} vs {self.player2.display_name}"
+        embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
+        embed.clear_fields()
         embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health}HP", inline=True)
-
-        # Add player 1 stamina and injuries
         embed.add_field(name=f"{self.player1.display_name}'s Stamina", value=player1_stamina_status, inline=False)
         if self.player1_critical_injuries:
             embed.add_field(name=f"{self.player1.display_name} Injuries", value=", ".join(self.player1_critical_injuries), inline=False)
         if self.player1_data.get("permanent_injuries"):
             embed.add_field(name=f"{self.player1.display_name} Permanent Injuries", value=", ".join(self.player1_data["permanent_injuries"]), inline=False)
 
-        # Add player 2 information
         embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}HP", inline=True)
-
-        # Add player 2 stamina and injuries
         embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
         if self.player2_critical_injuries:
             embed.add_field(name=f"{self.player2.display_name} Injuries", value=", ".join(self.player2_critical_injuries), inline=False)
@@ -212,8 +238,7 @@ class FightingGame:
         if round_result and not fight_over:
             embed.add_field(name="Round Result", value=round_result, inline=False)
         embed.add_field(name="Latest Strike", value=latest_message, inline=False)
-
-        embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
+        
 
         if self.embed_message:
             await self.embed_message.edit(embed=embed)
@@ -248,24 +273,20 @@ class FightingGame:
 
     def get_strike_damage(self, style, attacker, defender, body_part):
         strike = ""
-        damage_range = (0, 0)
-        base_damage = 0
-        modified_damage = 0
+        damage = 0
         message = ""
         conclude_message = ""
         critical_injury = ""
         critical_result_key = ""
 
         try:
-            strike, damage_range = random.choice(list(STRIKES[style].items()))
-            base_damage = random.randint(*damage_range)
-            damage_bonus = attacker.get('damage_bonus', 0)  # Get attacker's damage bonus from user config
-            modified_damage = self.calculate_adjusted_damage(base_damage, attacker['training_level'], attacker['nutrition_level'], damage_bonus)
-            modifier = random.uniform(0.8, 1.3)
+            damage_adjustments = self.player1_damage_adjustments if attacker == self.player1 else self.player2_damage_adjustments
+            strike, adjusted_damage_range = random.choice(list(damage_adjustments[style].items()))
+            damage = random.randint(*adjusted_damage_range)
 
             is_critical_hit = random.random() < self.CRITICAL_CHANCE
             if is_critical_hit:
-                modified_damage = base_damage * 2
+                damage *= 2
                 if possible_injuries := BODY_PART_INJURIES.get(body_part, []):
                     critical_injury = random.choice(possible_injuries)
                     for result, injury in CRITICAL_RESULTS.items():
@@ -278,12 +299,13 @@ class FightingGame:
                     if random.random() < self.PERMANENT_INJURY_CHANCE:
                         critical_injury = f"Permanent Injury: {critical_injury}"
             else:
-                modified_damage = round(modified_damage * modifier)
-            return strike, modified_damage, message, conclude_message, critical_injury, body_part
+                damage = round(damage * random.uniform(0.8, 1.3))
+
+            return strike, damage, message, conclude_message, critical_injury, body_part
         except Exception as e:
             print(f"Error during get_strike_damage: {e}")
             print(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
-            return strike, modified_damage, message, conclude_message, critical_injury, body_part
+            return strike, damage, message, conclude_message, critical_injury, body_part
 
     async def end_fight(self, winner, loser):
         self.bullshido_cog.logger.info(f"Ending fight between {winner} and {loser}.")

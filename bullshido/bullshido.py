@@ -30,6 +30,8 @@ class Bullshido(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=123123451514345671215451351235890, force_registration=True)
+        self.cached_settings = {}
+        asyncio.create_task(self.cache_settings())
         default_user = {
             "fighting_style": None,
             "wins": {"UD": 0, "SD": 0, "TKO": 0, "KO": 0},
@@ -75,7 +77,22 @@ class Bullshido(commands.Cog):
         self.setup_logging()
         self.bg_task = self.bot.loop.create_task(self.check_inactivity())
         self.logger.info("Bullshido cog loaded.")
-        
+    
+    async def cache_settings(self):
+        guild = self.bot.guilds[0]  # will need to change if bot is global
+        self.cached_settings = {
+            'rounds': await self.config.guild(guild).rounds(),
+            'max_strikes_per_round': await self.config.guild(guild).max_strikes_per_round(),
+            'training_weight': await self.config.guild(guild).training_weight(),
+            'diet_weight': await self.config.guild(guild).diet_weight(),
+            'base_health': await self.config.guild(guild).base_health(),
+            'action_cost': await self.config.guild(guild).action_cost(),
+            'base_miss_probability': await self.config.guild(guild).base_miss_probability(),
+            'base_stamina_cost': await self.config.guild(guild).base_stamina_cost(),
+            'critical_chance': await self.config.guild(guild).critical_chance(),
+            'permanent_injury_chance': await self.config.guild(guild).permanent_injury_chance(),
+        }
+    
     def setup_logging(self):
         self.logger = logging.getLogger("red.bullshido")
         self.logger.setLevel(logging.DEBUG)
