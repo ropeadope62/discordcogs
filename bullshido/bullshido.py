@@ -740,7 +740,7 @@ class Bullshido(commands.Cog):
         embed = discord.Embed(title="Available Fighting Styles", description="\n".join(styles), color=0xFF0000)
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
         self.logger.info(f"Listing available fighting styles.")
-        await self.channel.send(embed=embed)
+        await ctx.send(embed=embed)
         
     @bullshido_group.command(name="fight", description="Start a fight with another player")
     async def fight(self, ctx: commands.Context, opponent: discord.Member):
