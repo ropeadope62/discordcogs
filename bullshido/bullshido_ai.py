@@ -100,7 +100,7 @@ def generate_hype_challenge(user_config, attacker_id, defender_id, attacker_name
         f"Hype the upcoming match between {attacker_name} and {defender_name} with a sense of humor. "
         f"{attacker_summary}. "
         f"{defender_summary}. "
-        f"There is a wager placed on this prize fight of {wager} and the winner takes double their wager."
+        f"There is a wager placed on this prize fight of {wager}."
         "Keep it under 300 characters and mention their last fight results if available. Mention some stats between the two fighters."
     )
 
