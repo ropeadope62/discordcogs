@@ -11,6 +11,7 @@ from .fighting_constants import INJURY_TREATMENT_COST, XP_REQUIREMENTS
 from .bullshido_ai import generate_hype, generate_hype_challenge
 import logging
 import os
+from bullshido_constants import STRIKES
 
 class MemoryLogHandler(logging.Handler):
     def __init__(self):
@@ -736,7 +737,7 @@ class Bullshido(commands.Cog):
     @bullshido_group.command(name="list_fighting_styles", description="List all available fighting styles")
     async def list_fighting_styles(self, ctx: commands.Context):
         """List all available fighting styles."""
-        styles = ["Karate", "Muay-Thai", "Aikido", "Boxing", "Kung-Fu", "Judo", "Taekwondo", "Wrestling", "Sambo", "MMA", "Capoeira", "Kickboxing", "Krav-Maga", "Brazilian Jiu-Jitsu"]
+        styles = list(STRIKES.keys())
         embed = discord.Embed(title="Available Fighting Styles", description="\n".join(styles), color=0xFF0000)
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
         self.logger.info(f"Listing available fighting styles.")
