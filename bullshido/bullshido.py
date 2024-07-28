@@ -11,7 +11,7 @@ from .fighting_constants import INJURY_TREATMENT_COST, XP_REQUIREMENTS
 from .bullshido_ai import generate_hype, generate_hype_challenge
 import logging
 import os
-from bullshido_constants import STRIKES
+from fighting_constants import STRIKES
 
 class MemoryLogHandler(logging.Handler):
     def __init__(self):
