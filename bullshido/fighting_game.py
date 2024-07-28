@@ -99,7 +99,7 @@ class FightingGame:
         player1_avatar = player1_avatar.rotate(-0, expand=True)
         player2_avatar = player2_avatar.rotate(-0, expand=True)
 
-        player1_avatar_position = (100, 75)
+        player1_avatar_position = (85, 75)
         player2_avatar_position = (375, 75)
 
         background.paste(player1_avatar, player1_avatar_position, player1_avatar)
@@ -130,7 +130,7 @@ class FightingGame:
             text_y = avatar_y - text_height - 10  
             return text_x, text_y
 
-        player1_name_text_position = get_centered_text_position(draw, player1_name, font, player1_avatar_position, player1_avatar.size)
+player1_name_text_position = get_centered_text_position(draw, player1_name, font, player1_avatar_position, player1_avatar.size)
         player2_name_text_position = get_centered_text_position(draw, player2_name, font, player2_avatar_position, player2_avatar.size)
         player1_text_position = (80, 175)
         player2_text_position = (355, 175)
