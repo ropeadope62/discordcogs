@@ -280,8 +280,8 @@ class FightingGame:
                 modified_damage = round(modified_damage * modifier)
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
         except Exception as e:
-            print(f"Error during get_strike_damage: {e}")
-            print(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
+            self.bullsido_cog.logger.error(f"Error during get_strike_damage: {e}")
+            self.bullshido_cog.logger.debug(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
 
     async def end_fight(self, winner, loser):
@@ -431,7 +431,7 @@ class FightingGame:
             await self.bullshido_cog.config.user(loser).morale.set(new_loser_morale)
             await self.bullshido_cog.config.user(winner).morale.set(new_winner_morale)
         except Exception as e:
-            print(f"An error occurred: {e}")
+            self.bullshido_cog.logger.error(f"An error occurred: {e}")
 
     async def play_round(self, round_number, ctx):
         strike_count = 0
