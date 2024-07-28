@@ -121,7 +121,9 @@ class FightingGame:
         )
 
         def get_centered_text_position(draw, text, font, avatar_position, avatar_size):
-            text_width, text_height = draw.textsize(text, font=font)
+            text_bbox = draw.textbbox((0, 0), text, font=font)
+            text_width = text_bbox[2] - text_bbox[0]
+            text_height = text_bbox[3] - text_bbox[1]
             avatar_x, avatar_y = avatar_position
             avatar_width, avatar_height = avatar_size
             text_x = avatar_x + (avatar_width - text_width) // 2
