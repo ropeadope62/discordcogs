@@ -569,18 +569,6 @@ class FightingGame:
                 await self.channel.send("A game is already in progress in this channel.")
                 return
 
-            guild = self.channel.guild
-            self.rounds = self.bullshido_cog.cached_settings['rounds']
-            self.max_strikes_per_round = self.bullshido_cog.cached_settings['max_strikes_per_round']
-            self.training_weight = self.bullshido_cog.cached_settings['training_weight']
-            self.diet_weight = self.bullshido_cog.cached_settings['diet_weight']
-            self.base_health = self.bullshido_cog.cached_settings['base_health']
-            self.action_cost = self.bullshido_cog.cached_settings['action_cost']
-            self.BASE_MISS_PROBABILITY = self.bullshido_cog.cached_settings['base_miss_probability']
-            self.BASE_STAMINA_COST = self.bullshido_cog.cached_settings['base_stamina_cost']
-            self.critical_chance = self.bullshido_cog.cached_settings['critical_chance']
-            self.PERMANENT_INJURY_CHANCE = self.bullshido_cog.cached_settings['permanent_injury_chance']
-            
             player1_data = await self.bullshido_cog.config.user(self.player1).all()
             player2_data = await self.bullshido_cog.config.user(self.player2).all()
 
