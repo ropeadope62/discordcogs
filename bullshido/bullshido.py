@@ -2,7 +2,6 @@ import discord
 import asyncio
 from redbot.core import commands, Config, bank
 from discord import Interaction
-from discord.ext import tasks
 from .ui_elements import SelectFightingStyleView, StatIncreaseView
 from .fighting_game import FightingGame
 from datetime import datetime, timedelta
@@ -31,12 +30,6 @@ class Bullshido(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=123123451514345671215451351235890, force_registration=True)
-        self.cached_settings = {}
-        self.cached_user_settings = {}
-        asyncio.create_task(self.cache_settings())
-        self.update_queue = {}
-        self.update_lock = asyncio.Lock()
-        self.update_task.start()
         default_user = {
             "fighting_style": None,
             "wins": {"UD": 0, "SD": 0, "TKO": 0, "KO": 0},
@@ -82,27 +75,7 @@ class Bullshido(commands.Cog):
         self.setup_logging()
         self.bg_task = self.bot.loop.create_task(self.check_inactivity())
         self.logger.info("Bullshido cog loaded.")
-    
-    async def cache_settings(self):
-        guild = self.bot.guilds[0]  # will need to change if bot is global
-        self.cached_settings = {
-            'rounds': await self.config.guild(guild).rounds(),
-            'max_strikes_per_round': await self.config.guild(guild).max_strikes_per_round(),
-            'training_weight': await self.config.guild(guild).training_weight(),
-            'diet_weight': await self.config.guild(guild).diet_weight(),
-            'base_health': await self.config.guild(guild).base_health(),
-            'action_cost': await self.config.guild(guild).action_cost(),
-            'base_miss_probability': await self.config.guild(guild).base_miss_probability(),
-            'base_stamina_cost': await self.config.guild(guild).base_stamina_cost(),
-            'critical_chance': await self.config.guild(guild).critical_chance(),
-            'permanent_injury_chance': await self.config.guild(guild).permanent_injury_chance(),
-        }
-    
-    async def cache_user_settings(self, user_id):
-        user_data = await self.config.user_from_id(user_id).all()
-        self.cached_user_settings[user_id] = user_data
-        return user_data
-    
+        
     def setup_logging(self):
         self.logger = logging.getLogger("red.bullshido")
         self.logger.setLevel(logging.DEBUG)
@@ -121,27 +94,7 @@ class Bullshido(commands.Cog):
             self.file_handler.setFormatter(formatter)
             self.logger.addHandler(self.file_handler)
         
-    async def queue_update(self, user, data):
-        async with self.update_lock:
-            if user.id not in self.update_queue:
-                self.update_queue[user.id] = {}
-            self.update_queue[user.id].update(data)
-
-    async def process_updates(self):
-        async with self.update_lock:
-            for user_id, data in self.update_queue.items():
-                user = self.bot.get_user(user_id)
-                if user:
-                    await self.config.user(user).set(data)
-            self.update_queue.clear()
-
-    @tasks.loop(minutes=5)
-    async def update_task(self):
-        await self.process_updates()
-
-    def cog_unload(self):
-        self.update_task.cancel()
-    
+        
     async def has_sufficient_stamina(self, user):
         """ Check if the user has sufficient stamina to fight."""
         self.logger.info(f"Checking if {user} has sufficient stamina...")
@@ -579,12 +532,12 @@ class Bullshido(commands.Cog):
 
         # Store the total pot
         pot = bet * 2
-        challenger_data = self.cached_user_settings.get(challenger.id) or await self.cache_user_settings(challenger.id)
-        opponent_data = self.cached_user_settings.get(opponent.id) or await self.cache_user_settings(opponent.id)
-        fighting_game = FightingGame(self.bot, ctx.channel, challenger, opponent, challenger_data, opponent_data, self, wager=bet, challenge=True)
+
+        # Start the fight
+        fighting_game = FightingGame(self.bot, ctx.channel, challenger, opponent, await self.config.user(challenger).all(), await self.config.user(opponent).all(), self, wager=bet, challenge=True)
         await fighting_game.start_game(ctx)
 
-# Determine the winner and transfer the pot
+        # Determine the winner and transfer the pot
         winner = fighting_game.winner
         
         if winner is None:
@@ -799,8 +752,8 @@ class Bullshido(commands.Cog):
             player2 = opponent
 
             # Retrieve player data
-            player1_data = self.cached_user_settings.get(player1.id) or await self.cache_user_settings(player1.id)
-            player2_data = self.cached_user_settings.get(player2.id) or await self.cache_user_settings(player2.id)
+            player1_data = await self.config.user(player1).all()
+            player2_data = await self.config.user(player2).all()
 
             self.logger.info(f"Starting fight: {player1.display_name} vs {player2.display_name}")
             self.logger.info(f"Player 1 Data: {player1_data}")
