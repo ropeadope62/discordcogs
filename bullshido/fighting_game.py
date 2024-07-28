@@ -53,7 +53,7 @@ class FightingGame:
         self.ACTION_COST = 10
         self.BASE_MISS_PROBABILITY = 0.15
         self.BASE_STAMINA_COST = 10
-        self.FIGHT_TEMPLATE_URL = "https://i.ibb.co/MSprvBG/bullshido-template.png"
+        self.FIGHT_TEMPLATE_PATH = "/home/slurms/ScrapGPT/scrapgpt_data/cogs/Bullshido/bullshido_template.png"
         self.BASE_TKO_PROBABILITY = 0.5
         self.embed_message = None
         if player1_data['training_level'] >= player2_data['training_level']:
@@ -78,9 +78,8 @@ class FightingGame:
             return image
 
     async def generate_fight_image(self):
-        template_url = self.FIGHT_TEMPLATE_URL
-        response = requests.get(template_url)
-        background = Image.open(BytesIO(response.content))
+        template_path = self.FIGHT_TEMPLATE_PATH
+        background = Image.open(template_path)
         font_path = '/home/slurms/ScrapGPT/scrapgpt_data/cogs/CogManager/cogs/bullshido/osaka.ttf'
         font = ImageFont.truetype(font_path, size=20)
         header_font = ImageFont.truetype(font_path, size=34)
