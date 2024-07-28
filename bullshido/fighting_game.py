@@ -99,8 +99,8 @@ class FightingGame:
         player1_avatar = player1_avatar.rotate(-0, expand=True)
         player2_avatar = player2_avatar.rotate(-0, expand=True)
 
-        background.paste(player1_avatar, (100, 75), player1_avatar)
-        background.paste(player2_avatar, (375, 75), player2_avatar)
+        background.paste(player1_avatar, (90, 75), player1_avatar)
+        background.paste(player2_avatar, (365, 75), player2_avatar)
 
         draw = ImageDraw.Draw(background)
 
@@ -117,10 +117,10 @@ class FightingGame:
             f"Record: {player2_total_wins} Wins \n {player2_total_losses} Losses"
         )
 
-        player1_name_text_position = (100, 55)
-        player2_name_text_position = (375, 55)
-        player1_text_position = (100, 175)
-        player2_text_position = (375, 175)
+        player1_name_text_position = (80, 53)
+        player2_name_text_position = (355, 53)
+        player1_text_position = (80, 175)
+        player2_text_position = (355, 175)
 
         def draw_text_with_shadow(draw, position, text, font, shadow_color, text_color, offset=(2, 2)):
             x, y = position
@@ -140,7 +140,7 @@ class FightingGame:
         )
         intro_subtitle = ("")
 
-        intro_text_position = (80, 10)
+        intro_text_position = (80, 6)
         intro_subtitle_position = (20, 40)
         draw_text_with_shadow(draw, intro_text_position, intro_message, header_font, shadow_color, text_color)
         draw_text_with_shadow(draw, intro_subtitle_position, intro_subtitle, header_font, shadow_color, text_color)
