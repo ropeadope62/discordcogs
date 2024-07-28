@@ -7,11 +7,10 @@ from .fighting_game import FightingGame
 from datetime import datetime, timedelta
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont, ImageTransform
-from .fighting_constants import INJURY_TREATMENT_COST, XP_REQUIREMENTS
+from .fighting_constants import INJURY_TREATMENT_COST, XP_REQUIREMENTS,STRIKES
 from .bullshido_ai import generate_hype, generate_hype_challenge
 import logging
 import os
-from fighting_constants import STRIKES
 
 class MemoryLogHandler(logging.Handler):
     def __init__(self):
