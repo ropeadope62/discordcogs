@@ -99,8 +99,11 @@ class FightingGame:
         player1_avatar = player1_avatar.rotate(-0, expand=True)
         player2_avatar = player2_avatar.rotate(-0, expand=True)
 
-        background.paste(player1_avatar, (90, 75), player1_avatar)
-        background.paste(player2_avatar, (365, 75), player2_avatar)
+        player1_avatar_position = (100, 75)
+        player2_avatar_position = (375, 75)
+
+        background.paste(player1_avatar, player1_avatar_position, player1_avatar)
+        background.paste(player2_avatar, player2_avatar_position, player2_avatar)
 
         draw = ImageDraw.Draw(background)
 
@@ -117,8 +120,16 @@ class FightingGame:
             f"Record: {player2_total_wins} Wins \n {player2_total_losses} Losses"
         )
 
-        player1_name_text_position = (80, 53)
-        player2_name_text_position = (355, 53)
+        def get_centered_text_position(draw, text, font, avatar_position, avatar_size):
+            text_width, text_height = draw.textsize(text, font=font)
+            avatar_x, avatar_y = avatar_position
+            avatar_width, avatar_height = avatar_size
+            text_x = avatar_x + (avatar_width - text_width) // 2
+            text_y = avatar_y - text_height - 10  
+            return text_x, text_y
+
+        player1_name_text_position = get_centered_text_position(draw, player1_name, font, player1_avatar_position, player1_avatar.size)
+        player2_name_text_position = get_centered_text_position(draw, player2_name, font, player2_avatar_position, player2_avatar.size)
         player1_text_position = (80, 175)
         player2_text_position = (355, 175)
 
