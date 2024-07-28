@@ -569,8 +569,8 @@ class FightingGame:
                 await self.channel.send("A game is already in progress in this channel.")
                 return
 
-            player1_data = await self.bullshido_cog.config.user(self.player1).all()
-            player2_data = await self.bullshido_cog.config.user(self.player2).all()
+            player1_data = await self.bullshido_cog.cached_user_settings(self.player1)
+            player2_data = await self.bullshido_cog.cached_user_settings(self.player2)
 
             # Get the bonus values from the user config for each player, default to 0 if not present
             player1_health_bonus = player1_data.get("health_bonus", 0)
