@@ -4,7 +4,6 @@ import asyncio
 import discord
 import math
 import requests
-import textwrap
 from discord import File, Webhook
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
@@ -128,25 +127,12 @@ class FightingGame:
             draw.text((x + offset[0], y + offset[1]), text, font=font, fill=shadow_color)
             draw.text(position, text, font=font, fill=text_color)
             
-        def wrap_text(text, width):
-            return textwrap.wrap(text, width)
-
-        # Define the maximum width
-        max_width = 18
-
-        # Wrap the player names
-        wrapped_player1 = wrap_text(player1_name, max_width)
-        wrapped_player2 = wrap_text(player2_name, max_width)
-
-        # Print the wrapped names
-        print("\n".join(wrapped_player1))
-        print("\n".join(wrapped_player2))
 
         shadow_color = (0, 0, 0)
         text_color = (249, 4, 43)
 
-        draw_text_with_shadow(draw, player1_name_text_position, wrapped_player1, font, shadow_color, text_color)
-        draw_text_with_shadow(draw, player2_name_text_position, wrapped_player2, font, shadow_color, text_color)
+        draw_text_with_shadow(draw, player1_name_text_position, player1_name, font, shadow_color, text_color)
+        draw_text_with_shadow(draw, player2_name_text_position, player2_name, font, shadow_color, text_color)
         draw_text_with_shadow(draw, player1_text_position, player1_details, font, shadow_color, text_color)
         draw_text_with_shadow(draw, player2_text_position, player2_details, font, shadow_color, text_color)
 
