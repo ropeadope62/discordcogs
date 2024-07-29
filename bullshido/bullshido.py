@@ -650,9 +650,10 @@ class Bullshido(commands.Cog):
 
 
     @bullshido_group.command(name="treat", description="Treat a permanent injury")
-    async def treat_injury(self, ctx, user: discord.Member, *, injury: str):
+    async def treat_injury(self, ctx, *, injury: str):
         """Treat specific injury for a user."""
         guild = ctx.guild
+        user = ctx.author
         socialized_medicine_mode = await self.config.guild(guild).socialized_medicine()
         socialized_medicine_payer_id = await self.config.guild(guild).socialized_medicine_payer_id()
         currency = await bank.get_currency_name(ctx.guild)
