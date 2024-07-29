@@ -128,7 +128,7 @@ class FightingGame:
             draw.text((x + offset[0], y + offset[1]), text, font=font, fill=shadow_color)
             draw.text(position, text, font=font, fill=text_color)
             
-        def wrap_text(text, width, player_name):
+        def wrap_text(text, width):
             return textwrap.wrap(text, width)
 
         # Define the maximum width
