@@ -77,6 +77,27 @@ class FightingGame:
             image = Image.merge('RGBA', (r, g, b, a))
             return image
 
+    @staticmethod
+    def split_text_into_lines(text, max_length):
+        words = text.split(' ')
+        lines = []
+        current_line = ''
+        
+        for word in words:
+            if len(current_line) + len(word) + 1 <= max_length:
+                if current_line:
+                    current_line += ' ' + word
+                else:
+                    current_line = word
+            else:
+                lines.append(current_line)
+                current_line = word
+        
+        if current_line:
+            lines.append(current_line)
+        
+        return '\n'.join(lines)
+    
     async def generate_fight_image(self):
         template_path = self.FIGHT_TEMPLATE_PATH
         background = Image.open(template_path)
@@ -104,14 +125,12 @@ class FightingGame:
 
         draw = ImageDraw.Draw(background)
 
-        player1_name = (
-            f"{self.player1.display_name}\n")
+        player1_name = FightingGame.split_text_into_lines(f"{self.player1.display_name}", 20)
         player1_details = (
             f"Style: {self.player1_data['fighting_style']}\n"
             f"Record: {player1_total_wins} Wins \n {player1_total_losses} Losses"
         )
-        player2_name = (
-            f"{self.player2.display_name}\n")
+        player2_name = FightingGame.split_text_into_lines(f"{self.player2.display_name}", 20)
         player2_details = (
             f"Style: {self.player2_data['fighting_style']}\n"
             f"Record: {player2_total_wins} Wins \n {player2_total_losses} Losses"
@@ -312,7 +331,7 @@ class FightingGame:
         intimidation_factor = (defender_intimidation - attacker_intimidation) * 0.01
         miss_probability += intimidation_factor
 
-        return min(max(miss_probability, 0.05), 0.25)
+        return min(max(miss_probability, 0.05), 0.20)
 
     def regenerate_stamina(self, current_stamina, training_level, diet_level):
         regeneration_rate = (training_level + diet_level) / 20
