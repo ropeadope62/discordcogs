@@ -125,12 +125,12 @@ class FightingGame:
 
         draw = ImageDraw.Draw(background)
 
-        player1_name = FightingGame.split_text_into_lines(f"{self.player1.display_name}", 20)
+        player1_name = FightingGame.split_text_into_lines(f"{self.player1.display_name}", 18)
         player1_details = (
             f"Style: {self.player1_data['fighting_style']}\n"
             f"Record: {player1_total_wins} Wins \n {player1_total_losses} Losses"
         )
-        player2_name = FightingGame.split_text_into_lines(f"{self.player2.display_name}", 20)
+        player2_name = FightingGame.split_text_into_lines(f"{self.player2.display_name}", 18)
         player2_details = (
             f"Style: {self.player2_data['fighting_style']}\n"
             f"Record: {player2_total_wins} Wins \n {player2_total_losses} Losses"
