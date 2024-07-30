@@ -39,7 +39,7 @@ class FightingGame:
         self.winner = None
         self.wager = wager
         self.challenge = challenge
-self.training_weight = 0.15  # 15% contribution
+        self.training_weight = 0.15  # 15% contribution
         self.diet_weight = 0.15  # 15% contribution
         self.player1_critical_message = ""
         self.player2_critical_message = ""
