@@ -141,6 +141,7 @@ class Bullshido(commands.Cog):
         """Add xp to the user config for the fight result and call check_level_up. If check_level_up returns True, call level_up"""
         user_data = await self.config.user(user).all()
         new_xp = user_data["xp"] + xp
+        self.logger.debug(f"Adding {xp} xp to {user}. New total: {new_xp}")
         await self.config.user(user).xp.set(new_xp)
         
         if await self.check_level_up(user, new_xp, channel):
@@ -150,10 +151,11 @@ class Bullshido(commands.Cog):
         """Check if the users new_xp reaches the next level, if so, return True"""
         user_data = await self.config.user(user).all()
         current_level = user_data['level']
+        self.logger.debug(f"Checking if {user} has leveled up...")
         next_level_xp = XP_REQUIREMENTS.get(current_level + 1)
 
         if next_level_xp and new_xp >= next_level_xp:
-            await self.level_up(user, channel)
+            self.logger.info(f"{user} has leveled up!")
             return True
         return False
 
