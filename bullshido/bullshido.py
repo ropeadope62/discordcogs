@@ -152,7 +152,12 @@ class Bullshido(commands.Cog):
         user_data = await self.config.user(user).all()
         current_level = user_data['level']
         self.logger.debug(f"Checking if {user} has leveled up...")
-        next_level_xp = XP_REQUIREMENTS.get(current_level + 1)
+        try:
+            next_level_xp = XP_REQUIREMENTS[current_level + 1]
+            next_level_xp = XP_REQUIREMENTS.get(current_level + 1)
+            self.logger.debug(f'Next level xp: {next_level_xp}')
+        except KeyError:
+            self.logger.debug(f"Could not find next level xp for level {current_level + 1}.")
 
         if next_level_xp and new_xp >= next_level_xp:
             self.logger.info(f"{user} has leveled up!")
