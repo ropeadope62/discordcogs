@@ -215,10 +215,10 @@ class Bullshido(commands.Cog):
             await interaction.response.send_message(f"{user.mention}, you have no points to distribute.", ephemeral=False)
 
     def create_xp_bar(self, current_xp, current_level, next_level_xp):
-        if current_level == 1:
-            previous_level_xp = 0
-        else:
-            previous_level_xp = XP_REQUIREMENTS.get(current_level, 0)
+        if isinstance(next_level_xp, str):
+            return "Max Level"
+
+        previous_level_xp = XP_REQUIREMENTS.get(current_level, 0)
 
         xp_range = next_level_xp - previous_level_xp
         xp_progress = current_xp - previous_level_xp
@@ -227,6 +227,9 @@ class Bullshido(commands.Cog):
         progress_bar_filled = int(progress * progress_bar_length)
         progress_bar = "[" + ("=" * progress_bar_filled)
         progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
+        if progress_bar_filled < progress_bar_length:
+            marker = "🔴"
+            progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
         return progress_bar
 
     async def set_fighting_style(self, interaction: discord.Interaction, new_style: str):
