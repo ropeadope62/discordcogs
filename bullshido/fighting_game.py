@@ -39,7 +39,7 @@ class FightingGame:
         self.winner = None
         self.wager = wager
         self.challenge = challenge
-        self.training_weight = 0.15  # 15% contribution
+self.training_weight = 0.15  # 15% contribution
         self.diet_weight = 0.15  # 15% contribution
         self.player1_critical_message = ""
         self.player2_critical_message = ""
@@ -619,7 +619,7 @@ class FightingGame:
             if self.challenge: 
                 narrative = generate_hype_challenge(self.user_config, str(self.player1.id), str(self.player2.id), self.player1.display_name, self.player2.display_name, self.wager)
             else: 
-                narrative = generate_hype_challenge(self.user_config, str(self.player1.id), str(self.player2.id), self.player1.display_name, self.player2.display_name)
+                narrative = generate_hype(self.user_config, str(self.player1.id), str(self.player2.id), self.player1.display_name, self.player2.display_name)
             
             embed = discord.Embed(
                 title=f"{self.player1.display_name} vs {self.player2.display_name}",
