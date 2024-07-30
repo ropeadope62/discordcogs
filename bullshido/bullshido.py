@@ -153,7 +153,6 @@ class Bullshido(commands.Cog):
         current_level = user_data['level']
         self.logger.debug(f"Checking if {user} has leveled up...")
         try:
-            next_level_xp = XP_REQUIREMENTS[current_level + 1]
             next_level_xp = XP_REQUIREMENTS.get(current_level + 1)
             self.logger.debug(f'Next level xp: {next_level_xp}')
         except KeyError:
