@@ -215,7 +215,7 @@ class Bullshido(commands.Cog):
             await interaction.response.send_message(f"{user.mention}, you have no points to distribute.", ephemeral=False)
 
     def create_xp_bar(self, current_xp, current_level, next_level_xp):
-        if isinstance(next_level_xp, str):
+        if next_level_xp == "Max Level":
             return "Max Level"
 
         previous_level_xp = XP_REQUIREMENTS.get(current_level, 0)
