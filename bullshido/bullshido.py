@@ -7,7 +7,7 @@ from .fighting_game import FightingGame
 from datetime import datetime, timedelta
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont, ImageTransform
-from .fighting_constants import INJURY_TREATMENT_COST, XP_REQUIREMENTS,STRIKES
+from .fighting_constants import INJURY_TREATMENT_COST, XP_REQUIREMENTS, STRIKES
 from .bullshido_ai import generate_hype, generate_hype_challenge
 import logging
 import os
@@ -214,6 +214,20 @@ class Bullshido(commands.Cog):
         else:
             await interaction.response.send_message(f"{user.mention}, you have no points to distribute.", ephemeral=False)
 
+    def create_xp_bar(current_xp, current_level, next_level_xp):
+        if current_level == 1:
+            previous_level_xp = 0
+        else:
+            previous_level_xp = XP_REQUIREMENTS.get(current_level, 0)
+
+        xp_range = next_level_xp - previous_level_xp
+        xp_progress = current_xp - previous_level_xp
+        progress = xp_progress / xp_range if xp_range > 0 else 0
+        progress_bar_length = 30
+        progress_bar_filled = int(progress * progress_bar_length)
+        progress_bar = "[" + ("=" * progress_bar_filled)
+        progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
+        return progress_bar
 
     async def set_fighting_style(self, interaction: discord.Interaction, new_style: str):
         user = interaction.user
@@ -981,6 +995,9 @@ class Bullshido(commands.Cog):
         wins = await self.config.user(user).wins()
         losses = await self.config.user(user).losses()
         level = await self.config.user(user).level()
+        current_xp = self.config.user(user).xp()
+        next_level_xp = XP_REQUIREMENTS.get(level + 1, "Max Level")
+
         training_level = await self.config.user(user).training_level()
         nutrition_level = await self.config.user(user).nutrition_level()
         health_bonus = await self.config.user(user).health_bonus()
@@ -998,6 +1015,9 @@ class Bullshido(commands.Cog):
 
         total_wins = sum(wins.values())
         total_losses = sum(losses.values())
+        
+        xp_bar = self.create_xp_bar(current_xp, level, next_level_xp)
+        xp_info = f"{current_xp} / {next_level_xp} XP" if next_level_xp != "Max Level" else "Max Level"
 
         embed = discord.Embed(title=f"{user.display_name}'s Fight Record", color=0xFF0000)
         embed.add_field(name="Total Wins", value=total_wins, inline=True)
@@ -1023,6 +1043,7 @@ class Bullshido(commands.Cog):
         embed.add_field(name="Level Points to Distribute", value=level_up_points_to_distribute, inline=True)
         embed.add_field(name="Prize Money Won", value=prize_money_won, inline=True)
         embed.add_field(name="Prize Money Lost", value=prize_money_lost, inline=True)
+        embed.add_field(name="XP Progress", value=xp_bar, inline=False)
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
         await ctx.send(embed=embed)
 
