@@ -220,9 +220,6 @@ class Bullshido(commands.Cog):
 
     def create_xp_bar(self, current_xp, current_level, next_level_xp):
         self.logger.debug(f"Creating xp bar for {current_xp} xp, level {current_level}, next level {next_level_xp} xp.")
-        if next_level_xp == "Max Level":
-            return "Max Level"
-
         previous_level_xp = XP_REQUIREMENTS.get(current_level, 0)
 
         xp_range = next_level_xp - previous_level_xp

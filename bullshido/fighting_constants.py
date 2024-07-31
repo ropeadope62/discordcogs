@@ -1919,7 +1919,7 @@ XP_REQUIREMENTS = {
     11: 9000,
     12: 10500,
     13: 12000,
-    14: 'Max Level'
+    14: 14000
 }
 
 KO_VICTOR_FLAVOR = [
