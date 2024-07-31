@@ -220,7 +220,7 @@ class Bullshido(commands.Cog):
 
     def create_xp_bar(self, current_xp, current_level, next_level_xp):
         self.logger.debug(f"Creating xp bar for {current_xp} xp, level {current_level}, next level {next_level_xp} xp.")
-        previous_level_xp = XP_REQUIREMENTS.get(current_level, 0)
+        previous_level_xp = XP_REQUIREMENTS.get(current_level)
 
         xp_range = next_level_xp - previous_level_xp
         self.logger.debug(f"XP range: {xp_range}")
@@ -1024,7 +1024,7 @@ class Bullshido(commands.Cog):
         total_losses = sum(losses.values())
         
         xp_bar = self.create_xp_bar(current_xp, level, next_level_xp)
-        xp_info = f"{current_xp} / {next_level_xp} XP" if next_level_xp != "Max Level" else "Max Level"
+        xp_info = f"{current_xp} / {next_level_xp} XP"
 
         embed = discord.Embed(title=f"{user.display_name}'s Fight Record", color=0xFF0000)
         embed.add_field(name="Total Wins", value=total_wins, inline=True)
