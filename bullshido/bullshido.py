@@ -1007,7 +1007,7 @@ class Bullshido(commands.Cog):
         losses = await self.config.user(user).losses()
         level = await self.config.user(user).level()
         current_xp = self.config.user(user).xp()
-        next_level_xp = XP_REQUIREMENTS.get(level + 1, "Max Level")
+        next_level_xp = XP_REQUIREMENTS.get(level + 1)
         training_level = await self.config.user(user).training_level()
         nutrition_level = await self.config.user(user).nutrition_level()
         health_bonus = await self.config.user(user).health_bonus()
