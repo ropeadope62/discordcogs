@@ -56,7 +56,7 @@ class FightingGame:
         self.FIGHT_TEMPLATE_PATH = "/home/slurms/ScrapGPT/scrapgpt_data/cogs/Bullshido/bullshido_template.png"
         self.BASE_TKO_PROBABILITY = 0.5
         self.embed_message = None
-        if player1_data['training_level'] >= player2_data['training_level']:
+        if self.determine_first_turn(player1_data['training_level'], player2_data['training_level']):
             self.current_turn = player1
         else:
             self.current_turn = player2
@@ -97,6 +97,14 @@ class FightingGame:
             lines.append(current_line)
         
         return '\n'.join(lines)
+    
+    async def determine_first_turn(attacker_training, defender_training):
+        # Determine who goes first based on training levels
+        total_training = attacker_training + defender_training
+        attacker_probability = attacker_training / total_training
+        defender_probability = defender_training / total_training
+        # If both training levels are equal, its a 50/50 chance
+        return random.choices([True, False], [attacker_probability, defender_probability])[0]
     
     async def generate_fight_image(self):
         template_path = self.FIGHT_TEMPLATE_PATH
