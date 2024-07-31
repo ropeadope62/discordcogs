@@ -442,14 +442,23 @@ class FightingGame:
 
     async def record_result(self, winner, loser, result_type):
         try:
-            await self.bullshido_cog.update_player_stats(winner, win=True, result_type=result_type, opponent_name=loser.display_name)
-            await self.bullshido_cog.update_player_stats(loser, win=False, result_type=result_type, opponent_name=winner.display_name)
-            current_loser_morale = await self.bullshido_cog.config.user(loser).morale()
-            current_winner_morale = await self.bullshido_cog.config.user(winner).morale()
-            new_loser_morale = max(0, current_loser_morale - 20)
-            new_winner_morale = min(100, current_winner_morale + 20)
-            await self.bullshido_cog.config.user(loser).morale.set(new_loser_morale)
-            await self.bullshido_cog.config.user(winner).morale.set(new_winner_morale)
+            if result_type == "DRAW":
+                
+                await self.bullshido_cog.config.user(self.player1).draws.set(
+                    await self.bullshido_cog.config.user(self.player1).draws() + 1
+                )
+                await self.bullshido_cog.config.user(self.player2).draws.set(
+                    await self.bullshido_cog.config.user(self.player2).draws() + 1
+                )
+            else:
+                await self.bullshido_cog.update_player_stats(winner, win=True, result_type=result_type, opponent_name=loser.display_name)
+                await self.bullshido_cog.update_player_stats(loser, win=False, result_type=result_type, opponent_name=winner.display_name)
+                current_loser_morale = await self.bullshido_cog.config.user(loser).morale()
+                current_winner_morale = await self.bullshido_cog.config.user(winner).morale()
+                new_loser_morale = max(0, current_loser_morale - 20)
+                new_winner_morale = min(100, current_winner_morale + 20)
+                await self.bullshido_cog.config.user(loser).morale.set(new_loser_morale)
+                await self.bullshido_cog.config.user(winner).morale.set(new_winner_morale)
         except Exception as e:
             self.bullshido_cog.logger.error(f"An error occurred: {e}")
 

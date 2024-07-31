@@ -34,6 +34,7 @@ class Bullshido(commands.Cog):
             "fighting_style": None,
             "wins": {"UD": 0, "SD": 0, "TKO": 0, "KO": 0},
             "losses": {"UD": 0, "SD": 0, "TKO": 0, "KO": 0},
+            "draws": 0,
             "xp": 0,
             "level": 1,
             "level_points_to_distribute": 0,
