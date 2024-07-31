@@ -206,11 +206,11 @@ class FightingGame:
         player1_stamina_status = self.get_stamina_status(self.player1_stamina)
         player2_stamina_status = self.get_stamina_status(self.player2_stamina)
 
-        if FightingGame.is_game_active(self.channel.id):
-            title = f"Round {round_number} - {self.player1.display_name} vs {self.player2.display_name}"
-        else:
+        if fight_over:
             title = final_result if final_result else f"Fight Concluded - {self.player1.display_name} vs {self.player2.display_name}"
-        
+        else:
+            title = f"Round {round_number} - {self.player1.display_name} vs {self.player2.display_name}"
+            
         embed = discord.Embed(
             title=title,
             color=0xFF0000
@@ -562,7 +562,7 @@ class FightingGame:
         final_message = (
             f"{ko_message} {self.winner.display_name} {ko_victor_message}. {ko_victor_flavor}"
         )
-        await self.update_health_bars(0, final_message, "KO Victory!", final_result=f"KO Victory for {self.winner.display_name}!")  # Update embed with KO result
+        await self.update_health_bars(0, final_message, "KO Victory!", fight_over=True, final_result=f"KO Victory for {self.winner.display_name}!")  # Update embed with KO result
         await self.record_result(self.winner, loser, "KO")
         FightingGame.set_game_active(self.channel.id, False)
         await self.end_fight(self.winner, loser)
@@ -577,7 +577,7 @@ class FightingGame:
             f"{tko_message_flavor} {referee_stop_flavor}, {self.winner.display_name} wins the fight by TKO!\n"
             f"{self.winner.display_name} {tko_victor_message}, {tko_finale}"
         )
-        await self.update_health_bars(0, final_message, "TKO Victory!", final_result=f"TKO Victory for {self.winner.display_name}!")  # Update embed with TKO result
+        await self.update_health_bars(0, final_message, "TKO Victory!", fight_over=True, final_result=f"TKO Victory for {self.winner.display_name}!")  # Update embed with TKO result
         await self.record_result(self.winner, loser, "TKO")
         FightingGame.set_game_active(self.channel.id, False)
         await self.end_fight(self.winner, loser)
@@ -680,7 +680,7 @@ class FightingGame:
                     f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, by {result_description}, {winner.display_name}!"
                 )
 
-            await self.update_health_bars(self.rounds, final_message, "Decision Victory", final_result=f"Decision Victory for {winner.display_name if winner else 'No one'}!")
+            await self.update_health_bars(self.rounds, final_message, "Decision Victory", fight_over=True, final_result=f"Decision Victory for {winner.display_name if winner else 'No one'}!")
             await self.record_result(winner, loser, result_type)
 
             FightingGame.set_game_active(channel_id, False)
