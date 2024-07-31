@@ -219,14 +219,18 @@ class Bullshido(commands.Cog):
             await interaction.response.send_message(f"{user.mention}, you have no points to distribute.", ephemeral=False)
 
     def create_xp_bar(self, current_xp, current_level, next_level_xp):
+        self.logger.debug(f"Creating xp bar for {current_xp} xp, level {current_level}, next level {next_level_xp} xp.")
         if next_level_xp == "Max Level":
             return "Max Level"
 
         previous_level_xp = XP_REQUIREMENTS.get(current_level, 0)
 
         xp_range = next_level_xp - previous_level_xp
+        self.logger.debug(f"XP range: {xp_range}")
         xp_progress = current_xp - previous_level_xp
+        self.logger.debug(f"XP progress: {xp_progress}")
         progress = xp_progress / xp_range if xp_range > 0 else 0
+        self.logger.debug(f"Progress: {progress}")
         progress_bar_length = 30
         progress_bar_filled = int(progress * progress_bar_length)
         progress_bar = "[" + ("=" * progress_bar_filled)
