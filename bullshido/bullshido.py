@@ -839,7 +839,9 @@ class Bullshido(commands.Cog):
         self.logger.info(f"{ctx.author} used the train command.")
         user = ctx.author
         style = await self.config.user(user).fighting_style()
-        
+        if style is None: 
+            await ctx.send(f"{user.mention}, you need to select a fighting style before you can train.")
+            return
         # Check if the command was used in the last 24 hours
         last_train = await self.config.user(user).last_train()
         if last_train:
@@ -865,7 +867,10 @@ class Bullshido(commands.Cog):
         """Focus on your diet to increase your nutrition level."""
         self.logger.info(f"{ctx.author} used the diet command.")
         user = ctx.author
-        
+        style = await self.config.user(user).fighting_style()
+        if style is None: 
+            await ctx.send(f"{user.mention}, you need to select a fighting style before you can diet.")
+            return
         # Check if the command was used in the last 24 hours
         last_diet = await self.config.user(user).last_diet()
         if last_diet:
