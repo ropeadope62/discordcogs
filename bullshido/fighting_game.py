@@ -98,7 +98,7 @@ class FightingGame:
         
         return '\n'.join(lines)
     
-    async def determine_first_turn(attacker_training, defender_training):
+    async def determine_first_turn(self, attacker_training, defender_training):
         # Determine who goes first based on training levels
         total_training = attacker_training + defender_training
         attacker_probability = attacker_training / total_training
