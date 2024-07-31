@@ -219,15 +219,20 @@ class Bullshido(commands.Cog):
             await interaction.response.send_message(f"{user.mention}, you have no points to distribute.", ephemeral=False)
 
     def create_xp_bar(self, current_xp, current_level, next_level_xp):
-        self.logger.debug(f"Creating xp bar for {current_xp} xp, level {current_level}, next level {next_level_xp} xp.")
-        previous_level_xp = XP_REQUIREMENTS.get(current_level)
+        self.logger.debug(f"Creating xp bar for user at level {current_level} with {current_xp} xp.")
+        previous_level_xp = XP_REQUIREMENTS.get(current_level, 0)
+        
+        if next_level_xp is None:
+            self.logger.debug("User is at max level.")
+            xp_range = current_xp - previous_level_xp
+            xp_progress = xp_range
+            progress = 1  
+        else:
+            self.logger.debug(f"User is at level {current_level}. Next level: {next_level_xp}")
+            xp_range = next_level_xp - previous_level_xp
+            xp_progress = current_xp - previous_level_xp
+            progress = xp_progress / xp_range if xp_range > 0 else 0
 
-        xp_range = next_level_xp - previous_level_xp
-        self.logger.debug(f"XP range: {xp_range}")
-        xp_progress = current_xp - previous_level_xp
-        self.logger.debug(f"XP progress: {xp_progress}")
-        progress = xp_progress / xp_range if xp_range > 0 else 0
-        self.logger.debug(f"Progress: {progress}")
         progress_bar_length = 30
         progress_bar_filled = int(progress * progress_bar_length)
         progress_bar = "[" + ("=" * progress_bar_filled)
@@ -1003,8 +1008,9 @@ class Bullshido(commands.Cog):
         wins = await self.config.user(user).wins()
         losses = await self.config.user(user).losses()
         level = await self.config.user(user).level()
-        current_xp = self.config.user(user).xp()
-        next_level_xp = XP_REQUIREMENTS.get(level+1)
+        current_xp = await self.config.user(user).xp()
+        next_level_xp = XP_REQUIREMENTS.get(level + 1, None)
+
         training_level = await self.config.user(user).training_level()
         nutrition_level = await self.config.user(user).nutrition_level()
         health_bonus = await self.config.user(user).health_bonus()
@@ -1024,7 +1030,7 @@ class Bullshido(commands.Cog):
         total_losses = sum(losses.values())
         
         xp_bar = self.create_xp_bar(current_xp, level, next_level_xp)
-        xp_info = f"{current_xp} / {next_level_xp} XP"
+        xp_info = f"{current_xp} / {next_level_xp} XP" if next_level_xp is not None else f"{current_xp} XP (Max Level)"
 
         embed = discord.Embed(title=f"{user.display_name}'s Fight Record", color=0xFF0000)
         embed.add_field(name="Total Wins", value=total_wins, inline=True)
