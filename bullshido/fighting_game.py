@@ -565,11 +565,6 @@ class FightingGame:
         FightingGame.set_game_active(self.channel.id, False)
         await self.end_fight(self.winner, loser)
 
-    async def end_fight(self, winner, loser):
-        self.bullshido_cog.logger.info(f"Ending fight between {winner.display_name} and {loser.display_name}.")
-        await self.bullshido_cog.add_xp(winner, 100, self.channel)
-        await self.bullshido_cog.add_xp(loser, 50, self.channel)
-
 
     async def start_game(self, ctx):
         try:

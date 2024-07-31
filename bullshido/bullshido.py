@@ -269,12 +269,12 @@ class Bullshido(commands.Cog):
 
     async def apply_inactivity_penalties(self):
         self.logger.info("Applying inactivity penalties...")
-        current_time = datetime.utcnow()
-        async with self.config.all_users() as users:
-            for user_id, user_data in users.items():
-                self.logger.info(f"Applying inactivity penalties for user {user_id}")
-                await self.apply_penalty(user_id, user_data, current_time, "train", "training_level")
-                await self.apply_penalty(user_id, user_data, current_time, "diet", "nutrition_level")
+        current_time = datetime.datetime.utcnow()
+        users = await self.config.all_users()
+        for user_id, user_data in users.items():
+            self.logger.info(f"Applying inactivity penalties for user {user_id}")
+            await self.apply_penalty(user_id, user_data, current_time, "train", "training_level")
+            await self.apply_penalty(user_id, user_data, current_time, "diet", "nutrition_level")
 
     async def apply_penalty(self, user_id, user_data, current_time, last_action_key, level_key):
         last_action = user_data.get(f"last_{last_action_key}")
