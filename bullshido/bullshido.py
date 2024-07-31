@@ -1013,6 +1013,7 @@ class Bullshido(commands.Cog):
         
         wins = await self.config.user(user).wins()
         losses = await self.config.user(user).losses()
+        draws = await self.config.user(user).draws()
         level = await self.config.user(user).level()
         current_xp = await self.config.user(user).xp()
         next_level_xp = XP_REQUIREMENTS.get(level + 1, None)
@@ -1049,6 +1050,7 @@ class Bullshido(commands.Cog):
         embed.add_field(name="Losses (SD)", value=losses["SD"], inline=True)
         embed.add_field(name="Losses (TKO)", value=losses["TKO"], inline=True)
         embed.add_field(name="Losses (KO)", value=losses["KO"], inline=True)
+        embed.add_field(name="Draws", value=draws, inline=True)
         embed.add_field(name=f"{user.display_name}'s Current Stats", value="\u200b", inline=False)
         embed.add_field(name="Fighting Style", value=fighting_style, inline=True)
         embed.add_field(name="Level", value=level, inline=True)
