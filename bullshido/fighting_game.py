@@ -300,7 +300,7 @@ class FightingGame:
                 modified_damage = round(modified_damage * modifier)
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
         except Exception as e:
-            self.bullsido_cog.logger.error(f"Error during get_strike_damage: {e}")
+            self.bullshido_cog.logger.error(f"Error during get_strike_damage: {e}")
             self.bullshido_cog.logger.debug(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
 
