@@ -243,7 +243,7 @@ class FightingGame:
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level, damage_bonus):
         training_bonus = math.log10(training_level + 1) * self.training_weight
         diet_bonus = math.log10(diet_level + 1) * self.diet_weight
-        total_damage_bonus = 1 + training_bonus + diet_bonus + (damage_bonus * 0.05)
+        total_damage_bonus = 1 + training_bonus + diet_bonus + (damage_bonus * 0.10)
         adjusted_damage = base_damage * total_damage_bonus
         return round(adjusted_damage)
     
