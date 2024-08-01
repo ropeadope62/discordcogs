@@ -1252,7 +1252,8 @@ INJURY_TREATMENT_COST = {
     "Achilles Rupture": 10500,
     "Hip Fracture": 10400,
     "Cervical Fracture": 5200,
-    "Throat Contusion": 2400
+    "Throat Contusion": 2400,
+    "Fractured Right Knee": 2500
 }
 
 
