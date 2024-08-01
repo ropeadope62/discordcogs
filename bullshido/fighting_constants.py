@@ -360,15 +360,15 @@ STRIKES = {
                 "Han Zhongli's Wine Jug Throw": (6, 8),
                 "Han Zhongli's Strength Tackle": (8, 10),
                 "Lan Caihe's Swaying Waist": (6, 8),
-                "Lan Caihe's Feminine Posture Strike": (5, 7),
+                "Lan Caihe's Feminine Posture Strike": (7, 9),
                 "Lan Caihe's Bamboo Basket Attack": (7, 9),
                 "Zhang Guolao's Donkey Kick": (6, 10),
                 "Zhang Guolao's Donkey Ride Strike": (5, 10),
                 "Zhang Guolao's Swift Double Kick": (9, 10),
                 "Cao Guojiu's Joint Lock": (6, 10),
                 "Cao Guojiu's Deadly Soft Point Attack": (7, 10),
-                "Cao Guojiu's Clever Counter": (6, 8),
-                "Han Xiangzi's Flute Strike": (6, 8),
+                "Cao Guojiu's Clever Counter": (9, 11),
+                "Han Xiangzi's Flute Strike": (9, 11),
                 "Han Xiangzi's Wrist Counter": (7, 9),
 }   
                 
