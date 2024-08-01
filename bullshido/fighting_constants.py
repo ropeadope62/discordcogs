@@ -1935,11 +1935,3 @@ KO_VICTOR_FLAVOR = [
 ]
 
 ACTION_COST = 10
-
-XP_REQUIREMENTS = {
-    1: 100,
-    2: 300,
-    3: 600,
-    4: 1000,
-    5: 1500,
-}
