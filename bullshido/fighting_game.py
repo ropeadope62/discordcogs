@@ -273,7 +273,7 @@ class FightingGame:
 
         return random.random() < critical_chance
 
-    def get_strike_damage(self, style, attacker, defender, body_part):
+    def get_strike_damage(self, style, attacker, defender_data, body_part):
         strike = ""
         damage_range = (0, 0)
         base_damage = 0
@@ -299,19 +299,18 @@ class FightingGame:
                         if injury == critical_injury:
                             critical_result_key = result
                             break
-                    conclude_message = critical_result_key.format(defender=defender.display_name)
+                    conclude_message = critical_result_key.format(defender=defender_data['display_name'])
                     message = random.choice(CRITICAL_MESSAGES)
-
                     if random.random() < self.PERMANENT_INJURY_CHANCE:
                         critical_injury = f"Permanent Injury: {critical_injury}"
-            if body_part in defender.get('permanent_injuries', []):
+            if body_part in defender_data.get('permanent_injuries', []):
                 modified_damage *= 2
             else:
                 modified_damage = round(modified_damage * modifier)
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
         except Exception as e:
             self.bullshido_cog.logger.error(f"Error during get_strike_damage: {e}")
-            self.bullshido_cog.logger.debug(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
+            self.bullshido_cog.logger.debug(f"Attacker: {attacker}, Defender: {defender_data['display_name']}, Style: {style}")
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
 
     async def end_fight(self, winner, loser):
@@ -359,6 +358,9 @@ class FightingGame:
             defender_intimidation = self.player2_data["intimidation_level"] if self.current_turn == self.player1 else self.player1_data["intimidation_level"]
             style = self.player1_data["fighting_style"] if self.current_turn == self.player1 else self.player2_data["fighting_style"]
 
+            defender_data = self.player2_data if self.current_turn == self.player1 else self.player1_data
+
+
             miss_probability = self.calculate_miss_probability(attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation)
             if random.random() < miss_probability:
                 miss_message = f"{attacker.display_name} missed their attack on {defender.display_name}!"
@@ -367,14 +369,14 @@ class FightingGame:
                 return False
 
             bodypart = await self.target_bodypart()
-            strike, damage, critical_message, conclude_message, critical_injury, targeted_bodypart = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender, bodypart)
+            strike, damage, critical_message, conclude_message, critical_injury, targeted_bodypart = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender_data, bodypart)
 
             if not strike:
                 await self.update_health_bars(round_number, "An error occurred during the turn: Failed to determine strike.", None)
                 return True
 
             injury_message = ""
-            if bodypart in defender.get('permanent_injuries', []):
+            if bodypart in defender_data.get('permanent_injuries', []):
                 injury_message = f"{attacker}'s {strike} hits {defender}'s already injured {bodypart}, causing double damage!"
 
             if self.is_grapple_move(strike):
