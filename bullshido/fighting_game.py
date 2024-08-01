@@ -304,6 +304,8 @@ class FightingGame:
 
                     if random.random() < self.PERMANENT_INJURY_CHANCE:
                         critical_injury = f"Permanent Injury: {critical_injury}"
+            if body_part in defender.get('permanent_injuries', []):
+                modified_damage *= 2
             else:
                 modified_damage = round(modified_damage * modifier)
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
@@ -371,12 +373,16 @@ class FightingGame:
                 await self.update_health_bars(round_number, "An error occurred during the turn: Failed to determine strike.", None)
                 return True
 
+            injury_message = ""
+            if bodypart in defender.get('permanent_injuries', []):
+                injury_message = f"{attacker}'s {strike} hits {defender}'s already injured {bodypart}, causing double damage!"
+
             if self.is_grapple_move(strike):
                 action = random.choice(GRAPPLE_ACTIONS)
-                message = f"{critical_message} {attacker.display_name} {action} a {strike} causing {damage} damage! {conclude_message}"
+                message = f"{critical_message} {attacker.display_name} {action} a {strike} causing {damage} damage! {conclude_message}. {injury_message}"
             else:
                 action = random.choice(STRIKE_ACTIONS)
-                message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {targeted_bodypart} causing {damage} damage! {conclude_message}"
+                message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {targeted_bodypart} causing {damage} damage! {conclude_message}. {injury_message}"
 
             if self.current_turn == self.player1:
                 self.player2_health -= damage
