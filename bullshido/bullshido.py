@@ -574,16 +574,14 @@ class Bullshido(commands.Cog):
             await ctx.send("The fight ended in a draw. The bet is returned to both players.")
             await bank.deposit_credits(challenger, bet)
             await bank.deposit_credits(opponent, bet)
-        elif winner == challenger:
-            await bank.deposit_credits(challenger, pot)
-            await ctx.send(f"{challenger.mention} wins the fight and takes the pot of {pot} {currency}!")
         else:
             loser = opponent if winner == challenger else challenger
-            await bank.deposit_credits(opponent, pot)
-            await ctx.send(f"{opponent.mention} wins the fight and takes the pot of {pot} {currency}!")
-        
-            await self.config.user(winner).prize_money_won.set(await self.config.user(winner).prize_money_won() + (pot//2))
-            await self.config.user(loser).prize_money_lost.set(await self.config.user(loser).prize_money_lost() + (pot//2))
+            await bank.deposit_credits(winner, pot)
+            await ctx.send(f"{winner.mention} wins the fight and takes the pot of {pot} {currency}!")
+
+            # Update prize money won and lost
+            await self.config.user(winner).prize_money_won.set(await self.config.user(winner).prize_money_won() + pot)
+            await self.config.user(loser).prize_money_lost.set(await self.config.user(loser).prize_money_lost() + bet)
             
     @bullshido_group.command(name="hype", description="Hype the fight between two opponents.")
     async def hype_fight(self, ctx, fighter1: discord.Member, fighter2: discord.Member, wager: int = 0, challenge: bool = False):
