@@ -273,7 +273,7 @@ class FightingGame:
 
         return random.random() < critical_chance
 
-    def get_strike_damage(self, style, attacker, defender_data, body_part):
+    def get_strike_damage(self, style, attacker, defender, defender_data, body_part):
         strike = ""
         damage_range = (0, 0)
         base_damage = 0
@@ -299,7 +299,7 @@ class FightingGame:
                         if injury == critical_injury:
                             critical_result_key = result
                             break
-                    conclude_message = critical_result_key.format(defender=defender_data['display_name'])
+                    conclude_message = critical_result_key.format(defender=defender.display_name)
                     message = random.choice(CRITICAL_MESSAGES)
                     if random.random() < self.PERMANENT_INJURY_CHANCE:
                         critical_injury = f"Permanent Injury: {critical_injury}"
@@ -310,7 +310,7 @@ class FightingGame:
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
         except Exception as e:
             self.bullshido_cog.logger.error(f"Error during get_strike_damage: {e}")
-            self.bullshido_cog.logger.debug(f"Attacker: {attacker}, Defender: {defender_data['display_name']}, Style: {style}")
+            self.bullshido_cog.logger.debug(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
 
     async def end_fight(self, winner, loser):
