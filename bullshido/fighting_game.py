@@ -314,9 +314,10 @@ class FightingGame:
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
 
     async def end_fight(self, winner, loser):
-        self.bullshido_cog.logger.info(f"Ending fight between {winner} and {loser}.")
+        self.bullshido_cog.logger.info(f"Starting end_fight: Ending fight between {winner} and {loser}.")
         await self.bullshido_cog.add_xp(winner, 100, self.channel)
         await self.bullshido_cog.add_xp(loser, 50, self.channel)
+        self.bullshido_cog.logger.info(f"Completing end_fight: Ending fight between {winner} and {loser}.")
 
     async def target_bodypart(self):
         bodypart = random.choice(BODY_PARTS)
