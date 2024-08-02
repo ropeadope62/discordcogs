@@ -79,21 +79,27 @@ class FightingGame:
 
     @staticmethod
     def split_text_into_lines(text, max_length):
+        # Split the text into lines based on the maximum length
         words = text.split(' ')
         lines = []
         current_line = ''
         
         for word in words:
             if len(current_line) + len(word) + 1 <= max_length:
+                # If adding the word to the current line doesn't exceed the maximum length,
+                # add it to the current line
                 if current_line:
                     current_line += ' ' + word
                 else:
                     current_line = word
             else:
+                # If adding the word to the current line exceeds the maximum length,
+                # start a new line with the word
                 lines.append(current_line)
                 current_line = word
         
         if current_line:
+            # Add the remaining words in the current line to the lines list
             lines.append(current_line)
         
         return '\n'.join(lines)
@@ -107,86 +113,121 @@ class FightingGame:
         return random.choices([True, False], [attacker_probability, defender_probability])[0]
     
     async def generate_fight_image(self):
+        # Set the path to the fight template image
         template_path = self.FIGHT_TEMPLATE_PATH
+        
+        # Open the fight template image
         background = Image.open(template_path)
+        
+        # Set the path to the font file
         font_path = '/home/slurms/ScrapGPT/scrapgpt_data/cogs/CogManager/cogs/bullshido/osaka.ttf'
+        
+        # Load the font
         font = ImageFont.truetype(font_path, size=20)
         header_font = ImageFont.truetype(font_path, size=34)
 
+        # Read the avatars of player 1 and player 2
         player1_avatar_bytes = await self.player1.avatar.read()
         player2_avatar_bytes = await self.player2.avatar.read()
+        
+        # Open the avatars as RGBA images
         player1_avatar = Image.open(BytesIO(player1_avatar_bytes)).convert("RGBA")
         player2_avatar = Image.open(BytesIO(player2_avatar_bytes)).convert("RGBA")
+        
+        # Calculate the total wins and losses for player 1 and player 2
         player1_total_wins = sum(self.player1_data['wins'].values())
         player1_total_losses = sum(self.player1_data['losses'].values())
         player2_total_wins = sum(self.player2_data['wins'].values())
         player2_total_losses = sum(self.player2_data['losses'].values())
 
+        # Resize the avatars to 150x150 pixels
         player1_avatar = player1_avatar.resize((150, 150))
         player2_avatar = player2_avatar.resize((150, 150))
 
+        # Rotate the avatars by 0 degrees
         player1_avatar = player1_avatar.rotate(-0, expand=True)
         player2_avatar = player2_avatar.rotate(-0, expand=True)
 
+        # Paste the avatars onto the fight template image
         background.paste(player1_avatar, (90, 75), player1_avatar)
         background.paste(player2_avatar, (365, 75), player2_avatar)
 
+        # Create a drawing object
         draw = ImageDraw.Draw(background)
 
+        # Split the player names into multiple lines if necessary
         player1_name = FightingGame.split_text_into_lines(f"{self.player1.display_name}", 18)
+        player2_name = FightingGame.split_text_into_lines(f"{self.player2.display_name}", 18)
+        
+        # Create the player details strings
         player1_details = (
             f"Style: {self.player1_data['fighting_style']}\n"
             f"Record: {player1_total_wins} Wins \n {player1_total_losses} Losses"
         )
-        player2_name = FightingGame.split_text_into_lines(f"{self.player2.display_name}", 18)
         player2_details = (
             f"Style: {self.player2_data['fighting_style']}\n"
             f"Record: {player2_total_wins} Wins \n {player2_total_losses} Losses"
         )
 
+        # Set the positions for drawing the player names and details
         player1_name_text_position = (80, 53)
         player2_name_text_position = (355, 53)
         player1_text_position = (80, 175)
         player2_text_position = (355, 175)
 
+        # Function to draw text with a shadow
         def draw_text_with_shadow(draw, position, text, font, shadow_color, text_color, offset=(2, 2)):
             x, y = position
             draw.text((x + offset[0], y + offset[1]), text, font=font, fill=shadow_color)
             draw.text(position, text, font=font, fill=text_color)
-            
 
+        # Set the colors for the shadow and text
         shadow_color = (0, 0, 0)
         text_color = (249, 4, 43)
 
+        # Draw the player names and details with shadows
         draw_text_with_shadow(draw, player1_name_text_position, player1_name, font, shadow_color, text_color)
         draw_text_with_shadow(draw, player2_name_text_position, player2_name, font, shadow_color, text_color)
         draw_text_with_shadow(draw, player1_text_position, player1_details, font, shadow_color, text_color)
         draw_text_with_shadow(draw, player2_text_position, player2_details, font, shadow_color, text_color)
 
+        # Set the positions for drawing the intro message and subtitle
+        intro_text_position = (80, 6)
+        intro_subtitle_position = (20, 40)
+        
         intro_message = (
             "Introducing the fighters!\n"
         )
         intro_subtitle = ("")
 
-        intro_text_position = (80, 6)
-        intro_subtitle_position = (20, 40)
+        # Draw the intro message and subtitle with shadows
         draw_text_with_shadow(draw, intro_text_position, intro_message, header_font, shadow_color, text_color)
         draw_text_with_shadow(draw, intro_subtitle_position, intro_subtitle, header_font, shadow_color, text_color)
 
+        # Set the path for the final image
         final_image_path = '/home/slurms/ScrapGPT/ScrapGPT/logs/fight_image.png'
+        
+        # Save the final image
         background.save(final_image_path)
 
+        # Return the path to the final image
         return final_image_path
     
     def create_health_bar(self, current_health, base_health):
+        # Calculate the progress of the health bar
         progress = current_health / base_health
         progress_bar_length = 30
         progress_bar_filled = int(progress * progress_bar_length)
+        
+        # Create the progress bar string
         progress_bar = "[" + ("=" * progress_bar_filled)
         progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
+        
+        # Add a marker to indicate the current health level
         if progress_bar_filled < progress_bar_length:
             marker = "🔴"
             progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
+        
         return progress_bar
 
     def get_stamina_status(self, stamina):
@@ -200,36 +241,41 @@ class FightingGame:
             return "Exhausted"
 
     async def update_health_bars(self, round_number, latest_message, round_result, fight_over=False, final_result=None):
-
+        # Create health bars for player 1 and player 2
         player1_health_bar = self.create_health_bar(self.player1_health, self.base_health)
         player2_health_bar = self.create_health_bar(self.player2_health, self.base_health)
+
+        # Get stamina status for player 1 and player 2
         player1_stamina_status = self.get_stamina_status(self.player1_stamina)
         player2_stamina_status = self.get_stamina_status(self.player2_stamina)
 
         if fight_over:
+            # Set the title to the final result if fight is over
             title = final_result if final_result else f"Fight Concluded - {self.player1.display_name} vs {self.player2.display_name}"
         else:
+            # Set the title to the round number and player names
             title = f"Round {round_number} - {self.player1.display_name} vs {self.player2.display_name}"
             
+        # Create a Discord embed with the title and color
         embed = discord.Embed(
             title=title,
             color=0xFF0000
         )
 
-        # Add player 1 information
+        # Add player 1 information to the embed
         embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health}HP", inline=True)
 
-        # Add player 1 stamina and injuries
+        # Add player 1 stamina and injuries to the embed
         embed.add_field(name=f"{self.player1.display_name}'s Stamina", value=player1_stamina_status, inline=False)
         if self.player1_critical_injuries:
             embed.add_field(name=f"{self.player1.display_name} Injuries", value=", ".join(self.player1_critical_injuries), inline=False)
         if self.player1_data.get("permanent_injuries"):
             embed.add_field(name=f"{self.player1.display_name} Permanent Injuries", value=", ".join(self.player1_data["permanent_injuries"]), inline=False)
 
-        # Add player 2 information
+        # Add player 2 information to the embed
         embed.add_field(name=f"{self.player2.display_name}'s Health", value=f"{player2_health_bar} {self.player2_health}HP", inline=True)
 
-        # Add player 2 stamina and injuries
+        # Add player 2 stamina and injuries to the embed
         embed.add_field(name=f"{self.player2.display_name}'s Stamina", value=player2_stamina_status, inline=False)
         if self.player2_critical_injuries:
             embed.add_field(name=f"{self.player2.display_name} Injuries", value=", ".join(self.player2_critical_injuries), inline=False)
@@ -237,22 +283,35 @@ class FightingGame:
             embed.add_field(name=f"{self.player2.display_name} Permanent Injuries", value=", ".join(self.player2_data["permanent_injuries"]), inline=False)
 
         if round_result and not fight_over:
+            # Add round result to the embed if round is not over
             embed.add_field(name="Round Result", value=round_result, inline=False)
         embed.add_field(name="Latest Strike", value=latest_message, inline=False)
 
+        # Set the thumbnail image for the embed
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
 
         if self.embed_message:
+            # If there is an existing embed message, edit it with the updated embed
             await self.embed_message.edit(embed=embed)
         else:
+            # Otherwise, send a new message with the embed
             self.embed_message = await self.channel.send(embed=embed)
 
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level, damage_bonus):
+        # Calculate the bonus from training level
         training_bonus = math.log10(training_level + 1) * self.training_weight
+
+        # Calculate the bonus from diet level
         diet_bonus = math.log10(diet_level + 1) * self.diet_weight
+
+        # Calculate the total damage bonus
         total_damage_bonus = 1 + training_bonus + diet_bonus + (damage_bonus * 0.10)
+
+        # Calculate the adjusted damage
         adjusted_damage = base_damage * total_damage_bonus
+
+        # Round the adjusted damage to the nearest integer
         return round(adjusted_damage)
     
     def is_critical_hit(self, attacker_data, defender_data):
@@ -274,6 +333,7 @@ class FightingGame:
         return random.random() < critical_chance
 
     def get_strike_damage(self, style, attacker, defender, defender_data, body_part):
+        # Initialize variables
         strike = ""
         damage_range = (0, 0)
         base_damage = 0
@@ -284,73 +344,127 @@ class FightingGame:
         critical_result_key = ""
 
         try:
+            # Select a random strike and corresponding damage range from the style's strikes dictionary
             strike, damage_range = random.choice(list(STRIKES[style].items()))
-            base_damage = random.randint(*damage_range)
-            damage_bonus = attacker.get('damage_bonus', 0)  # Get attacker's damage bonus from user config
-            modified_damage = self.calculate_adjusted_damage(base_damage, attacker['training_level'], attacker['nutrition_level'], damage_bonus)
-            modifier = random.uniform(0.8, 1.3)
 
+            # Generate base damage within the specified range
+            base_damage = random.randint(*damage_range)
+
+            # Get attacker's damage bonus from user config
+            damage_bonus = attacker.get('damage_bonus', 0)
+
+            # Calculate adjusted damage based on attacker's training level, nutrition level, and damage bonus
+            modified_damage = self.calculate_adjusted_damage(base_damage, attacker['training_level'], attacker['nutrition_level'], damage_bonus)
+
+            # Apply a random modifier to the modified damage
+            modifier = random.uniform(0.8, 1.3)
+            modified_damage = round(modified_damage * modifier)
+
+            # Check if the strike is a critical hit
             is_critical_hit = random.random() < self.CRITICAL_CHANCE
             if is_critical_hit:
-                modified_damage = base_damage * 2
+                # Double the modified damage for critical hits
+                modified_damage *= 2
+
+                # Check if the body part has possible critical injuries
                 if possible_injuries := BODY_PART_INJURIES.get(body_part, []):
+                    # Select a random critical injury
                     critical_injury = random.choice(possible_injuries)
+
+                    # Find the corresponding critical result key for the injury
                     for result, injury in CRITICAL_RESULTS.items():
                         if injury == critical_injury:
                             critical_result_key = result
                             break
+
+                    # Generate the conclude message for the critical hit
                     conclude_message = critical_result_key.format(defender=defender.display_name)
+
+                    # Select a random message for the critical hit
                     message = random.choice(CRITICAL_MESSAGES)
+
+                    # Check if there is a chance for a permanent injury
                     if random.random() < self.PERMANENT_INJURY_CHANCE:
                         critical_injury = f"Permanent Injury: {critical_injury}"
+
+            # Check if the defender has a permanent injury on the body part
             if body_part in defender_data.get('permanent_injuries', []):
+                # Double the modified damage if the defender has a permanent injury on the body part
                 modified_damage *= 2
-            else:
-                modified_damage = round(modified_damage * modifier)
+
+            # Return the strike, modified damage, messages, and critical injury
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
+
         except Exception as e:
+            # Log any errors that occur during the calculation
             self.bullshido_cog.logger.error(f"Error during get_strike_damage: {e}")
             self.bullshido_cog.logger.debug(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
+
+            # Return the default values in case of an error
             return strike, modified_damage, message, conclude_message, critical_injury, body_part
 
     async def end_fight(self, winner, loser):
+        # Log the start of the end_fight method
         self.bullshido_cog.logger.info(f"Starting end_fight: Ending fight between {winner} and {loser}.")
+        
+        # Add XP to the winner and loser
         await self.bullshido_cog.add_xp(winner, 100, self.channel)
         await self.bullshido_cog.add_xp(loser, 50, self.channel)
+        
+        # Log the completion of the end_fight method
         self.bullshido_cog.logger.info(f"Completing end_fight: Ending fight between {winner} and {loser}.")
 
     async def target_bodypart(self):
+        # Select a random body part from the list of body parts
         bodypart = random.choice(BODY_PARTS)
         return bodypart
 
     def is_grapple_move(self, strike):
+        # Check if the strike contains any grapple keywords
         return any(keyword.lower() in strike.lower() for keyword in GRAPPLE_KEYWORDS)
 
     def calculate_miss_probability(self, attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation):
+        # Set the base miss probability
         miss_probability = self.BASE_MISS_PROBABILITY
 
+        # Adjust miss probability based on attacker and defender stamina
         if attacker_stamina < 50:
             miss_probability += 0.15
 
         if defender_stamina > 50:
             miss_probability += 0.15
 
+        # Adjust miss probability based on attacker and defender training levels
         miss_probability -= 0.01 * math.log10(attacker_training + 1)
         miss_probability += 0.01 * math.log10(defender_training + 1)
         
+        # Adjust miss probability based on the difference in attacker and defender intimidation levels
         intimidation_factor = (defender_intimidation - attacker_intimidation) * 0.007
         miss_probability += intimidation_factor
 
+        # Clamp miss probability to a reasonable range
         return min(max(miss_probability, 0.05), 0.30)
 
     def regenerate_stamina(self, current_stamina, training_level, diet_level):
+        # Calculate the regeneration rate based on training level and diet level
         regeneration_rate = (training_level + diet_level) / 20
-        return min(current_stamina + regeneration_rate, self.base_health)
+        
+        # Increase the current stamina by the regeneration rate
+        new_stamina = current_stamina + regeneration_rate
+        
+        # Ensure that the new stamina does not exceed the base health
+        new_stamina = min(new_stamina, self.base_health)
+        
+        # Return the new stamina value
+        return new_stamina
 
     async def play_turn(self, round_message, round_number):
         try:
+            # Determine the attacker and defender based on the current turn
             attacker = self.player1 if self.current_turn == self.player1 else self.player2
             defender = self.player2 if self.current_turn == self.player1 else self.player1
+
+            # Get the stamina and training levels of the attacker and defender
             attacker_stamina = self.player1_stamina if self.current_turn == self.player1 else self.player2_stamina
             defender_stamina = self.player2_stamina if self.current_turn == self.player1 else self.player1_stamina
             attacker_training = self.player1_data["training_level"] if self.current_turn == self.player1 else self.player2_data["training_level"]
@@ -359,59 +473,77 @@ class FightingGame:
             defender_intimidation = self.player2_data["intimidation_level"] if self.current_turn == self.player1 else self.player1_data["intimidation_level"]
             style = self.player1_data["fighting_style"] if self.current_turn == self.player1 else self.player2_data["fighting_style"]
 
+            # Get the defender's data based on the current turn
             defender_data = self.player2_data if self.current_turn == self.player1 else self.player1_data
 
-
+            # Calculate the miss probability
             miss_probability = self.calculate_miss_probability(attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation)
             if random.random() < miss_probability:
+                # Attacker missed the attack
                 miss_message = f"{attacker.display_name} missed their attack on {defender.display_name}!"
                 await self.update_health_bars(round_number, miss_message, None)
                 self.current_turn = defender
                 return False
 
+            # Determine the body part to target
             bodypart = await self.target_bodypart()
+
+            # Get the strike damage and other related information
             strike, damage, critical_message, conclude_message, critical_injury, targeted_bodypart = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender, defender_data, bodypart)
 
             if not strike:
+                # An error occurred during the turn
                 await self.update_health_bars(round_number, "An error occurred during the turn: Failed to determine strike.", None)
                 return True
 
             injury_message = ""
             if bodypart in defender_data.get('permanent_injuries', []):
+                # Attacker's strike hits a previously injured body part, causing double damage
                 injury_message = f"{attacker}'s {strike} hits {defender}'s already injured {bodypart}, causing double damage!"
 
             if self.is_grapple_move(strike):
+                # Attacker performs a grapple move
                 action = random.choice(GRAPPLE_ACTIONS)
                 message = f"{critical_message} {attacker.display_name} {action} a {strike} causing {damage} damage! {conclude_message}. {injury_message}"
             else:
+                # Attacker performs a strike move
                 action = random.choice(STRIKE_ACTIONS)
                 message = f"{critical_message} {attacker.display_name} {action} a {strike} into {defender.display_name}'s {targeted_bodypart} causing {damage} damage! {conclude_message}. {injury_message}"
 
             if self.current_turn == self.player1:
+                # Update player 2's health and player 1's stamina
                 self.player2_health -= damage
                 self.player1_stamina -= self.BASE_STAMINA_COST
                 self.current_turn = self.player2
                 if critical_injury:
+                    # Add critical injury to player 2 if applicable
                     self.player2_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
+                        # Add permanent injury to player 2 if applicable
                         permanent_injury = critical_injury.split(": ")[1]
                         await self.add_permanent_injury(defender, permanent_injury, targeted_bodypart)
             else:
+                # Update player 1's health and player 2's stamina
                 self.player1_health -= damage
                 self.player2_stamina -= self.BASE_STAMINA_COST
                 self.current_turn = self.player1
                 if critical_injury:
+                    # Add critical injury to player 1 if applicable
                     self.player1_critical_injuries.append(critical_injury)
                     if "Permanent Injury" in critical_injury:
+                        # Add permanent injury to player 1 if applicable
                         permanent_injury = critical_injury.split(": ")[1]
                         await self.add_permanent_injury(defender, permanent_injury, targeted_bodypart)
 
+            # Sleep for a random duration to simulate the turn
             sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)
             await asyncio.sleep(sleep_duration)
 
             if "Permanent Injury" in critical_injury:
+                # Display the permanent injury message if applicable
                 message += f"\n**Permanent Injury:** {critical_injury.split(': ')[1]}"
 
+            # Update the health bars with the turn message
             await self.update_health_bars(round_number, message, None)
 
             # Check for KO
@@ -432,16 +564,22 @@ class FightingGame:
 
             return False
         except Exception as e:
+            # Handle any errors that occur during the turn
             self.bullshido_cog.logger.error(f"Error during play_turn: {e}")
             self.bullshido_cog.logger.error(f"Attacker: {attacker.display_name}, Defender: {defender.display_name}")
             await self.update_health_bars(round_number, f"An error occurred during the turn: {e}", None)
             return True
         
     def calculate_tko_probability(self, attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation):
+        # Base TKO chance
         base_tko_chance = self.BASE_TKO_PROBABILITY
+
+        # Calculate factors based on stamina, training, and intimidation levels
         stamina_factor = (attacker_stamina - defender_stamina) * 0.01
         training_factor = (attacker_training - defender_training) * 0.01
         intimidation_factor = (attacker_intimidation - defender_intimidation) * 0.01
+
+        # Calculate the TKO probability
         tko_probability = base_tko_chance + stamina_factor + training_factor + intimidation_factor
 
         # Probability clamped between 0 and 0.75 (75%)
@@ -451,8 +589,12 @@ class FightingGame:
     async def add_permanent_injury(self, user: discord.Member, injury, body_part):
         """ Add a permanent injury to a user. """
         user_data = self.user_config[str(user.id)]
+        
+        # Check if the user has any permanent injuries, if not, create a list
         if "permanent_injuries" not in user_data:
             user_data["permanent_injuries"] = []
+            
+        # Add the permanent injury to the user's data
         user_data["permanent_injuries"].append(f"{injury}")
         await self.bullshido_cog.config.user(user).permanent_injuries.set(user_data["permanent_injuries"])
 
@@ -460,7 +602,7 @@ class FightingGame:
     async def record_result(self, winner, loser, result_type):
         try:
             if result_type == "DRAW":
-                
+                # Increment the number of draws for both players
                 await self.bullshido_cog.config.user(self.player1).draws.set(
                     await self.bullshido_cog.config.user(self.player1).draws() + 1
                 )
@@ -468,8 +610,11 @@ class FightingGame:
                     await self.bullshido_cog.config.user(self.player2).draws() + 1
                 )
             else:
+                # Update player stats for the winner and loser
                 await self.bullshido_cog.update_player_stats(winner, win=True, result_type=result_type, opponent_name=loser.display_name)
                 await self.bullshido_cog.update_player_stats(loser, win=False, result_type=result_type, opponent_name=winner.display_name)
+                
+                # Adjust morale for the winner and loser
                 current_loser_morale = await self.bullshido_cog.config.user(loser).morale()
                 current_winner_morale = await self.bullshido_cog.config.user(winner).morale()
                 new_loser_morale = max(0, current_loser_morale - 20)
@@ -477,28 +622,36 @@ class FightingGame:
                 await self.bullshido_cog.config.user(loser).morale.set(new_loser_morale)
                 await self.bullshido_cog.config.user(winner).morale.set(new_winner_morale)
         except Exception as e:
+            # Handle any errors that occur during the recording of the result
             self.bullshido_cog.logger.error(f"An error occurred: {e}")
 
     async def play_round(self, round_number, ctx):
+        # Initialize variables
         strike_count = 0
         player1_health_start = self.player1_health
         player2_health_start = self.player2_health
 
+        # Log round information
         self.bullshido_cog.logger.info(f"Starting Round {round_number}")
         self.bullshido_cog.logger.info(f"Player1 Health: {self.player1_health}, Player2 Health: {self.player2_health}")
 
+        # Loop through strikes until maximum strikes per round or one player's health reaches 0
         while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
             try:
+                # Play a turn
                 ko_or_tko_occurred = await self.play_turn(self.embed_message, round_number)
                 if ko_or_tko_occurred:
                     return True
 
+                # Increment strike count and wait for a random duration
                 strike_count += 1
                 await asyncio.sleep(random.uniform(3, 4))
             except Exception as e:
+                # Handle any errors that occur during the turn
                 self.bullshido_cog.logger.error(f"Error during play_turn: {e}")
                 raise e
 
+        # Calculate damage and round result
         player1_health_end = self.player1_health
         player2_health_end = self.player2_health
 
@@ -510,6 +663,8 @@ class FightingGame:
 
         self.bullshido_cog.logger.info("Evaluating round winner...")
 
+        # Round result is determined based on the damage dealt by each player and based on a 10-point must system
+        # Meaning the winner of the round gets 10 points, the loser gets 8 or 9 points, and in case of a draw, both get 9 points
         if damage_player1 > damage_player2:
             if damage_player1 - damage_player2 > 20:
                 round_result = random.choice(ROUND_RESULTS_WIN).format(winner=self.player1.display_name)
@@ -540,6 +695,7 @@ class FightingGame:
             self.bullshido_cog.logger.warning("Round winner not determined correctly. Setting default value.")
             round_result = "No clear winner"
 
+        # Update health bars and display round result
         await self.update_health_bars(round_number, "Round Ended", round_result)
 
         # Check for KO
@@ -559,34 +715,58 @@ class FightingGame:
             return False
 
     async def declare_winner_by_ko(self, ctx):
+        # Determine the winner and loser if one players health reaches 0
         if self.player1_health <= 0:
             self.winner = self.player2
             loser = self.player1
         else:
             self.winner = self.player1
             loser = self.player2
+
+        # Generate KO message and flavor text
         ko_message = random.choice(KO_MESSAGES).format(loser=loser.display_name)
         ko_victor_message = random.choice(KO_VICTOR_MESSAGE)
         ko_victor_flavor = random.choice(KO_VICTOR_FLAVOR)
+
+        # Create the final message to display
         final_message = (
             f"{ko_message} {self.winner.display_name} {ko_victor_message}. {ko_victor_flavor}"
         )
-        await self.update_health_bars(0, final_message, "KO Victory!", fight_over=True, final_result=f"KO Victory for {self.winner.display_name}!")  # Update embed with KO result
+
+        # Update health bars and display KO result
+        await self.update_health_bars(0, final_message, "KO Victory!", fight_over=True, final_result=f"KO Victory for {self.winner.display_name}!")
+
+        # Record the result and end the fight
         await self.record_result(self.winner, loser, "KO")
         FightingGame.set_game_active(self.channel.id, False)
         await self.end_fight(self.winner, loser)
 
     async def declare_winner_by_tko(self, ctx, loser):
+        # Determine the winner based on the loser
         self.winner = self.player1 if loser == self.player2 else self.player2
+
+        # Generate TKO message flavor
         tko_message_flavor = random.choice(TKO_MESSAGES).format(loser=loser.display_name)
+
+        # Generate referee stop flavor
         referee_stop_flavor = random.choice(REFEREE_STOPS)
+
+        # Generate TKO victor message
         tko_victor_message = random.choice(TKO_VICTOR_MESSAGE)
+
+        # Generate TKO message finale
         tko_finale = random.choice(TKO_MESSAGE_FINALES)
+
+        # Create the final message to display
         final_message = (
             f"{tko_message_flavor} {referee_stop_flavor}, {self.winner.display_name} wins the fight by TKO!\n"
             f"{self.winner.display_name} {tko_victor_message}, {tko_finale}"
         )
-        await self.update_health_bars(0, final_message, "TKO Victory!", fight_over=True, final_result=f"TKO Victory for {self.winner.display_name}!")  # Update embed with TKO result
+
+        # Update health bars and display TKO result
+        await self.update_health_bars(0, final_message, "TKO Victory!", fight_over=True, final_result=f"TKO Victory for {self.winner.display_name}!")
+
+        # Record the result and end the fight
         await self.record_result(self.winner, loser, "TKO")
         FightingGame.set_game_active(self.channel.id, False)
         await self.end_fight(self.winner, loser)
@@ -594,12 +774,13 @@ class FightingGame:
 
     async def start_game(self, ctx):
         try:
+            # Check if a game is already in progress
             channel_id = self.channel.id
-
             if FightingGame.is_game_active(channel_id):
                 await self.channel.send("A game is already in progress in this channel.")
                 return
 
+            # Get configuration values from guild settings
             guild = self.channel.guild
             self.rounds = await self.bullshido_cog.config.guild(guild).rounds()
             self.max_strikes_per_round = await self.bullshido_cog.config.guild(guild).max_strikes_per_round()
@@ -611,11 +792,12 @@ class FightingGame:
             self.BASE_STAMINA_COST = await self.bullshido_cog.config.guild(guild).base_stamina_cost()
             self.CRITICAL_CHANCE = await self.bullshido_cog.config.guild(guild).critical_chance()
             self.PERMANENT_INJURY_CHANCE = await self.bullshido_cog.config.guild(guild).permanent_injury_chance()
-            
+
+            # Get player data from user configuration
             player1_data = await self.bullshido_cog.config.user(self.player1).all()
             player2_data = await self.bullshido_cog.config.user(self.player2).all()
 
-            # Get the bonus values from the user config for each player, default to 0 if not present
+            # Get bonus values for each player, default to 0 if not present
             player1_health_bonus = player1_data.get("health_bonus", 0)
             player1_stamina_bonus = player1_data.get("stamina_bonus", 0)
             player1_damage_bonus = player1_data.get("damage_bonus", 0)
@@ -634,14 +816,18 @@ class FightingGame:
             self.player1_damage_bonus = player1_damage_bonus
             self.player2_damage_bonus = player2_damage_bonus
 
+            # Set game as active
             FightingGame.set_game_active(channel_id, True)
+
+            # Generate fight image and narrative
             fight_image_path = await self.generate_fight_image()
             user_config = await self.bullshido_cog.config.all_users()
-            if self.challenge: 
+            if self.challenge:
                 narrative = generate_hype_challenge(self.user_config, str(self.player1.id), str(self.player2.id), self.player1.display_name, self.player2.display_name, self.wager)
-            else: 
+            else:
                 narrative = generate_hype(self.user_config, str(self.player1.id), str(self.player2.id), self.player1.display_name, self.player2.display_name)
-            
+
+            # Create and send embed message
             embed = discord.Embed(
                 title=f"{self.player1.display_name} vs {self.player2.display_name}",
                 description=f"{narrative}",
@@ -649,18 +835,20 @@ class FightingGame:
             )
             file = discord.File(fight_image_path, filename="fight_image.png")
             embed.set_image(url="attachment://fight_image.png")
-
             self.embed_message = await self.channel.send(file=file, embed=embed)
             await asyncio.sleep(15)
 
+            # Update health bars and display fight start message
             await self.update_health_bars(0, "The fight is about to begin!", "Ready? FIGHT!")
 
+            # Play rounds
             for round_number in range(1, self.rounds + 1):
                 if not FightingGame.is_game_active(channel_id):
                     break
                 if await self.play_round(round_number, ctx):
                     return  # Exit if KO or TKO occurred
 
+            # Determine winner and loser
             winner, loser = None, None
             result_type = "DRAW"
             final_message = "The fight is over! The fight is declared a draw!"
@@ -681,6 +869,7 @@ class FightingGame:
                     f"After {self.rounds} rounds, the fight is declared a draw!\n"
                 )
 
+            # Generate final message based on result
             if winner and loser:
                 result_description = FIGHT_RESULT_LONG[result_type]
                 final_message = (
@@ -689,9 +878,13 @@ class FightingGame:
                     f"The judges scored the fight {self.player1_score if winner == self.player1 else self.player2_score} - {self.player1_score if winner == self.player2 else self.player2_score} for the winner, by {result_description}, {winner.display_name}!"
                 )
 
+            # Update health bars and display final result
             await self.update_health_bars(self.rounds, final_message, "Decision Victory", fight_over=True, final_result=f"Decision Victory for {winner.display_name if winner else 'No one'}!")
+
+            # Record the result
             await self.record_result(winner, loser, result_type)
 
+            # Set game as inactive and end the fight
             FightingGame.set_game_active(channel_id, False)
             await self.end_fight(winner, loser)
 
