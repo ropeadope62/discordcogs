@@ -330,10 +330,10 @@ class FightingGame:
         miss_probability = self.BASE_MISS_PROBABILITY
 
         if attacker_stamina < 50:
-            miss_probability += 0.05
+            miss_probability += 0.15
 
         if defender_stamina > 50:
-            miss_probability += 0.05
+            miss_probability += 0.15
 
         miss_probability -= 0.01 * math.log10(attacker_training + 1)
         miss_probability += 0.01 * math.log10(defender_training + 1)
@@ -341,7 +341,7 @@ class FightingGame:
         intimidation_factor = (defender_intimidation - attacker_intimidation) * 0.01
         miss_probability += intimidation_factor
 
-        return min(max(miss_probability, 0.05), 0.20)
+        return min(max(miss_probability, 0.05), 0.30)
 
     def regenerate_stamina(self, current_stamina, training_level, diet_level):
         regeneration_rate = (training_level + diet_level) / 20
