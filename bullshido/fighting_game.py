@@ -338,7 +338,7 @@ class FightingGame:
         miss_probability -= 0.01 * math.log10(attacker_training + 1)
         miss_probability += 0.01 * math.log10(defender_training + 1)
         
-        intimidation_factor = (defender_intimidation - attacker_intimidation) * 0.01
+        intimidation_factor = (defender_intimidation - attacker_intimidation) * 0.007
         miss_probability += intimidation_factor
 
         return min(max(miss_probability, 0.05), 0.30)

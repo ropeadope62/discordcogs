@@ -296,7 +296,9 @@ class Bullshido(commands.Cog):
         user_data = await self.config.user(user).all()
         ko_wins = user_data["wins"]["KO"]
         tko_wins = user_data["wins"]["TKO"]
-        intimidation_level = ko_wins + tko_wins
+        ko_losses = user_data["losses"]["KO"]
+        tko_losses = user_data["losses"]["TKO"]
+        intimidation_level = ko_wins + tko_wins - ko_losses - tko_losses
         self.logger.info(f"Intimidation level for {user} is {intimidation_level}")
         await self.config.user(user).intimidation_level.set(intimidation_level)
 
