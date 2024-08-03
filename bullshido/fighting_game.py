@@ -259,6 +259,7 @@ class FightingGame:
         # Re-use the existing embed
         embed = self.embed_message.embeds[0]
         embed.title = title
+        embed.description = ""
         embed.clear_fields()
 
         # Add player 1 information to the embed
