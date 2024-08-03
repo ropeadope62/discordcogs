@@ -256,11 +256,10 @@ class FightingGame:
             # Set the title to the round number and player names
             title = f"Round {round_number} - {self.player1.display_name} vs {self.player2.display_name}"
             
-        # Create a Discord embed with the title and color
-        embed = discord.Embed(
-            title=title,
-            color=0xFF0000
-        )
+        # Re-use the existing embed
+        embed = self.embed_message.embeds[0]
+        embed.title = title
+        embed.clear_fields()
 
         # Add player 1 information to the embed
         embed.add_field(name=f"{self.player1.display_name}'s Health", value=f"{player1_health_bar} {self.player1_health}HP", inline=True)
@@ -821,7 +820,6 @@ class FightingGame:
 
             # Generate fight image and narrative
             fight_image_path = await self.generate_fight_image()
-            user_config = await self.bullshido_cog.config.all_users()
             if self.challenge:
                 narrative = generate_hype_challenge(self.user_config, str(self.player1.id), str(self.player2.id), self.player1.display_name, self.player2.display_name, self.wager)
             else:
