@@ -51,7 +51,7 @@ def generate_hype(user_config, attacker_id, defender_id, attacker_name, defender
     )
 
     response = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "You are a commentator for a fight in the Bullshido Kumatae, an epic martial arts arena."},
             {"role": "user", "content": prompt}
