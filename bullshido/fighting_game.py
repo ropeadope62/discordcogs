@@ -834,7 +834,7 @@ class FightingGame:
             )
             file = discord.File(fight_image_path, filename="fight_image.png")
             embed.set_image(url="attachment://fight_image.png")
-            self.embed_message = await self.channel.send(embed=embed)
+            self.embed_message = await self.channel.send(file=file, embed=embed)
             await asyncio.sleep(15)
             embed.description = ""
             await self.embed_message.edit(embed=embed)
