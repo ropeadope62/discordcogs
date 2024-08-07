@@ -533,7 +533,7 @@ class FightingGame:
                     if "Permanent Injury" in critical_injury:
                         # Add permanent injury to player 1 if applicable
                         permanent_injury = critical_injury.split(": ")[1]
-                        await self.add_permanent_injury(defender, permanent_injury, targeted_bodypart)
+                        await self.add_permanent_injury(defender, permanent_injury, targeted_bodypart)  # noqa: E501
 
             # Sleep for a random duration to simulate the turn
             sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)
@@ -635,11 +635,11 @@ class FightingGame:
         self.bullshido_cog.logger.info(f"Starting Round {round_number}")
         self.bullshido_cog.logger.info(f"Player1 Health: {self.player1_health}, Player2 Health: {self.player2_health}")
 
-        # Loop through strikes until maximum strikes per round or one player's health reaches 0
-        while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:
+        # Loop through strikes until maximum strikes per round or one player's health reaches 0  
+        while strike_count < self.max_strikes_per_round and self.player1_health > 0 and self.player2_health > 0:  
             try:
                 # Play a turn
-                ko_or_tko_occurred = await self.play_turn(self.embed_message, round_number)
+                ko_or_tko_occurred = await self.play_turn(self.embed_message, round_number) 
                 if ko_or_tko_occurred:
                     return True
 
@@ -667,7 +667,7 @@ class FightingGame:
         # Meaning the winner of the round gets 10 points, the loser gets 8 or 9 points, and in case of a draw, both get 9 points
         if damage_player1 > damage_player2:
             if damage_player1 - damage_player2 > 20:
-                round_result = random.choice(ROUND_RESULTS_WIN).format(winner=self.player1.display_name)
+                round_result = random.choice(ROUND_RESULTS_WIN).format(winner=self.player1.display_name)  # noqa: E501
                 self.player1_score += 10
                 self.player2_score += 8
             else:
@@ -685,10 +685,10 @@ class FightingGame:
                 self.player2_score += 10
                 self.player1_score += 9
         elif damage_player1 == damage_player2:
-            round_result = f"The round was a draw"
+            round_result = "The round was a draw"
             self.player1_score += 9
             self.player2_score += 9
-            self.bullshido_cog.logger.debug(f"Round was a draw")
+            self.bullshido_cog.logger.debug("Round was a draw")
         
         else: 
             round_result = None
@@ -834,7 +834,7 @@ class FightingGame:
             )
             file = discord.File(fight_image_path, filename="fight_image.png")
             embed.set_image(url="attachment://fight_image.png")
-            self.embed_message = await self.channel.send(file=file, embed=embed)
+            self.embed_message = await self.channel.send(embed=embed)
             await asyncio.sleep(15)
             embed.description = ""
             await self.embed_message.edit(embed=embed)
