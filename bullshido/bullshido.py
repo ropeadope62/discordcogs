@@ -222,6 +222,7 @@ class Bullshido(commands.Cog):
     def create_xp_bar(self, current_xp, current_level, next_level_xp):
         self.logger.debug(f"Creating xp bar for user at level {current_level} with {current_xp} xp.")
         previous_level_xp = XP_REQUIREMENTS.get(current_level)
+        next_level = current_level + 1
         
         if next_level_xp is None:
             self.logger.debug("User is at max level.")
@@ -237,7 +238,7 @@ class Bullshido(commands.Cog):
         progress_bar_length = 30
         progress_bar_filled = int(progress * progress_bar_length)
         progress_bar = "[" + ("=" * progress_bar_filled)
-        progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]"
+        progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]" + "Level:" + next_level
         if progress_bar_filled < progress_bar_length:
             marker = "🔴"
             progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
