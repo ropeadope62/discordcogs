@@ -238,7 +238,7 @@ class Bullshido(commands.Cog):
         progress_bar_length = 30
         progress_bar_filled = int(progress * progress_bar_length)
         progress_bar = "[" + ("=" * progress_bar_filled)
-        progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]" + "Level:" + next_level
+        progress_bar += "=" * (progress_bar_length - progress_bar_filled) + "]" + "Level:" + str(next_level)
         if progress_bar_filled < progress_bar_length:
             marker = "🔴"
             progress_bar = progress_bar[:progress_bar_filled] + marker + progress_bar[progress_bar_filled + 1:]
