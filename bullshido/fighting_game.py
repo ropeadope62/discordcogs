@@ -295,7 +295,7 @@ class FightingGame:
             await self.embed_message.edit(embed=embed)
         else:
             # Otherwise, send a new message with the embed
-            self.embed_message = await self.channel.send(embed=embed)
+            self.embed_message = await self.embed_message.edit(embed=embed)
 
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level, damage_bonus):
