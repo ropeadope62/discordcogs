@@ -836,6 +836,7 @@ class FightingGame:
             embed.set_image(url="attachment://fight_image.png")
             self.embed_message = await self.channel.send(file=file, embed=embed)
             await asyncio.sleep(15)
+            embed.set_image(url=None)
             embed.description = ""
             await self.embed_message.edit(embed=embed)
             # Update health bars and display fight start message
