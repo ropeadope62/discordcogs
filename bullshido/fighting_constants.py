@@ -1921,7 +1921,7 @@ TKO_MESSAGE_FINALES = [
     "Holy S***!",
     "Hot damn!",
     "Dammmmmn!",
-    "Crazy!",
+    "Crazy!"
     "Oh my goodness!",
     "Holy cow!",
     "Oh my gosh!",
