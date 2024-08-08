@@ -306,7 +306,7 @@ class FightingGame:
         diet_bonus = math.log10(diet_level + 1) * self.diet_weight
 
         # Calculate the total damage bonus
-        total_damage_bonus = 1 + training_bonus + diet_bonus + (damage_bonus * 0.10)
+        total_damage_bonus = 1 + training_bonus + diet_bonus + (damage_bonus * 1.5)
 
         # Calculate the adjusted damage
         adjusted_damage = base_damage * total_damage_bonus
