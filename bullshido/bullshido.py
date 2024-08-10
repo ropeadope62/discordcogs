@@ -933,7 +933,7 @@ class Bullshido(commands.Cog):
                 "The fighter with the most points at the end of the fight wins unless a KO or TKO occurs.\n"
                 "**KO & TKO**: Fights can end early if a fighter is knocked out (KO) or if the referee determines they can no longer continue (TKO). Intimidation level affects the likelihood of these outcomes."
             ),
-            inline=False
+            inline=True
         )
         
         embed.add_field(
@@ -945,7 +945,8 @@ class Bullshido(commands.Cog):
                 "**Hit Probability**: Hit chance is based on both fighter's stats and stamina levels as the fight progresses. Intimidation affects strike chance to a lesser extent.\n"
                 "**Intimidation Level**: A higher intimidation level reduces your opponent's chances to land successful strikes and increases your chances of securing a KO or TKO victory.\n"
 
-            )
+            ),
+            inline=False
         )
         
         # Server Interaction Mechanic
