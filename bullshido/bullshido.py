@@ -900,55 +900,72 @@ class Bullshido(commands.Cog):
             description="Welcome to Bullshido, a Discord game of epic combat!",
             color=0xFF0000
         )
+        # Basic Gameplay Commands
         embed.add_field(
-            name="Selecting a Fighting Style",
-            value="Use `/bullshido setstyle` to choose your fighting style. Each style has unique strikes and abilities.",
+            name="🎮 **Basic Gameplay Commands**",
+            value=(
+                "**`/fight @opponent`**: Start a fight with another player.\n"
+                "**`/challenge @opponent <amount>`**: Challenge another player to a prize fight for a wager bet. The opponent must accept the challenge before the fight will begin.\n"
+            ),
             inline=False
         )
+
+        # Fighter Customization
         embed.add_field(
-            name="Daily Training and Diet",
-            value="Train and follow a diet each day to improve your stats:\n- `/bullshido train`: Train daily to increase your training level.\n- `/bullshido diet`: Follow a diet to increase your nutrition level.\n*Note: Each can be used once every 24 hours.*\n Your overall nutrition and training level will improve your chances of winning a fight.",
+            name="💪 **Fighter Customization**",
+            value=(
+                "**`/setstyle`**: Choose your fighting style. Options include Karate, Muay-Thai, Aikido, Boxing, Kung-Fu, Judo, Taekwondo, Wrestling, "
+                "Krav-Maga, Capoeira, Sambo, Kickboxing, MMA, Brazilian Jiu-Jitsu, Zui Quan.\n"
+                "**`/train`**: Increase your fighter's training level to improve performance.\n"
+                "**`/diet`**: Improve your fighter's nutrition level to enhance stamina and recovery.\n"
+                "**`/distribute_points`**: Spend any skill points you have been granted by advancing player level."
+            ),
             inline=False
         )
+
+        # Game Mechanics
         embed.add_field(
-            name="Starting a Fight",
-            value="Challenge another player to a fight using `/bullshido fight @player`. The fight consists of 3 rounds and will be scored by a panel of judges, unless a KO/TKO/Submission occurs.",
+            name="⚙️ **Game Mechanics**",
+            value=(
+                "**Health & Stamina**: Each fighter starts with a base health and stamina. Performing actions depletes stamina, "
+                "which regenerates between rounds based on your training and diet levels.\n"
+                "**Strike Damage**: Damage dealt is influenced by your chosen fighting style, training level, nutrition level, and any damage bonuses. "
+                "Critical strikes can double the damage and cause permanent injuries to your opponent. Strikes to permanently injured body parts cause double damage.\n"
+                "**Miss Probability**: Attacks can miss based on factors like stamina and intimidation levels.\n"
+                "**Critical Hits**: Certain strikes have a chance to critically injure an opponent, causing additional damage or permanent injuries.\n"
+                "**Intimidation Level**: A higher intimidation level reduces your opponent's chances to land successful strikes and increases your chances of securing a KO or TKO victory.\n"
+                "**Rounds & Scoring**: Fights typically last 3 rounds. Each round is scored using a 10-point must system. "
+                "The fighter with the most points at the end of the fight wins unless a KO or TKO occurs.\n"
+                "**KO & TKO**: Fights can end early if a fighter is knocked out (KO) or if the referee determines they can no longer continue (TKO). Intimidation level affects the likelihood of these outcomes."
+            ),
             inline=False
         )
+        
+        # Server Interaction Mechanic
         embed.add_field(
-            name="Starting a Fight with a Wager",
-            value="Challenge another player to a fight for a wager using `/bullshido fight @player <wager>`. The opponent will have 30 seconds to accept the challenge. When the fight ends, the winner is paid out the wagers.",
-        )
+            name="🌐 **How to Maximize your odds and Win Fights**",
+            value=(
+                "**Train Daily**: You can train once every 24 hours, with each consecutive day of training, your fighter will gain 10 training level\n"
+                "**Diet Daily**: You can improve your diet / nutrition every 24 hours, with each consecutive day of dieting, your fighter will gain 10 diet level.\n"
+                "**Don't Forget to Diet or Train!**: Training and dieting are essential to improving your fighter's performance in the ring. Your Training and Diet levels will begin to drain if you did not perform an activity for 48 hours.\n"
+                "**Pick Your Opponents**: If your Training and Diet level is low against a fighter of the same level, it's likely you'll lose. If your opponent is of higher Player Level, you'll very likely lose.\n"
+                "**Intimidation**: Think twice about challenging opponents with high damage bonus and a high intimidation level (compared to your own). This is how you get KTFO.\n"
+            ),
+            )
+
+        # Additional Information
         embed.add_field(
-            name="Winning and Losing",
-            value="Winning a fight increases your wins and morale and may also increase your intimidation level. Losing decreases your morale. Keep training and dieting to improve your chances in future fights.",
+            name="📜 **Additional Information**",
+            value=(
+                "**Permanent Injuries**: Fighters can sustain permanent injuries that affect future performance. "
+                "**Fighting with Permanent Injuries**: Fighters can choose to fight with permanent injuries, but they will suffer double damage to injured bodyparts. "
+                "**Treating Injuries**: Permanent injuries can be treated with the `/bullshido treat <injury>` command. "
+            ),
             inline=False
         )
-        embed.add_field(
-            name="How Damage is Calculated",
-        value="Damage is calculated using your fighting style, stats and stamina. Training level and nutrition level affect damage by 15%.",
-        )
-        embed.add_field(
-            name="How Misses and Blocks are Calculated", 
-            value="Misses and blocks are calculated using the attacker and defender's training level and stamina. Training level and nutrition level affect misses and blocks by up to50%.",
-        )
-        embed.add_field(
-            name="Penalties for Inactivity",
-            value="If you miss a day of training or diet, your stats will decrease by 20 points.",
-            inline=False
-        )
-        embed.add_field(
-            name="Fighting Styles",
-            value="Each style has unique strikes and abilities. Use `/bullshido list_fighting_styles` to see all available styles.",
-        )
-        embed.add_field(
-            name="Stamina",
-            value="Fighting costs stamina, which will be regained daily, or can be replenished by purchasing stamina recovery items. Use `/bullshido stamina` to see your current stamina level.",
-        )
-        embed.add_field(
-            name="Buy",
-            value="Buy stamina recovery items using `/bullshido buy <item>`.",
-        )
+
+        embed.set_footer(text="Bullshido is a cog by Slurms aka https://github.com/ropeadope62.")
+
         embed.set_thumbnail(url="https://i.ibb.co/GWpXztm/bullshido.png")
         await ctx.send(embed=embed)
 
