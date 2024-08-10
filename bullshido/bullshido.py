@@ -914,11 +914,11 @@ class Bullshido(commands.Cog):
         embed.add_field(
             name="💪 **Fighter Customization**",
             value=(
-                "**`/setstyle`**: Choose your fighting style. Options include Karate, Muay-Thai, Aikido, Boxing, Kung-Fu, Judo, Taekwondo, Wrestling, "
+                "**`/bullshido setstyle`**: Choose your fighting style. Options include Karate, Muay-Thai, Aikido, Boxing, Kung-Fu, Judo, Taekwondo, Wrestling, "
                 "Krav-Maga, Capoeira, Sambo, Kickboxing, MMA, Brazilian Jiu-Jitsu, Zui Quan.\n"
-                "**`/train`**: Increase your fighter's training level to improve performance.\n"
-                "**`/diet`**: Improve your fighter's nutrition level to enhance stamina and recovery.\n"
-                "**`/distribute_points`**: Spend any skill points you have been granted by advancing player level."
+                "**`/bullshido train`**: Increase your fighter's training level to improve performance.\n"
+                "**`/bullshido diet`**: Improve your fighter's nutrition level to enhance stamina and recovery.\n"
+                "**`/bullshido distribute_points`**: Spend any skill points you have been granted by advancing player level."
             ),
             inline=False
         )
@@ -937,9 +937,9 @@ class Bullshido(commands.Cog):
         )
         
         embed.add_field(
-            name="🏆 **Strike Calculations**",
+            name="🔧 **Strike Calculations**",
             value=(
-                "**Strike Damage**: Damage dealt is influenced by your chosen fighting style, training level, nutrition level, and any damage bonuses. "
+                "**Strike Damage**: Damage dealt is influenced by your chosen fighting style, training level, nutrition level, and any damage bonuses.\n "
                 "Critical strikes can double the damage and cause permanent injuries to your opponent. \n"
                 "**Critical Hits**: Certain strikes have a chance to critically injure an opponent, causing additional damage or permanent injuries.\n"
                 "**Hit Probability**: Hit chance is based on both fighter's stats and stamina levels as the fight progresses. Intimidation affects strike chance to a lesser extent.\n"
@@ -964,9 +964,22 @@ class Bullshido(commands.Cog):
         embed.add_field(
             name="📜 **Additional Information**",
             value=(
-                "**Permanent Injuries**: Fighters can sustain permanent injuries that affect future performance. "
-                "**Fighting with Permanent Injuries**: Fighters can choose to fight with permanent injuries, but they will suffer double damage to injured bodyparts. "
+                "**Permanent Injuries**: Fighters can sustain permanent injuries that affect future performance.\n"
+                "**Fighting with Permanent Injuries**: Fighters can choose to fight with permanent injuries, but they will suffer double damage to injured bodyparts.\n"
+                "**Checking Your Injuries**: Use the `/bullshido injuries` command to view your permanent injuries.\n"
                 "**Treating Injuries**: Permanent injuries can be treated with the `/bullshido treat <injury>` command. "
+            ),
+            inline=False
+        )
+        
+        # Other Commands
+        embed.add_field(
+            name="🏆 **Stats Commands**",
+            value=(
+                "**`/bullshido player_stats`**: View your own fighting stats and player attributes.\n"
+                "**`/bullshido player_stats @user`**: View another player's fighting stats and player attributes.\n"
+                "**`/bullshido top_injuries`**: List the players with the 10 most permanent injuries.\n"
+                "**`/bullshido rankings`**: Display the top 25 players based on win-loss ratio and their fight record.\n"
             ),
             inline=False
         )
