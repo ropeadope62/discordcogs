@@ -896,7 +896,7 @@ class Bullshido(commands.Cog):
     async def bullshido_help(self, ctx: commands.Context):
         """Provides information about how the Bullshido game works."""
         embed = discord.Embed(
-            title="About Bullshido",
+            title="Help / About Bullshido",
             description="Welcome to Bullshido, a Discord game of epic combat!",
             color=0xFF0000
         )
@@ -904,8 +904,8 @@ class Bullshido(commands.Cog):
         embed.add_field(
             name="🎮 **Basic Gameplay Commands**",
             value=(
-                "**`/fight @opponent`**: Start a fight with another player.\n"
-                "**`/challenge @opponent <amount>`**: Challenge another player to a prize fight for a wager bet. The opponent must accept the challenge before the fight will begin.\n"
+                "**`/bullshido fight @opponent`**: Start a fight with another player.\n"
+                "**`/bullshido challenge @opponent <amount>`**: Challenge another player to a prize fight for a wager bet. The opponent must accept the challenge before the fight will begin.\n"
             ),
             inline=False
         )
@@ -929,16 +929,23 @@ class Bullshido(commands.Cog):
             value=(
                 "**Health & Stamina**: Each fighter starts with a base health and stamina. Performing actions depletes stamina, "
                 "which regenerates between rounds based on your training and diet levels.\n"
-                "**Strike Damage**: Damage dealt is influenced by your chosen fighting style, training level, nutrition level, and any damage bonuses. "
-                "Critical strikes can double the damage and cause permanent injuries to your opponent. Strikes to permanently injured body parts cause double damage.\n"
-                "**Miss Probability**: Attacks can miss based on factors like stamina and intimidation levels.\n"
-                "**Critical Hits**: Certain strikes have a chance to critically injure an opponent, causing additional damage or permanent injuries.\n"
-                "**Intimidation Level**: A higher intimidation level reduces your opponent's chances to land successful strikes and increases your chances of securing a KO or TKO victory.\n"
                 "**Rounds & Scoring**: Fights typically last 3 rounds. Each round is scored using a 10-point must system. "
                 "The fighter with the most points at the end of the fight wins unless a KO or TKO occurs.\n"
                 "**KO & TKO**: Fights can end early if a fighter is knocked out (KO) or if the referee determines they can no longer continue (TKO). Intimidation level affects the likelihood of these outcomes."
             ),
             inline=False
+        )
+        
+        embed.add_field(
+            name="🏆 **Strike Calculations**",
+            value=(
+                "**Strike Damage**: Damage dealt is influenced by your chosen fighting style, training level, nutrition level, and any damage bonuses. "
+                "Critical strikes can double the damage and cause permanent injuries to your opponent. \n"
+                "**Critical Hits**: Certain strikes have a chance to critically injure an opponent, causing additional damage or permanent injuries.\n"
+                "**Hit Probability**: Hit chance is based on both fighter's stats and stamina levels as the fight progresses. Intimidation affects strike chance to a lesser extent.\n"
+                "**Intimidation Level**: A higher intimidation level reduces your opponent's chances to land successful strikes and increases your chances of securing a KO or TKO victory.\n"
+
+            )
         )
         
         # Server Interaction Mechanic
