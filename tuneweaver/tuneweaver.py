@@ -9,7 +9,7 @@ from redbot.core.bot import Red
 class TuneWeaver(commands.Cog):
     def __init__(self, bot: Red):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=1234567890)
+        self.config = Config.get_conf(self, identifier=1234567891274843525235889345210)
         default_guild = {
             "channel_id": None,
             "last_genre": None,
@@ -18,9 +18,8 @@ class TuneWeaver(commands.Cog):
         self.config.register_guild(**default_guild)
         self.spotify = None
         self.task = self.bot.loop.create_task(self.daily_tracks())
+        self.imagestore = "/home/slurms/ScrapGPT/scrapgpt_data/cogs/TuneWeaver/images/"
 
-    def cog_unload(self):
-        self.task.cancel()
 
     async def initialize(self):
         client_id = await self.bot.get_shared_api_tokens("spotipy")
@@ -33,6 +32,17 @@ class TuneWeaver(commands.Cog):
                     client_secret=client_id["client_secret"]
                 )
             )
+    async def get_random_genre(self):
+        if self.spotify is None:
+            raise ValueError("Spotify API is not initialized. Please set up the API credentials.")
+        
+        try: 
+            # Get a list of genres
+            genres = self.spotify.recommendation_genre_seeds()
+            return random.choice(genres["genres"])
+        except Exception as e:
+            print(e)
+            return None
 
     async def daily_tracks(self):
         await self.bot.wait_until_ready()
@@ -57,17 +67,18 @@ class TuneWeaver(commands.Cog):
                 color=discord.Color.red()
             )
 
-            embed.set_thumbnail(url="")
+            embed.set_thumbnail(url="https://i.ibb.co/tzxqWJ8/tuneweaver-logo-circle.png")
             embed.add_field(
                 name="About",
-                value="Another action packed discord cog by Slurms Mackenzie/ropeadope62\n Use [p]bullshidoset for admin commands!",
+                value="A discord cog by Slurms Mackenzie/ropeadope62\n Use /tuneweaverset for admin commands.",
                 inline=True
             )
             embed.add_field(
                 name="Repo",
-                value="If you liked this, check out my other cogs! https://github.com/ropeadope62/discordcogs",
+                value="If you liked this cog, check out my other cogs! https://github.com/ropeadope62/discordcogs",
                 inline=True
             )
+            await ctx.send(embed=embed)
 
     @tuneweaverset_group.command()
     @commands.is_owner()
@@ -76,9 +87,9 @@ class TuneWeaver(commands.Cog):
         await self.config.guild(ctx.guild).channel_id.set(channel.id)
         await ctx.send(f"TuneWeaver channel set to {channel.mention}")
 
-    @tuneweaverset_group.command()
+    @tuneweaverset_group.command(name="weave")
     @commands.is_owner()
-    async def trigger_selection(self, ctx):
+    async def trigger_weave(self, ctx):
         """Manually trigger the daily track selection."""
         if self.spotify is None:
             await ctx.send("Spotify API is not initialized. Please set up the API credentials.")
@@ -106,8 +117,19 @@ class TuneWeaver(commands.Cog):
     async def post_daily_tracks(self, channel):
         await channel.send("Posting daily tracks")
 
-    async def get_random_genre(self):
-        # Implementation for getting a random genre
-        pass
+    @tuneweaver_group.command(name="randomgenre")
+    async def get_random_genre(self, ctx):
+        """ Get a random genre """
+        try: 
+            genre = await self.get_random_genre()
+            if genre: 
+                await ctx.send(f"Random genre: {genre}")
+            else: 
+                await ctx.send("Failed to retrieve a random genre.")
+        except Exception as e:
+            print(e)
+            await ctx.send("Failed to retrieve a random genre.")
 
     #async def get_tracks_from_genre(self, ctx, genre: str):
+    
+    
