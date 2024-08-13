@@ -33,20 +33,21 @@ class TuneWeaver(commands.Cog):
                     client_secret=client_id["client_secret"]
                 )
             )
-    async def get_random_genre(self):
+    async def get_random_genre(self, ctx):
         if self.spotify is None:
             raise ValueError("Spotify API is not initialized. Please set up the API credentials.")
         
         try: 
             # Get a list of genres
             genres = self.spotify.recommendation_genre_seeds()
+            last_genre = await self.config.guild(ctx.guild).last_genre()
             genre = random.choice(genres["genres"])
             # If the genre is the same as the last genre, pick a new one
-            while genre == self.last_genre:
+            while genre == last_genre:
                 genre = random.choice(genres["genres"])
                 
             # update the last genre in the guild config
-            await self.config.last_genre.set(genre)
+            await self.config.guild(ctx.guild).last_genre.set(genre)
             return genre
         
         except Exception as e:
