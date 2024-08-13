@@ -57,7 +57,7 @@ class TuneWeaver(commands.Cog):
                 color=discord.Color.red()
             )
 
-            embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
+            embed.set_thumbnail(url="")
             embed.add_field(
                 name="About",
                 value="Another action packed discord cog by Slurms Mackenzie/ropeadope62\n Use [p]bullshidoset for admin commands!",
