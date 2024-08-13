@@ -110,4 +110,4 @@ class TuneWeaver(commands.Cog):
         # Implementation for getting a random genre
         pass
 
-    async def get_tracks_from_genre(self, ctx, genre: str):
+    #async def get_tracks_from_genre(self, ctx, genre: str):
