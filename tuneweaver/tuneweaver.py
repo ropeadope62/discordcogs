@@ -92,8 +92,25 @@ class TuneWeaver(commands.Cog):
     @commands.hybrid_group(name="tuneweaverset", description="Set TuneWeaver settings.")
     async def tuneweaverset_group(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send_help()
-        
+            embed = discord.Embed(
+                title="TuneWeaver",
+                description="Expand your Musical Horizons.",
+                color=discord.Color.purple()
+            )
+
+            embed.set_thumbnail(url="https://i.ibb.co/tzxqWJ8/tuneweaver-logo-circle.png")
+            embed.add_field(
+                name="About",
+                value="A discord cog by Slurms Mackenzie/ropeadope62\n Use /tuneweaverset for admin commands.",
+                inline=True
+            )
+            embed.add_field(
+                name="Repo",
+                value="If you liked this cog, check out my other cogs! https://github.com/ropeadope62/discordcogs",
+                inline=True
+            )
+            await ctx.send(embed=embed)
+            
     @commands.hybrid_group(name="tuneweaver", description="TuneWeaver commands.")
     async def tuneweaver_group(self, ctx):
         if ctx.invoked_subcommand is None:
@@ -130,7 +147,7 @@ class TuneWeaver(commands.Cog):
         if self.spotify is None:
             await ctx.send("Spotify API is not initialized. Please set up the API credentials.")
             return
-        await self.post_daily_weave(ctx.guild)
+        await self.post_daily_weave(ctx, ctx.guild)
         
     @tuneweaverset_group.command(name="dailyweavetime", description="Set the time for daily track selection.")
     @commands.is_owner()
