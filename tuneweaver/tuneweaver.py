@@ -18,7 +18,7 @@ class TuneWeaver(commands.Cog):
         }
         self.config.register_guild(**default_guild)
         self.spotify = None
-        self.task = self.bot.loop.create_task(self.daily_tracks())
+        self.task = self.bot.loop.create_task(self.daily_weave_loop())
         self.imagestore = "/home/slurms/ScrapGPT/scrapgpt_data/cogs/TuneWeaver/images/"
 
 
@@ -133,9 +133,16 @@ class TuneWeaver(commands.Cog):
         
     @tuneweaverset_group.command(name="dailyweavetime", description="Set the time for daily track selection.")
     @commands.is_owner()
-    async def daily_weave_time(self, ctx, time):
+    async def daily_weave_time(self, ctx, weave_time: str):
         """Set the time for daily track selection."""
-        await ctx.send(f"Daily track selection time set to {time}")
+        """Set the time for daily track posts (in HH:MM format, UTC)."""
+        try:
+            datetime.strptime(weave_time, "%H:%M")
+            await self.config.guild(ctx.guild).post_time.set(weave_time)
+            await ctx.send(f"TuneWeaver daily weave time set to {weave_time} UTC")
+        except ValueError:
+            await ctx.send("Invalid time format. Please use HH:MM (24-hour format).")
+
         
     @tuneweaver_group.command()
     async def show_daily_tracks(self, ctx):
