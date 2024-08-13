@@ -118,7 +118,7 @@ class TuneWeaver(commands.Cog):
         await channel.send("Posting daily tracks")
 
     @tuneweaver_group.command(name="randomgenre")
-    async def get_random_genre(self, ctx):
+    async def randomgenre(self, ctx):
         """ Get a random genre """
         try: 
             genre = await self.get_random_genre()
