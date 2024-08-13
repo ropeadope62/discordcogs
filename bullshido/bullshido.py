@@ -1282,7 +1282,4 @@ class Bullshido(commands.Cog):
                 await self.config.user(user).last_interaction.set(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
                 self.logger.info(f"Reset last {command_used} interaction for {user}.")
     
-    async def setup(bot):
-        cog = Bullshido(bot)
-        await bot.add_cog(cog)
-        await bot.tree.sync()
+        
