@@ -11,6 +11,7 @@ class TuneWeaver(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=1234567891274843525235889345210)
         default_guild = {
+            "daily_weave_time": None,
             "channel_id": None,
             "last_genre": None,
             "last_tracks": [],
@@ -39,19 +40,53 @@ class TuneWeaver(commands.Cog):
         try: 
             # Get a list of genres
             genres = self.spotify.recommendation_genre_seeds()
-            return random.choice(genres["genres"])
+            genre = random.choice(genres["genres"])
+            # If the genre is the same as the last genre, pick a new one
+            while genre == self.last_genre:
+                genre = random.choice(genres["genres"])
+                
+            # update the last genre in the guild config
+            await self.config.last_genre.set(genre)
+            return genre
+        
         except Exception as e:
             print(e)
             return None
 
-    async def daily_tracks(self):
+    async def daily_weave_loop(self):
         await self.bot.wait_until_ready()
         await self.initialize()
         while not self.bot.is_closed():
-            now = datetime.utcnow()
-            if now.hour == 0 and now.minute == 0:
-                await self.post_daily_tracks()
-            await asyncio.sleep(60)  # Check every minute
+            now = datetime.now()
+            for guild in self.bot.guilds: 
+                weave_time_str = await self.config.guild(guild).daily_weave_time()
+                weave_time = datetime.strptime(weave_time_str, "%H:%M").time()
+                if now.time().hour == weave_time.hour and now.time().minute == weave_time.minute:
+                    await self.post_daily_weave(guild)
+            await asyncio.sleep(60)
+            
+    async def post_daily_weave(self, guild):
+        channel_id = await self.config.guild(guild).channel_id()
+        if not channel_id:
+            return
+        channel = guild.get_channel(channel_id)
+        if not channel:
+            return
+
+        genre = await self.get_random_genre()
+        if not genre: 
+            await channel.send("Failed to retrieve a random genre. Please try again later")
+            return
+        
+        tracks = await self.weave_tracks_from_genre(genre)
+        if not tracks: 
+            await channel.send("Failed to retrieve tracks for the genre. Please try again later")
+            return
+        
+        embed = discord.Embed(title=f"TrackWeaver - Daily Tracks for today's genre: {genre}", color=discord.Color.purple())
+        for i, track in enumerate(tracks):
+            embed.add_field(name=f"Track {i+1}", value=f"{track['name']} by {track['artists']}")
+        await channel.send(embed=embed)
 
     @commands.hybrid_group(name="tuneweaverset", description="Set TuneWeaver settings.")
     async def tuneweaverset_group(self, ctx):
@@ -64,7 +99,7 @@ class TuneWeaver(commands.Cog):
             embed = discord.Embed(
                 title="TuneWeaver",
                 description="Expand your Musical Horizons.",
-                color=discord.Color.red()
+                color=discord.Color.purple()
             )
 
             embed.set_thumbnail(url="https://i.ibb.co/tzxqWJ8/tuneweaver-logo-circle.png")
@@ -87,18 +122,18 @@ class TuneWeaver(commands.Cog):
         await self.config.guild(ctx.guild).channel_id.set(channel.id)
         await ctx.send(f"TuneWeaver channel set to {channel.mention}")
 
-    @tuneweaverset_group.command(name="weave")
+    @tuneweaverset_group.command(name="weave", description="Manually trigger the daily track selection.")
     @commands.is_owner()
     async def trigger_weave(self, ctx):
         """Manually trigger the daily track selection."""
         if self.spotify is None:
             await ctx.send("Spotify API is not initialized. Please set up the API credentials.")
             return
-        await self.post_daily_tracks(ctx.guild)
+        await self.post_daily_weave(ctx.guild)
         
-    @tuneweaverset_group.command()
+    @tuneweaverset_group.command(name="dailyweavetime", description="Set the time for daily track selection.")
     @commands.is_owner()
-    async def daily_pick_time(self, ctx, time):
+    async def daily_weave_time(self, ctx, time):
         """Set the time for daily track selection."""
         await ctx.send(f"Daily track selection time set to {time}")
         
