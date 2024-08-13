@@ -84,10 +84,74 @@ class TuneWeaver(commands.Cog):
             await channel.send("Failed to retrieve tracks for the genre. Please try again later")
             return
         
-        embed = discord.Embed(title=f"TrackWeaver - Daily Tracks for today's genre: {genre}", color=discord.Color.purple())
-        for i, track in enumerate(tracks):
-            embed.add_field(name=f"Track {i+1}", value=f"{track['name']} by {track['artists']}")
+        embed = discord.Embed(title=f"TrackWeaver - Daily Weave for today's genre: {genre}", color=discord.Color.purple())
+        for i, track in enumerate(tracks, 1):
+            duration = f"{track['duration_ms'] // 60000}:{(track['duration_ms'] % 60000) // 1000:02d}"
+            embed.add_field(
+                name=f"Track {i}: {track['name']}",
+                value=f"By: {track['artists']}\n"
+                      f"Album: {track['album']}\n"
+                      f"Duration: {duration}\n"
+                      f"Popularity: {track['popularity']}/100\n"
+                      f"[Listen on Spotify]({track['url']})\n"
+                      f"[Preview]({track['preview_url']})",
+                inline=False
+            )
+            
         await channel.send(embed=embed)
+        
+    async def weave_tracks_from_genre(self, genre, limit=5):
+        if self.spotify is None:
+            raise ValueError("Spotify API is not initialized. Please set up the API credentials.")
+        try:
+            results = self.spotify.recommendations(
+                seed_genres=[genre],
+                limit=limit,
+                market="US",
+                min_popularity=50
+            )
+            
+            tracks = []
+            for track in results["tracks"]:
+                artists = ", ".join([artist["name"] for artist in track["artists"]])
+                album = track["album"]["name"]
+                preview_url = track["preview_url"]
+                tracks.append({
+                    'name': track['name'],
+                    'artists': artists,
+                    'album': album,
+                    'url': track['external_urls']['spotify'],
+                    'preview_url': preview_url,
+                    'duration_ms': track['duration_ms'],
+                    'popularity': track['popularity']
+                })
+                
+            # In instances where he recommendations are less than the limit, we can search for more tracks
+            if len(tracks) < limit:
+                more_results = self.spotify.search(q=f'genre:"{genre}"', type='track', limit=limit-len(tracks))
+                for track in more_results['tracks']['items']:
+                    artists = ", ".join([artist['name'] for artist in track['artists']])
+                    album = track['album']['name']
+                    preview_url = track.get('preview_url', 'No preview available')
+                    tracks.append({
+                        'name': track['name'],
+                        'artists': artists,
+                        'album': album,
+                        'url': track['external_urls']['spotify'],
+                        'preview_url': preview_url,
+                        'duration_ms': track['duration_ms'],
+                        'popularity': track['popularity']
+                    })
+                    
+            random.shuffle(tracks)
+            return tracks[":limit"]
+        
+        except spotipy.SpotifyException as e:
+            print(f"Spotify API error: {str(e)}")
+            return None
+        except Exception as e:
+            print(f"Error fetching tracks: {str(e)}")
+            return None
 
     @commands.hybrid_group(name="tuneweaverset", description="Set TuneWeaver settings.")
     async def tuneweaverset_group(self, ctx):
