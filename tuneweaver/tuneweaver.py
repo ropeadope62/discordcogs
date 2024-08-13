@@ -66,7 +66,7 @@ class TuneWeaver(commands.Cog):
                     await self.post_daily_weave(guild)
             await asyncio.sleep(60)
             
-    async def post_daily_weave(self, guild):
+    async def post_daily_weave(self, ctx, guild):
         channel_id = await self.config.guild(guild).channel_id()
         if not channel_id:
             return
@@ -74,7 +74,7 @@ class TuneWeaver(commands.Cog):
         if not channel:
             return
 
-        genre = await self.get_random_genre()
+        genre = await self.get_random_genre(ctx)
         if not genre: 
             await channel.send("Failed to retrieve a random genre. Please try again later")
             return
@@ -164,7 +164,7 @@ class TuneWeaver(commands.Cog):
     async def randomgenre(self, ctx):
         """ Get a random genre """
         try: 
-            genre = await self.get_random_genre()
+            genre = await self.get_random_genre(ctx)
             if genre: 
                 await ctx.send(f"Random genre: {genre}")
             else: 
