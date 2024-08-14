@@ -299,14 +299,23 @@ class FightingGame:
 
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level, damage_bonus):
-        # Calculate the bonus from training level
-        training_bonus = math.log10(training_level + 1) * self.training_weight
+    # Ensure training and diet levels are within the valid range
+        training_level = min(max(training_level, 0), 100)
+        diet_level = min(max(diet_level, 0), 100)
 
-        # Calculate the bonus from diet level
-        diet_bonus = math.log10(diet_level + 1) * self.diet_weight
+        # Normalize the training and diet levels to a range of 0 to 1
+        normalized_training = training_level / 100.0
+        normalized_diet = diet_level / 100.0
 
-        # Calculate the total damage bonus
-        total_damage_bonus = 1 + training_bonus + diet_bonus + (damage_bonus * 1)
+        # Calculate the bonus from training and diet using logarithmic scaling
+        training_bonus = math.log10(normalized_training * 9 + 1) * self.training_weight
+        diet_bonus = math.log10(normalized_diet * 9 + 1) * self.diet_weight
+
+        # Apply logarithmic scaling to the damage bonus to increase its impact slightly
+        scaled_damage_bonus = math.log10(damage_bonus + 1)
+
+        # Increase the scaling factor from 0.3 to 0.4 for more impact
+        total_damage_bonus = 1 + (training_bonus + diet_bonus) * 0.5 + scaled_damage_bonus * 0.5
 
         # Calculate the adjusted damage
         adjusted_damage = base_damage * total_damage_bonus
