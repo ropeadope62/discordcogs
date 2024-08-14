@@ -15,7 +15,7 @@ class TuneWeaver(commands.Cog):
             "daily_weave_time": None,
             "channel_id": None,
             "last_genre": None,
-            "last_tracks": [],
+            "last_tracks": None,
         }
         self.config.register_guild(**default_guild)
         self.spotify = None
@@ -167,6 +167,7 @@ class TuneWeaver(commands.Cog):
             return
 
         tracks = await self.weave_tracks_from_genre(genre)
+        self.last_tracks = tracks
         if not tracks:
             await channel.send(
                 "Failed to retrieve tracks for the genre. Please try again later"
@@ -334,9 +335,31 @@ class TuneWeaver(commands.Cog):
         except ValueError:
             await ctx.send("Invalid time format. Please use HH:MM (24-hour format).")
 
-    @tuneweaver_group.command()
+    @tuneweaver_group.command(name="showdailytracks", description="Show today's tracks that have been selected.")
     async def show_daily_tracks(self, ctx):
-        await ctx.send("Displaying today's tracks for genre:")
+        """ Show today's tracks that have been selected """
+        if not self.last_tracks:
+            await ctx.send("No tracks available. Please run the daily track selection first.")
+            return
+        last_genre = await self.config.guild(ctx.guild).last_genre()
+        if not last_genre:
+            last_genre = None
+            
+        await ctx.send(f"**Todays daily tracks from {last_genre.title()} **")
+
+        for track in self.last_tracks:
+            # Extract the Spotify track ID from the URL
+            track_id = track['url'].split('/')[-1]
+            
+            # Create the specially formatted Spotify URL
+            spotify_url = f"https://open.spotify.com/track/{track_id}"
+            
+            # Send the URL as a message
+            await ctx.send(spotify_url)
+            
+            # Add a small delay between messages to prevent rate limiting
+            await asyncio.sleep(1)
+        
 
     @tuneweaver_group.command()
     async def genre_info(self, ctx, genre: str):
@@ -346,6 +369,7 @@ class TuneWeaver(commands.Cog):
         name="sample", description="Get a random sample track from a genre."
     )
     async def get_sample(self, ctx, genre: str):
+        """ Get a random sample track from a genre"""
         if self.spotify is None:
             await ctx.send("Spotify API is not initialized.")
             return
