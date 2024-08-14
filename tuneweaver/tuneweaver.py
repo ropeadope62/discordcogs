@@ -144,7 +144,7 @@ class TuneWeaver(commands.Cog):
                     })
                     
             random.shuffle(tracks)
-            return tracks[":limit"]
+            return tracks[:limit]
         
         except spotipy.SpotifyException as e:
             print(f"Spotify API error: {str(e)}")
