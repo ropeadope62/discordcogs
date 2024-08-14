@@ -7,29 +7,45 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
+
 def generate_hype(user_config, attacker_id, defender_id, attacker_name, defender_name):
     # Define relevant keys
-    relevant_keys = ['training_level', 'nutrition_level', 'wins', 'losses', 'fighting_style', 'intimidation_level']
-    
+    relevant_keys = [
+        "training_level",
+        "nutrition_level",
+        "wins",
+        "losses",
+        "fighting_style",
+        "intimidation_level",
+    ]
+
     # Initialize data dictionaries
     attacker_data = {}
     defender_data = {}
 
     # Check if fighters have fought before
-    if 'fight_history' in user_config[str(attacker_id)]:
-        fighting_history = user_config[str(attacker_id)]['fight_history']
+    if "fight_history" in user_config[str(attacker_id)]:
+        fighting_history = user_config[str(attacker_id)]["fight_history"]
         for fight in fighting_history:
-            if fight['opponent'] == defender_name:
+            if fight["opponent"] == defender_name:
                 # Extract relevant data for attacker and defender from the past fight
-                attacker_data = {key: fight.get(key) for key in relevant_keys if key in fight}
-                defender_data = {key: user_config[str(defender_id)].get(key) for key in relevant_keys}
+                attacker_data = {
+                    key: fight.get(key) for key in relevant_keys if key in fight
+                }
+                defender_data = {
+                    key: user_config[str(defender_id)].get(key) for key in relevant_keys
+                }
                 break
 
     # If no past fight data is found, use the general data
     if not attacker_data:
-        attacker_data = {key: user_config[str(attacker_id)].get(key) for key in relevant_keys}
+        attacker_data = {
+            key: user_config[str(attacker_id)].get(key) for key in relevant_keys
+        }
     if not defender_data:
-        defender_data = {key: user_config[str(defender_id)].get(key) for key in relevant_keys}
+        defender_data = {
+            key: user_config[str(defender_id)].get(key) for key in relevant_keys
+        }
 
     # Debug prints
     print(attacker_data)  # debug print
@@ -53,36 +69,57 @@ def generate_hype(user_config, attacker_id, defender_id, attacker_name, defender
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "You are a commentator for a fight in the Bullshido Kumatae, an epic martial arts arena."},
-            {"role": "user", "content": prompt}
-        ]
+            {
+                "role": "system",
+                "content": "You are a commentator for a fight in the Bullshido Kumatae, an epic martial arts arena.",
+            },
+            {"role": "user", "content": prompt},
+        ],
     )
 
     return response.choices[0].message.content
 
-def generate_hype_challenge(user_config, attacker_id, defender_id, attacker_name, defender_name, wager: int=0):
+
+def generate_hype_challenge(
+    user_config, attacker_id, defender_id, attacker_name, defender_name, wager: int = 0
+):
     # Define relevant keys
-    relevant_keys = ['training_level', 'nutrition_level', 'wins', 'losses', 'fighting_style', 'intimidation_level']
-    
+    relevant_keys = [
+        "training_level",
+        "nutrition_level",
+        "wins",
+        "losses",
+        "fighting_style",
+        "intimidation_level",
+    ]
+
     # Initialize data dictionaries
     attacker_data = {}
     defender_data = {}
 
     # Check if fighters have fought before
-    if 'fight_history' in user_config[str(attacker_id)]:
-        fighting_history = user_config[str(attacker_id)]['fight_history']
+    if "fight_history" in user_config[str(attacker_id)]:
+        fighting_history = user_config[str(attacker_id)]["fight_history"]
         for fight in fighting_history:
-            if fight['opponent'] == defender_name:
+            if fight["opponent"] == defender_name:
                 # Extract relevant data for attacker and defender from the past fight
-                attacker_data = {key: fight.get(key) for key in relevant_keys if key in fight}
-                defender_data = {key: user_config[str(defender_id)].get(key) for key in relevant_keys}
+                attacker_data = {
+                    key: fight.get(key) for key in relevant_keys if key in fight
+                }
+                defender_data = {
+                    key: user_config[str(defender_id)].get(key) for key in relevant_keys
+                }
                 break
 
     # If no past fight data is found, use the general data
     if not attacker_data:
-        attacker_data = {key: user_config[str(attacker_id)].get(key) for key in relevant_keys}
+        attacker_data = {
+            key: user_config[str(attacker_id)].get(key) for key in relevant_keys
+        }
     if not defender_data:
-        defender_data = {key: user_config[str(defender_id)].get(key) for key in relevant_keys}
+        defender_data = {
+            key: user_config[str(defender_id)].get(key) for key in relevant_keys
+        }
 
     # Debug prints
     print(attacker_data)  # debug print
@@ -107,9 +144,12 @@ def generate_hype_challenge(user_config, attacker_id, defender_id, attacker_name
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "You are a commentator for a fight in the Bullshido Kumatae, an epic martial arts arena."},
-            {"role": "user", "content": prompt}
-        ]
+            {
+                "role": "system",
+                "content": "You are a commentator for a fight in the Bullshido Kumatae, an epic martial arts arena.",
+            },
+            {"role": "user", "content": prompt},
+        ],
     )
 
     return response.choices[0].message.content
