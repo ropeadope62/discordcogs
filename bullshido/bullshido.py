@@ -499,14 +499,24 @@ class Bullshido(commands.Cog):
         for chunk in [logs[i:i+10] for i in range(0, len(logs), 10)]:
             await ctx.send("```\n{}\n```".format("\n".join(chunk)))
             
-    @bullshidoset_group.command(name="grant_level", description="Grant a specific level to a user.")
+    @bullshidoset_group.command(name="set_level", description="Grant a specific level to a user.")
     @commands.is_owner()
-    async def grant_level(self, ctx: commands.Context, user: discord.Member, level: int):
-        """Grant a specific level to a user."""
+    async def set_level(self, ctx: commands.Context, user: discord.Member, level: int):
+        """Set a specific level to a user."""
         user_data = await self.config.user(user).all()
+        current_level = user_data["level"]
+        levels_gained = level - current_level
         user_data["level"] = level
-        user_data["xp"] = 0
-        user_data["level_points_to_distribute"] = level - 1  # Assuming 1 point per level
+        user_data["xp"] = XP_REQUIREMENTS[level] if level in XP_REQUIREMENTS else 0
+        if levels_gained > 0:
+            self.logger.info(f"Granting {levels_gained} levels to {user}.")
+            self.logger.info(f"Setting {user_data['level_points_to_distribute']} points to distribute to user {user}.")
+            user_data["level_points_to_distribute"] += levels_gained
+        else:
+            self.logger.info(f"Removing {levels_gained} levels from {user}.")
+            self.logger.info(f"Setting {user_data['level_points_to_distribute']} points to distribute to user {user}.")
+            user_data["level_points_to_distribute"] = 0  
+
         await self.config.user(user).set(user_data)
         self.logger.info(f"Granted level {level} to {user}.")
         await ctx.send(f"Set {user.display_name} to level {level} with {user_data['level_points_to_distribute']} points to distribute.")
@@ -525,6 +535,18 @@ class Bullshido(commands.Cog):
         await self.config.user(user).set(user_data)
         self.logger.info(f"Reset {user} to level 1.")
         await ctx.send(f"Reset {user.display_name} to level 1.")
+        
+    @bullshidoset_group.command(name="set_player_stats", description="Manually set the users bonus stats.")
+    @commands.is_owner()
+    async def set_player_stats(self, ctx: commands.Context, user: discord.Member, stamina_bonus: int, health_bonus: int, damage_bonus: int):
+        """Manually set the users bonus stats."""
+        user_data = await self.config.user(user).all()
+        user_data["stamina_bonus"] = stamina_bonus
+        user_data["health_bonus"] = health_bonus
+        user_data["damage_bonus"] = damage_bonus
+        await self.config.user(user).set(user_data)
+        self.logger.info(f"Set {user}'s stats to {stamina_bonus} stamina, {health_bonus} health, and {damage_bonus} damage.")
+        await ctx.send(f"Set {user.display_name}'s stats to {stamina_bonus} stamina, {health_bonus} health, and {damage_bonus} damage.")
         
     @bullshido_group.command(name="challenge", description="Challenge another player to a fight with a bet.")
     async def challenge(self, ctx: commands.Context, opponent: discord.Member, bet: int):
