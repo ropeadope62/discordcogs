@@ -167,7 +167,7 @@ class TuneWeaver(commands.Cog):
             return
 
         tracks = await self.weave_tracks_from_genre(genre)
-        self.last_tracks = tracks
+        await self.config.guild(ctx.guild).last_tracks.set(tracks)
         if not tracks:
             await channel.send(
                 "Failed to retrieve tracks for the genre. Please try again later"
@@ -338,7 +338,8 @@ class TuneWeaver(commands.Cog):
     @tuneweaver_group.command(name="showdailytracks", description="Show today's tracks that have been selected.")
     async def show_daily_tracks(self, ctx):
         """ Show today's tracks that have been selected """
-        if not self.last_tracks:
+        last_tracks = await self.config.guild(ctx.guild).last_tracks()
+        if not last_tracks:
             await ctx.send("No tracks available. Please run the daily track selection first.")
             return
         last_genre = await self.config.guild(ctx.guild).last_genre()
@@ -347,7 +348,7 @@ class TuneWeaver(commands.Cog):
             
         await ctx.send(f"**Todays daily tracks from {last_genre.title()} **")
 
-        for track in self.last_tracks:
+        for track in last_tracks:
             # Extract the Spotify track ID from the URL
             track_id = track['url'].split('/')[-1]
             
