@@ -273,18 +273,19 @@ class BoofCoin(commands.Cog):
             coin_data = await self.checkcoins(real_symbol)
             current_price = coin_data.get("quote", {}).get("USD", {}).get("price", 0)
 
-            # Calculate the total value of the holding
-            totalvalue = details["amount"] * current_price
-            profit_loss = totalvalue - details["totalcost"]
-            pricestr = f"+{humanize_number(profit_loss)}" if profit_loss > 0 else f"{humanize_number(profit_loss)}"
-            enddata.append([self.wallet_name_mapping.get(custom_name, custom_name), details["amount"], pricestr, totalvalue])
+            # Calculate the current value of the holding
+            total_value = details["amount"] * current_price
+
+            # Display the current value as a positive figure
+            enddata.append([self.wallet_name_mapping.get(custom_name, custom_name), details["amount"], humanize_number(total_value)])
 
         if enddata:
             await ctx.send(
-                box(tabulate(enddata, headers=["Crypto Asset", "Amount", "Net Investment Value", "Relative Profit/Loss"]), lang="prolog")
+                box(tabulate(enddata, headers=["Crypto Asset", "Amount", "Current Value (USD)"]), lang="prolog")
             )
         else:
             await ctx.send("There was an issue fetching your wallet data.")
+
 
     @boofcoin.command()
     async def price(self, ctx, coin, *, amount: float = None):

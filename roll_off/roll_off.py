@@ -23,6 +23,10 @@ class RollOff(commands.Cog):
         if ctx.channel.id in active_games:
             await ctx.send("There is already a Roll Off in progress in this channel.")
             return
+        
+        if not await bank.can_spend(ctx.author, bet):
+            await ctx.send(f"You do not have enough credits to make this bet. You need {bet - await bank.get_balance(ctx.author)} more.")
+            return
 
         if opponent == ctx.author:
             await ctx.send("You can't roll off against yourself!")
