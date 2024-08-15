@@ -40,9 +40,9 @@ class FightingGame:
         self.wager = wager
         self.challenge = challenge
         self.bullshido_cog = bullshido_cog
-        self.training_weight = bullshido_cog.config.guild(channel.guild).training_weight()
-        self.diet_weight = bullshido_cog.config.guild(channel.guild).diet_weight()
-        self.damage_bonus_weight = bullshido_cog.config.guild(channel.guild).damage_bonus_weight()
+        self.training_weight = None
+        self.diet_weight = None
+        self.damage_bonus_weight = None
         self.player1_critical_message = ""
         self.player2_critical_message = ""
         self.player1_critical_injuries = []
@@ -300,13 +300,13 @@ class FightingGame:
             self.embed_message = await self.embed_message.edit(embed=embed)
 
 
-    def calculate_adjusted_damage(self, base_damage, training_level, diet_level, damage_bonus):
+    async def calculate_adjusted_damage(self, base_damage, training_level, diet_level, damage_bonus):
         # Define max levels and weights for each factor
+        training_weight = await self.bullshido_cog.config.guild(self.channel.guild).training_weight()
+        diet_weight = await self.bullshido_cog.config.guild(self.channel.guild).diet_weight()
+        damage_bonus_weight = await self.bullshido_cog.config.guild(self.channel.guild).damage_bonus_weight()
         max_training_level = 100
         max_diet_level = 100
-        training_weight = self.training_weight
-        diet_weight = self.diet_weight
-        damage_bonus_weight = self.damage_bonus_weight
 
         # Normalize and scale the training level bonus
         training_bonus = (training_level / max_training_level) * training_weight
