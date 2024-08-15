@@ -106,6 +106,12 @@ class FightingGame:
         
         return '\n'.join(lines)
     
+    async def async_initialize(self):
+        """Fetch asynchronous configuration values."""
+        self.training_weight = await self.bullshido_cog.config.guild(self.channel.guild).training_weight()
+        self.diet_weight = await self.bullshido_cog.config.guild(self.channel.guild).diet_weight()
+        self.damage_bonus_weight = await self.bullshido_cog.config.guild(self.channel.guild).damage_bonus_weight()
+    
     async def determine_first_turn(self, attacker_training, defender_training):
         # Determine who goes first based on training levels
         total_training = attacker_training + defender_training
@@ -300,11 +306,11 @@ class FightingGame:
             self.embed_message = await self.embed_message.edit(embed=embed)
 
 
-    async def calculate_adjusted_damage(self, base_damage, training_level, diet_level, damage_bonus):
+    def calculate_adjusted_damage(self, base_damage, training_level, diet_level, damage_bonus):
         # Define max levels and weights for each factor
-        training_weight = await self.bullshido_cog.config.guild(self.channel.guild).training_weight()
-        diet_weight = await self.bullshido_cog.config.guild(self.channel.guild).diet_weight()
-        damage_bonus_weight = await self.bullshido_cog.config.guild(self.channel.guild).damage_bonus_weight()
+        training_weight = self.training_weight
+        diet_weight = self.diet_weight
+        damage_bonus_weight = self.damage_bonus_weight
         max_training_level = 100
         max_diet_level = 100
 
@@ -801,6 +807,7 @@ class FightingGame:
             self.max_strikes_per_round = await self.bullshido_cog.config.guild(guild).max_strikes_per_round()
             self.training_weight = await self.bullshido_cog.config.guild(guild).training_weight()
             self.diet_weight = await self.bullshido_cog.config.guild(guild).diet_weight()
+            self.damage_bonus_weight = await self.bullshido_cog.config.guild(guild).damage_bonus_weight()
             self.base_health = await self.bullshido_cog.config.guild(guild).base_health()
             self.ACTION_COST = await self.bullshido_cog.config.guild(guild).action_cost()
             self.BASE_MISS_PROBABILITY = await self.bullshido_cog.config.guild(guild).base_miss_probability()
