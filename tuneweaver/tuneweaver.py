@@ -12,7 +12,7 @@ class TuneWeaver(commands.Cog):
         self.bot = bot
         self.config = Config.get_conf(self, identifier=1234567891274843525235889345210)
         default_guild = {
-            "daily_weave_time": None,
+            "weave_time": None,
             "channel_id": None,
             "last_genre": None,
             "last_tracks": None,
@@ -142,7 +142,7 @@ class TuneWeaver(commands.Cog):
         while not self.bot.is_closed():
             now = datetime.now(timezone.utc)
             for guild in self.bot.guilds:
-                weave_time_str = await self.config.guild(guild).daily_weave_time()
+                weave_time_str = await self.config.guild(guild).weave_time()
                 if not weave_time_str:
                     continue  # Skip if no time is set
                 try:
@@ -326,10 +326,10 @@ class TuneWeaver(commands.Cog):
         await self.post_daily_weave(ctx, ctx.guild)
 
     @tuneweaverset_group.command(
-        name="dailyweavetime", description="Set the time for daily track selection."
+        name="time", description="Set the time for daily track selection."
     )
     @commands.is_owner()
-    async def daily_weave_time(self, ctx, weave_time: str):
+    async def set_weave_time(self, ctx, weave_time: str):
         """Set the time for daily track selection."""
         """Set the time for daily track posts (in HH:MM format, UTC)."""
         try:
@@ -368,7 +368,7 @@ class TuneWeaver(commands.Cog):
     @tuneweaver_group.command(name="next", description="Show how much time is left until the next weave.")
     async def next_weave(self, ctx):
         """Show when the next daily weave will trigger."""
-        weave_time_str = await self.config.guild(ctx.guild).daily_weave_time()
+        weave_time_str = await self.config.guild(ctx.guild).weave_time()
         if not weave_time_str:
             await ctx.send("Daily weave time is not set.")
             return
