@@ -325,7 +325,7 @@ class FightingGame:
 
         # Calculate the adjusted damage
         adjusted_damage = base_damage * diminished_multiplier
-
+        print(f"Adjusted Damage: {adjusted_damage} based on base damage: {base_damage}, training bonus: {training_bonus}, diet bonus: {diet_bonus}, damage bonus: {scaled_damage_bonus}")
         # Round the adjusted damage to the nearest integer
         return round(adjusted_damage)
     
@@ -372,7 +372,7 @@ class FightingGame:
             modified_damage = self.calculate_adjusted_damage(base_damage, attacker['training_level'], attacker['nutrition_level'], damage_bonus)
 
             # Apply a random modifier to the modified damage
-            modifier = random.uniform(0.8, 1.3)
+            modifier = random.uniform(0.7, 1.4)
             modified_damage = round(modified_damage * modifier)
 
             # Check if the strike is a critical hit
