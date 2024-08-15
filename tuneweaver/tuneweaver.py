@@ -3,7 +3,7 @@ from redbot.core import commands, Config
 import spotipy
 import random
 import asyncio
-from datetime import datetime, time
+from datetime import datetime, time, timezone, timedelta
 from redbot.core.bot import Red
 
 
@@ -140,18 +140,22 @@ class TuneWeaver(commands.Cog):
         await self.bot.wait_until_ready()
         await self.initialize()
         while not self.bot.is_closed():
-            now = datetime.now()
+            now = datetime.now(timezone.utc)
             for guild in self.bot.guilds:
                 weave_time_str = await self.config.guild(guild).daily_weave_time()
-                weave_time = datetime.strptime(weave_time_str, "%H:%M").time()
-                if (
-                    now.time().hour == weave_time.hour
-                    and now.time().minute == weave_time.minute
-                ):
+                if not weave_time_str:
+                    continue  # Skip if no time is set
+                try:
+                    weave_time = datetime.strptime(weave_time_str, "%H:%M").time()
+                except ValueError:
+                    print(f"Invalid time format for guild {guild.name}: {weave_time_str}")
+                    continue
+
+                if now.time().hour == weave_time.hour and now.time().minute == weave_time.minute:
                     await self.post_daily_weave(guild)
             await asyncio.sleep(60)
 
-    async def post_daily_weave(self, ctx, guild):
+    async def post_daily_weave(self, guild):
         channel_id = await self.config.guild(guild).channel_id()
         if not channel_id:
             return
@@ -159,7 +163,7 @@ class TuneWeaver(commands.Cog):
         if not channel:
             return
 
-        genre = await self.get_random_genre(ctx)
+        genre = await self.get_random_genre(channel)  # Pass channel as context
         if not genre:
             await channel.send(
                 "Failed to retrieve a random genre. Please try again later"
@@ -167,7 +171,7 @@ class TuneWeaver(commands.Cog):
             return
 
         tracks = await self.weave_tracks_from_genre(genre)
-        await self.config.guild(ctx.guild).last_tracks.set(tracks)
+        await self.config.guild(guild).last_tracks.set(tracks)
         if not tracks:
             await channel.send(
                 "Failed to retrieve tracks for the genre. Please try again later"
@@ -179,17 +183,17 @@ class TuneWeaver(commands.Cog):
             color=discord.Color.purple(),
         )
         embed.set_thumbnail(url="https://i.ibb.co/tzxqWJ8/tuneweaver-logo-circle.png")
-        
+
         for i, track in enumerate(tracks, 1):
             duration = f"{track['duration_ms'] // 60000}:{(track['duration_ms'] % 60000) // 1000:02d}"
             embed.add_field(
                 name=f"Track {i}: {track['name']}",
                 value=f"By: {track['artists']}\n"
-                f"Album: {track['album']}\n"
-                f"Duration: {duration}\n"
-                f"Popularity: {track['popularity']}/100\n"
-                f"[Listen on Spotify]({track['url']})\n"
-                f"[Preview]({track['preview_url']})",
+                      f"Album: {track['album']}\n"
+                      f"Duration: {duration}\n"
+                      f"Popularity: {track['popularity']}/100\n"
+                      f"[Listen on Spotify]({track['url']})\n"
+                      f"[Preview]({track['preview_url']})",
                 inline=False,
             )
 
@@ -360,8 +364,35 @@ class TuneWeaver(commands.Cog):
             
             # Add a small delay between messages to prevent rate limiting
             await asyncio.sleep(1)
-        
+    
+    @tuneweaver_group.command(name="next", description="Show how much time is left until the next weave.")
+    async def next_weave(self, ctx):
+        """Show when the next daily weave will trigger."""
+        weave_time_str = await self.config.guild(ctx.guild).daily_weave_time()
+        if not weave_time_str:
+            await ctx.send("Daily weave time is not set.")
+            return
 
+        try:
+            weave_time = datetime.strptime(weave_time_str, "%H:%M").time()
+        except ValueError:
+            await ctx.send(f"Invalid daily weave time format: {weave_time_str}")
+            return
+
+        now = datetime.now(timezone.utc).time()
+        current_datetime = datetime.utcnow()
+        scheduled_time_today = datetime.combine(current_datetime.date(), weave_time)
+
+        if now > weave_time:
+            # If the current time has passed the scheduled time, calculate for the next day
+            scheduled_time_today += timedelta(days=1)
+
+        time_until_next_weave = scheduled_time_today - current_datetime
+        hours, remainder = divmod(time_until_next_weave.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        await ctx.send(f"Next daily weave will trigger in {hours} hours, {minutes} minutes, and {seconds} seconds.")
+    
     @tuneweaver_group.command()
     async def genre_info(self, ctx, genre: str):
         await ctx.send(f"Displaying information for genre: {genre}")
