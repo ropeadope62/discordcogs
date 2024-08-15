@@ -430,7 +430,7 @@ class TuneWeaver(commands.Cog):
                 "Spotify API is not initialized. Please set up the API credentials."
             )
             return
-        await self.post_daily_weave(ctx, ctx.guild)
+        await self.post_daily_weave(ctx.guild)
 
     @tuneweaverset_group.command(
         name="time", description="Set the time for daily track selection."
