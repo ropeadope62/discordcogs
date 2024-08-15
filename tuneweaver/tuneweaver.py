@@ -144,14 +144,19 @@ class TuneWeaver(commands.Cog):
             for guild in self.bot.guilds:
                 weave_time_str = await self.config.guild(guild).weave_time()
                 if not weave_time_str:
-                    continue 
+                    continue
                 try:
                     weave_time = datetime.strptime(weave_time_str, "%H:%M").time()
                 except ValueError:
-                    print(f"Invalid time format for guild {guild.name}: {weave_time_str}")
+                    print(
+                        f"Invalid time format for guild {guild.name}: {weave_time_str}"
+                    )
                     continue
 
-                if now.time().hour == weave_time.hour and now.time().minute == weave_time.minute:
+                if (
+                    now.time().hour == weave_time.hour
+                    and now.time().minute == weave_time.minute
+                ):
                     await self.post_daily_weave(guild)
             await asyncio.sleep(60)
 
@@ -189,11 +194,11 @@ class TuneWeaver(commands.Cog):
             embed.add_field(
                 name=f"Track {i}: {track['name']}",
                 value=f"By: {track['artists']}\n"
-                      f"Album: {track['album']}\n"
-                      f"Duration: {duration}\n"
-                      f"Popularity: {track['popularity']}/100\n"
-                      f"[Listen on Spotify]({track['url']})\n"
-                      f"[Preview]({track['preview_url']})",
+                f"Album: {track['album']}\n"
+                f"Duration: {duration}\n"
+                f"Popularity: {track['popularity']}/100\n"
+                f"[Listen on Spotify]({track['url']})\n"
+                f"[Preview]({track['preview_url']})",
                 inline=False,
             )
 
@@ -349,33 +354,41 @@ class TuneWeaver(commands.Cog):
         except ValueError:
             await ctx.send("Invalid time format. Please use HH:MM (24-hour format).")
 
-    @tuneweaver_group.command(name="showdailytracks", alias = "daily", description="Show today's tracks that have been selected.")
+    @tuneweaver_group.command(
+        name="showdailytracks",
+        alias="daily",
+        description="Show today's tracks that have been selected.",
+    )
     async def show_daily_tracks(self, ctx):
-        """ Show today's tracks that have been selected """
+        """Show today's tracks that have been selected"""
         last_tracks = await self.config.guild(ctx.guild).last_tracks()
         if not last_tracks:
-            await ctx.send("No tracks available. Please run the daily track selection first.")
+            await ctx.send(
+                "No tracks available. Please run the daily track selection first."
+            )
             return
         last_genre = await self.config.guild(ctx.guild).last_genre()
         if not last_genre:
             last_genre = None
-            
+
         await ctx.send(f"**Todays daily tracks from {last_genre.title()} **")
 
         for track in last_tracks:
             # Extract the Spotify track ID from the URL
-            track_id = track['url'].split('/')[-1]
-            
+            track_id = track["url"].split("/")[-1]
+
             # Create the specially formatted Spotify URL
             spotify_url = f"https://open.spotify.com/track/{track_id}"
-            
+
             # Send the URL as a message
             await ctx.send(spotify_url)
-            
+
             # Add a small delay between messages to prevent rate limiting
             await asyncio.sleep(1)
-    
-    @tuneweaver_group.command(name="next", description="Show how much time is left until the next weave.")
+
+    @tuneweaver_group.command(
+        name="next", description="Show how much time is left until the next weave."
+    )
     async def next_weave(self, ctx):
         """Show when the next daily weave will trigger."""
         weave_time_str = await self.config.guild(ctx.guild).weave_time()
@@ -401,8 +414,10 @@ class TuneWeaver(commands.Cog):
         hours, remainder = divmod(time_until_next_weave.seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
 
-        await ctx.send(f"Next daily weave will trigger in {hours} hours, {minutes} minutes, and {seconds} seconds.")
-    
+        await ctx.send(
+            f"Next daily weave will trigger in {hours} hours, {minutes} minutes, and {seconds} seconds."
+        )
+
     @tuneweaver_group.command()
     async def genre_info(self, ctx, genre: str):
         await ctx.send(f"Displaying information for genre: {genre}")
@@ -411,7 +426,7 @@ class TuneWeaver(commands.Cog):
         name="sample", description="Get a random sample track from a genre."
     )
     async def get_sample(self, ctx, genre: str):
-        """ Get a random sample track from a genre"""
+        """Get a random sample track from a genre"""
         if self.spotify is None:
             await ctx.send("Spotify API is not initialized.")
             return
@@ -443,5 +458,3 @@ class TuneWeaver(commands.Cog):
         except Exception as e:
             print(e)
             await ctx.send("Failed to retrieve a random genre.")
-
-    @tuneweaver
