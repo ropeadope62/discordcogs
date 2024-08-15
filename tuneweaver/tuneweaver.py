@@ -407,7 +407,7 @@ class TuneWeaver(commands.Cog):
             )
             embed.add_field(
                 name="Commands",
-                value="- **/tuneweaver daily:** Show the chosen tracks for today.\n- **/tuneweaver next:** Show how much time is left until the next genre/track selection.\n- **/tuneweaver genre_info <genre>:** Display information about a genre.\n- **/tuneweaver sample <genre>:** Get a random sample track from a genre.",
+                value="- **/tuneweaver daily:** Show the chosen tracks for today.\n- **/tuneweaver next:** Show how much time is left until the next genre/track selection.\n- **/tuneweaver genre_info <genre>:** Display information about a genre.\n- **/tuneweaver sample <genre>:** Get a random sample track from a genre.\n - **/tuneweaver recommendations <genre>:** Get track recommendations based on a genre.",
                 inline=False,
             )
             await ctx.send(embed=embed)
