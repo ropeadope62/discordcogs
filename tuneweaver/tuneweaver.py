@@ -144,7 +144,7 @@ class TuneWeaver(commands.Cog):
             for guild in self.bot.guilds:
                 weave_time_str = await self.config.guild(guild).weave_time()
                 if not weave_time_str:
-                    continue  # Skip if no time is set
+                    continue 
                 try:
                     weave_time = datetime.strptime(weave_time_str, "%H:%M").time()
                 except ValueError:
@@ -334,7 +334,7 @@ class TuneWeaver(commands.Cog):
         """Set the time for daily track posts (in HH:MM format, UTC)."""
         try:
             datetime.strptime(weave_time, "%H:%M")
-            await self.config.guild(ctx.guild).post_time.set(weave_time)
+            await self.config.guild(ctx.guild).weave_time.set(weave_time)
             await ctx.send(f"TuneWeaver daily weave time set to {weave_time} UTC")
         except ValueError:
             await ctx.send("Invalid time format. Please use HH:MM (24-hour format).")
