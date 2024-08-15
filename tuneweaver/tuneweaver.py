@@ -279,6 +279,11 @@ class TuneWeaver(commands.Cog):
                 value="If you liked this cog, check out my other cogs! https://github.com/ropeadope62/discordcogs",
                 inline=True,
             )
+            embed.add_field(
+                name="Admin Commands",
+                value="- **/tuneweaverset time <hh:mm>:** Set the daily weave time.\n- **/tuneweaverset weave:** Manually trigger a new genre/track selection.\n- **/tuneweaver genre_info <genre>:** Display information about a genre.\n- **/tuneweaver sample <genre>:** Get a random sample track from a genre.",
+                inline=False,
+            )
             await ctx.send(embed=embed)
 
     @commands.hybrid_group(name="tuneweaver", description="TuneWeaver commands.")
@@ -302,6 +307,11 @@ class TuneWeaver(commands.Cog):
                 name="Repo",
                 value="If you liked this cog, check out my other cogs! https://github.com/ropeadope62/discordcogs",
                 inline=True,
+            )
+            embed.add_field(
+                name="Commands",
+                value="- **/tuneweaver daily:** Show the chosen tracks for today.\n- **/tuneweaver next:** Show how much time is left until the next genre/track selection.\n- **/tuneweaver genre_info <genre>:** Display information about a genre.\n- **/tuneweaver sample <genre>:** Get a random sample track from a genre.",
+                inline=False,
             )
             await ctx.send(embed=embed)
 
@@ -339,7 +349,7 @@ class TuneWeaver(commands.Cog):
         except ValueError:
             await ctx.send("Invalid time format. Please use HH:MM (24-hour format).")
 
-    @tuneweaver_group.command(name="showdailytracks", description="Show today's tracks that have been selected.")
+    @tuneweaver_group.command(name="showdailytracks", alias = "daily", description="Show today's tracks that have been selected.")
     async def show_daily_tracks(self, ctx):
         """ Show today's tracks that have been selected """
         last_tracks = await self.config.guild(ctx.guild).last_tracks()
@@ -434,4 +444,4 @@ class TuneWeaver(commands.Cog):
             print(e)
             await ctx.send("Failed to retrieve a random genre.")
 
-    # async def get_tracks_from_genre(self, ctx, genre: str):
+    @tuneweaver
