@@ -39,8 +39,10 @@ class FightingGame:
         self.winner = None
         self.wager = wager
         self.challenge = challenge
-        self.training_weight = 0.15  # 15% contribution
-        self.diet_weight = 0.15  # 15% contribution
+        self.bullshido_cog = bullshido_cog
+        self.training_weight = bullshido_cog.config.guild(channel.guild).training_weight()
+        self.diet_weight = bullshido_cog.config.guild(channel.guild).diet_weight()
+        self.damage_bonus_weight = bullshido_cog.config.guild(channel.guild).damage_bonus_weight()
         self.player1_critical_message = ""
         self.player2_critical_message = ""
         self.player1_critical_injuries = []
@@ -299,26 +301,30 @@ class FightingGame:
 
 
     def calculate_adjusted_damage(self, base_damage, training_level, diet_level, damage_bonus):
-    # Ensure training and diet levels are within the valid range
-        training_level = min(max(training_level, 0), 100)
-        diet_level = min(max(diet_level, 0), 100)
+        # Define max levels and weights for each factor
+        max_training_level = 100
+        max_diet_level = 100
+        training_weight = self.training_weight
+        diet_weight = self.diet_weight
+        damage_bonus_weight = self.damage_bonus_weight
 
-        # Normalize the training and diet levels to a range of 0 to 1
-        normalized_training = training_level / 100.0
-        normalized_diet = diet_level / 100.0
+        # Normalize and scale the training level bonus
+        training_bonus = (training_level / max_training_level) * training_weight
 
-        # Calculate the bonus from training and diet using logarithmic scaling
-        training_bonus = math.log10(normalized_training * 9 + 1) * self.training_weight
-        diet_bonus = math.log10(normalized_diet * 9 + 1) * self.diet_weight
+        # Normalize and scale the diet level bonus
+        diet_bonus = (diet_level / max_diet_level) * diet_weight
 
-        # Apply logarithmic scaling to the damage bonus to increase its impact slightly
-        scaled_damage_bonus = math.log10(damage_bonus + 1)
+        # Scale the damage bonus
+        scaled_damage_bonus = damage_bonus * damage_bonus_weight
 
-        # Increase the scaling factor from 0.3 to 0.4 for more impact
-        total_damage_bonus = 1 + (training_bonus + diet_bonus) * 0.5 + scaled_damage_bonus * 0.5
+        # Calculate the total damage multiplier
+        total_damage_multiplier = 1 + training_bonus + diet_bonus + scaled_damage_bonus
+
+        # Apply diminishing returns using a logarithmic function
+        diminished_multiplier = math.log(total_damage_multiplier + 1, 2)
 
         # Calculate the adjusted damage
-        adjusted_damage = base_damage * total_damage_bonus
+        adjusted_damage = base_damage * diminished_multiplier
 
         # Round the adjusted damage to the nearest integer
         return round(adjusted_damage)

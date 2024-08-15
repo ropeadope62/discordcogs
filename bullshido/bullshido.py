@@ -63,8 +63,9 @@ class Bullshido(commands.Cog):
         default_guild = {
             "rounds": 3,
             "max_strikes_per_round": 5,
-            "training_weight": 0.15,
-            "diet_weight": 0.15,
+            "training_weight": 0.5,
+            "diet_weight": 0.3,
+            "damage_bonus_weight": 0.5,
             "base_health": 100,
             "action_cost": 10,
             "base_miss_probability": 0.15,
