@@ -259,7 +259,7 @@ class TuneWeaver(commands.Cog):
 
         await channel.send(embed=embed)
         
-    async def post_recommendations_weave(self, guild):
+    async def post_recommendations_weave(self, guild, genre: str):
         channel_id = await self.config.guild(guild).channel_id()
         if not channel_id:
             return
@@ -517,13 +517,13 @@ class TuneWeaver(commands.Cog):
         )
 
     @tuneweaver_group.command(name="recommendations", description="Get recommendations based on a genre.")
-    async def recommendations(self, ctx):
+    async def recommendations(self, ctx, genre: str):
         if self.spotify is None:
             await ctx.send(
                 "Spotify API is not initialized. Please set up the API credentials."
             )
             return
-        await self.post_recommendations_weave(ctx, ctx.guild)
+        await self.post_recommendations_weave(ctx.guild, genre)
         
 
     @tuneweaver_group.command()
