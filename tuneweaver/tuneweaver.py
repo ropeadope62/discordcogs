@@ -84,7 +84,7 @@ class TuneWeaver(commands.Cog):
         except Exception as e:
             print(f"Error fetching track: {str(e)}")
             raise
-        
+
     async def get_track_from_genre(self, genre: str):
         try:
             # Perform a search for tracks within the specified genre
@@ -102,7 +102,7 @@ class TuneWeaver(commands.Cog):
         except Exception as e:
             print(f"Error fetching track: {str(e)}")
             raise
-    
+
     async def weave_tracks_from_genre(self, genre, limit=5):
         if self.spotify is None:
             raise ValueError(
@@ -258,53 +258,43 @@ class TuneWeaver(commands.Cog):
             )
 
         await channel.send(embed=embed)
-        
-    @tuneweaver_group.command(name="recommendations", description="Get recommendations based on a genre.")
-async def recommendations(self, ctx, genre: str):
-    """Get recommendations based on a genre."""
-    if self.spotify is None:
-        await ctx.send(
-            "Spotify API is not initialized. Please set up the API credentials."
+
+    async def post_recommendations_weave(self, guild, genre: str):
+        channel_id = await self.config.guild(guild).channel_id()
+        if not channel_id:
+            return
+        channel = guild.get_channel(channel_id)
+        if not channel:
+            return
+
+        # No need to call get_random_genre; we use the provided genre
+        tracks = await self.weave_tracks_from_recommendations(genre)
+        if not tracks:
+            await channel.send(
+                f"Failed to retrieve tracks for the genre '{genre}'. Please try again later."
+            )
+            return
+
+        embed = discord.Embed(
+            title=f"TuneWeaver - Recommendations based on {genre}",
+            color=discord.Color.purple(),
         )
-        return
-    await self.post_recommendations_weave(ctx.guild, genre)  # Pass the genre to the method
+        embed.set_thumbnail(url="https://i.ibb.co/tzxqWJ8/tuneweaver-logo-circle.png")
 
-async def post_recommendations_weave(self, guild, genre: str):
-    channel_id = await self.config.guild(guild).channel_id()
-    if not channel_id:
-        return
-    channel = guild.get_channel(channel_id)
-    if not channel:
-        return
+        for i, track in enumerate(tracks, 1):
+            duration = f"{track['duration_ms'] // 60000}:{(track['duration_ms'] % 60000) // 1000:02d}"
+            embed.add_field(
+                name=f"Track {i}: {track['name']}",
+                value=f"By: {track['artists']}\n"
+                f"Album: {track['album']}\n"
+                f"Duration: {duration}\n"
+                f"Popularity: {track['popularity']}/100\n"
+                f"[Listen on Spotify]({track['url']})\n"
+                f"[Preview]({track['preview_url']})",
+                inline=False,
+            )
 
-    # No need to call get_random_genre; we use the provided genre
-    tracks = await self.weave_tracks_from_recommendations(genre)
-    if not tracks:
-        await channel.send(
-            f"Failed to retrieve tracks for the genre '{genre}'. Please try again later."
-        )
-        return
-
-    embed = discord.Embed(
-        title=f"TuneWeaver - Recommendations based on {genre}",
-        color=discord.Color.purple(),
-    )
-    embed.set_thumbnail(url="https://i.ibb.co/tzxqWJ8/tuneweaver-logo-circle.png")
-
-    for i, track in enumerate(tracks, 1):
-        duration = f"{track['duration_ms'] // 60000}:{(track['duration_ms'] % 60000) // 1000:02d}"
-        embed.add_field(
-            name=f"Track {i}: {track['name']}",
-            value=f"By: {track['artists']}\n"
-                  f"Album: {track['album']}\n"
-                  f"Duration: {duration}\n"
-                  f"Popularity: {track['popularity']}/100\n"
-                  f"[Listen on Spotify]({track['url']})\n"
-                  f"[Preview]({track['preview_url']})",
-            inline=False,
-        )
-
-    await channel.send(embed=embed)
+        await channel.send(embed=embed)
 
     async def weave_tracks_from_recommendations(self, genre, limit=5):
         if self.spotify is None:
@@ -457,8 +447,7 @@ async def post_recommendations_weave(self, guild, genre: str):
             await ctx.send("Invalid time format. Please use HH:MM (24-hour format).")
 
     @tuneweaver_group.command(
-        name="daily",
-        description="Show today's tracks that have been selected."
+        name="daily", description="Show today's tracks that have been selected."
     )
     async def show_daily_tracks(self, ctx):
         """Show today's tracks that have been selected"""
@@ -517,15 +506,17 @@ async def post_recommendations_weave(self, guild, genre: str):
             f"Next daily weave will trigger in {hours} hours, {minutes} minutes, and {seconds} seconds."
         )
 
-    @tuneweaver_group.command(name="recommendations", description="Get recommendations based on a genre.")
+    @tuneweaver_group.command(
+        name="recommendations", description="Get recommendations based on a genre."
+    )
     async def recommendations(self, ctx, genre: str):
+        """Get Track recommendations based on a genre"""
         if self.spotify is None:
             await ctx.send(
                 "Spotify API is not initialized. Please set up the API credentials."
             )
             return
         await self.post_recommendations_weave(ctx.guild, genre)
-        
 
     @tuneweaver_group.command()
     async def genre_info(self, ctx, genre: str):
