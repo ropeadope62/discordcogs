@@ -59,7 +59,7 @@ class TuneWeaver(commands.Cog):
             print(e)
             return None
 
-    async def get_track_from_genre(self, genre: str):
+    async def recommend_track_from_genre(self, genre: str):
         try:
             results = self.spotify.recommendations(
                 seed_genres=[genre], limit=1, market="US", min_popularity=50
@@ -84,6 +84,61 @@ class TuneWeaver(commands.Cog):
         except Exception as e:
             print(f"Error fetching track: {str(e)}")
             raise
+        
+    async def get_track_from_genre(self, genre: str):
+        try:
+            # Perform a search for tracks within the specified genre
+            search_results = self.spotify.search(
+                q=f'genre:"{genre}"', type="track", limit=1, market="US"
+            )
+
+            if search_results["tracks"]["items"]:
+                return self.format_track(search_results["tracks"]["items"][0])
+            return None
+
+        except spotipy.SpotifyException as e:
+            print(f"Spotify API error: {str(e)}")
+            raise
+        except Exception as e:
+            print(f"Error fetching track: {str(e)}")
+            raise
+    
+    async def weave_tracks_from_genre(self, genre, limit=5):
+        if self.spotify is None:
+            raise ValueError(
+                "Spotify API is not initialized. Please set up the API credentials."
+            )
+        try:
+            # Search for tracks within the specified genre
+            search_results = self.spotify.search(
+                q=f'genre:"{genre}"', type="track", limit=limit, market="US"
+            )
+
+            tracks = []
+            for track in search_results["tracks"]["items"]:
+                artists = ", ".join([artist["name"] for artist in track["artists"]])
+                album = track["album"]["name"]
+                preview_url = track.get("preview_url", "No preview available")
+                tracks.append(
+                    {
+                        "name": track["name"],
+                        "artists": artists,
+                        "album": album,
+                        "url": track["external_urls"]["spotify"],
+                        "preview_url": preview_url,
+                        "duration_ms": track["duration_ms"],
+                        "popularity": track["popularity"],
+                    }
+                )
+
+            return tracks[:limit]
+
+        except spotipy.SpotifyException as e:
+            print(f"Spotify API error: {str(e)}")
+            return None
+        except Exception as e:
+            print(f"Error fetching tracks: {str(e)}")
+            return None
 
     def format_track(self, track):
         artists = ", ".join([artist["name"] for artist in track["artists"]])
@@ -203,8 +258,51 @@ class TuneWeaver(commands.Cog):
             )
 
         await channel.send(embed=embed)
+        
+    async def post_recommendations_weave(self, guild):
+        channel_id = await self.config.guild(guild).channel_id()
+        if not channel_id:
+            return
+        channel = guild.get_channel(channel_id)
+        if not channel:
+            return
 
-    async def weave_tracks_from_genre(self, genre, limit=5):
+        genre = await self.get_random_genre(channel)  # Pass channel as context
+        if not genre:
+            await channel.send(
+                "Failed to retrieve a random genre. Please try again later"
+            )
+            return
+
+        tracks = await self.weave_tracks_from_recommendations(genre)
+        if not tracks:
+            await channel.send(
+                "Failed to retrieve tracks for the genre. Please try again later"
+            )
+            return
+
+        embed = discord.Embed(
+            title=f"TuneWeaver - Recommendations based on {genre}",
+            color=discord.Color.purple(),
+        )
+        embed.set_thumbnail(url="https://i.ibb.co/tzxqWJ8/tuneweaver-logo-circle.png")
+
+        for i, track in enumerate(tracks, 1):
+            duration = f"{track['duration_ms'] // 60000}:{(track['duration_ms'] % 60000) // 1000:02d}"
+            embed.add_field(
+                name=f"Track {i}: {track['name']}",
+                value=f"By: {track['artists']}\n"
+                f"Album: {track['album']}\n"
+                f"Duration: {duration}\n"
+                f"Popularity: {track['popularity']}/100\n"
+                f"[Listen on Spotify]({track['url']})\n"
+                f"[Preview]({track['preview_url']})",
+                inline=False,
+            )
+
+        await channel.send(embed=embed)
+
+    async def weave_tracks_from_recommendations(self, genre, limit=5):
         if self.spotify is None:
             raise ValueError(
                 "Spotify API is not initialized. Please set up the API credentials."
@@ -417,6 +515,16 @@ class TuneWeaver(commands.Cog):
         await ctx.send(
             f"Next daily weave will trigger in {hours} hours, {minutes} minutes, and {seconds} seconds."
         )
+
+    @tuneweaver_group.command(name="recommendations", description="Get recommendations based on a genre.")
+    async def recommendations(self, ctx):
+        if self.spotify is None:
+            await ctx.send(
+                "Spotify API is not initialized. Please set up the API credentials."
+            )
+            return
+        await self.post_recommendations_weave(ctx, ctx.guild)
+        
 
     @tuneweaver_group.command()
     async def genre_info(self, ctx, genre: str):
