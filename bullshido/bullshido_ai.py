@@ -47,10 +47,6 @@ def generate_hype(user_config, attacker_id, defender_id, attacker_name, defender
             key: user_config[str(defender_id)].get(key) for key in relevant_keys
         }
 
-    # Debug prints
-    print(attacker_data)  # debug print
-    print(defender_data)  # debug print
-
     if not attacker_data or not defender_data:
         return "Invalid attacker or defender ID."
 
@@ -121,9 +117,6 @@ def generate_hype_challenge(
             key: user_config[str(defender_id)].get(key) for key in relevant_keys
         }
 
-    # Debug prints
-    print(attacker_data)  # debug print
-    print(defender_data)  # debug print
 
     if not attacker_data or not defender_data:
         return "Invalid attacker or defender ID."
