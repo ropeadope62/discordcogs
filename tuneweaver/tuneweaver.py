@@ -194,8 +194,10 @@ class TuneWeaver(commands.Cog):
     async def daily_weave_loop(self):
         await self.bot.wait_until_ready()
         await self.initialize()
+        last_run_date = None
         while not self.bot.is_closed():
             now = datetime.now(timezone.utc)
+            current_date = now.date()
             for guild in self.bot.guilds:
                 weave_time_str = await self.config.guild(guild).weave_time()
                 if not weave_time_str:
@@ -211,8 +213,10 @@ class TuneWeaver(commands.Cog):
                 if (
                     now.time().hour == weave_time.hour
                     and now.time().minute == weave_time.minute
+                    and last_run_date != current_date
                 ):
                     await self.post_daily_weave(guild)
+                    last_run_date = current_date
             await asyncio.sleep(60)
 
     async def post_daily_weave(self, guild):
