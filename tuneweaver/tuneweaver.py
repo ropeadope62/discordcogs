@@ -16,6 +16,7 @@ class TuneWeaver(commands.Cog):
             "channel_id": None,
             "last_genre": None,
             "last_tracks": None,
+            "last_run_date": None
         }
         self.config.register_guild(**default_guild)
         self.spotify = None
@@ -194,7 +195,7 @@ class TuneWeaver(commands.Cog):
     async def daily_weave_loop(self):
         await self.bot.wait_until_ready()
         await self.initialize()
-        last_run_date = None
+        
         while not self.bot.is_closed():
             now = datetime.now(timezone.utc)
             current_date = now.date()
@@ -209,6 +210,8 @@ class TuneWeaver(commands.Cog):
                         f"Invalid time format for guild {guild.name}: {weave_time_str}"
                     )
                     continue
+                
+                last_run_date = await self.config.guild(guild).last_run_date()
 
                 if (
                     now.time().hour == weave_time.hour
@@ -216,7 +219,7 @@ class TuneWeaver(commands.Cog):
                     and last_run_date != current_date
                 ):
                     await self.post_daily_weave(guild)
-                    last_run_date = current_date
+                    await self.config.guild(guild).last_run_date.set(current_date)
             await asyncio.sleep(60)
 
     async def post_daily_weave(self, guild):
