@@ -16,7 +16,8 @@ class TuneWeaver(commands.Cog):
             "channel_id": None,
             "last_genre": None,
             "last_tracks": None,
-            "last_run_date": None
+            "last_run_date": None,
+            "last_run_time": None
         }
         self.config.register_guild(**default_guild)
         self.spotify = None
@@ -36,6 +37,42 @@ class TuneWeaver(commands.Cog):
                     client_secret=client_id["client_secret"],
                 )
             )
+
+    async def daily_weave_loop(self):
+        await self.bot.wait_until_ready()
+        await self.initialize()
+        
+        while not self.bot.is_closed():
+            now = datetime.now(timezone.utc)
+            current_date = now.date()
+            current_time = now.time()
+            
+            for guild in self.bot.guilds:
+                weave_time_str = await self.config.guild(guild).weave_time()
+                if not weave_time_str:
+                    continue
+                try:
+                    weave_time = datetime.strptime(weave_time_str, "%H:%M").time()
+                except ValueError:
+                    print(f"Invalid time format for guild {guild.name}: {weave_time_str}")
+                    continue
+                
+                last_run_date = await self.config.guild(guild).last_run_date()
+                last_run_time_str = await self.config.guild(guild).last_run_time()
+                last_run_time = datetime.strptime(last_run_time_str, "%H:%M").time() if last_run_time_str else None
+                print(f"Guild: {guild.name}, Last Run Date: {last_run_date}, Last Run Time: {last_run_time}, Current Date: {current_date}, Current Time: {current_time}")
+
+                if (
+                    current_time.hour == weave_time.hour
+                    and current_time.minute == weave_time.minute
+                    and (last_run_date != current_date or last_run_time != current_time)
+                ):
+                    await self.post_daily_weave(guild)
+                    await self.config.guild(guild).last_run_date.set(current_date)
+                    await self.config.guild(guild).last_run_time.set(current_time.strftime("%H:%M"))
+                    print(f"Posted daily weave for guild {guild.name} at {now}")
+            
+            await asyncio.sleep(60)
 
     async def get_random_genre(self, ctx):
         if self.spotify is None:
@@ -191,7 +228,7 @@ class TuneWeaver(commands.Cog):
             embed.set_thumbnail(url=track["image_url"])
 
         await ctx.send(embed=embed)
-
+    
     async def daily_weave_loop(self):
         await self.bot.wait_until_ready()
         await self.initialize()
@@ -199,6 +236,8 @@ class TuneWeaver(commands.Cog):
         while not self.bot.is_closed():
             now = datetime.now(timezone.utc)
             current_date = now.date()
+            current_time = now.time()
+            
             for guild in self.bot.guilds:
                 weave_time_str = await self.config.guild(guild).weave_time()
                 if not weave_time_str:
@@ -206,20 +245,23 @@ class TuneWeaver(commands.Cog):
                 try:
                     weave_time = datetime.strptime(weave_time_str, "%H:%M").time()
                 except ValueError:
-                    print(
-                        f"Invalid time format for guild {guild.name}: {weave_time_str}"
-                    )
+                    print(f"Invalid time format for guild {guild.name}: {weave_time_str}")
                     continue
                 
                 last_run_date = await self.config.guild(guild).last_run_date()
-
+                last_run_time = await self.config.guild(guild).last_run_time()
+                print(f"Guild: {guild.name}, Last Run Date: {last_run_date}, Current Date: {current_date}")
+    
                 if (
-                    now.time().hour == weave_time.hour
-                    and now.time().minute == weave_time.minute
-                    and last_run_date != current_date
+                    current_time.hour == weave_time.hour
+                    and current_time.minute == weave_time.minute
+                    and (last_run_date != current_date or last_run_time != current_time)
                 ):
                     await self.post_daily_weave(guild)
                     await self.config.guild(guild).last_run_date.set(current_date)
+                    await self.config.guild(guild).last_run_time.set(current_time)
+                    print(f"Posted daily weave for guild {guild.name} at {now}")
+            
             await asyncio.sleep(60)
 
     async def post_daily_weave(self, guild):
