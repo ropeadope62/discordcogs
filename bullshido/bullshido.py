@@ -411,6 +411,11 @@ class Bullshido(commands.Cog):
                 inline=False,
             )
             embed.add_field(
+                name="Damage Bonus Weight:",
+                value=f"{await self.config.guild(ctx.guild).damage_bonus_weight()}",
+                inline=False,
+            )
+            embed.add_field(
                 name="Base Health:",
                 value=f"{await self.config.guild(ctx.guild).base_health()}",
                 inline=False,
@@ -505,11 +510,11 @@ class Bullshido(commands.Cog):
         name="damage_bonus_weight", description="Set the weight for damage bonus factored into damage calculations."
     )
     @commands.is_owner()
-    async def set_damage_bonus_weight(self, ctx: commands.Context, critical_chance: float):
+    async def set_damage_bonus_weight(self, ctx: commands.Context, damage_bonus_weight: float):
         """Set the damage bonus weight to calculate scaled damage bonuses."""
-        await self.config.guild(ctx.guild).critical_chance.set(critical_chance)
-        self.logger.info(f"Critical hit chance set to {critical_chance}.")
-        await ctx.send(f"Critical hit chance set to {critical_chance}.")
+        await self.config.guild(ctx.guild).damage_bonus_weight.set(damage_bonus_weight)
+        self.logger.info(f"Damage Bonus weight {damage_bonus_weight}.")
+        await ctx.send(f"Damage Bonus weight set to {damage_bonus_weight}.")
 
     @bullshidoset_group.command(
         name="permanent_injury_chance", description="Set the permanent injury chance."
