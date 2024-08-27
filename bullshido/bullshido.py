@@ -502,6 +502,16 @@ class Bullshido(commands.Cog):
         await ctx.send(f"Critical hit chance set to {critical_chance}.")
 
     @bullshidoset_group.command(
+        name="damage_bonus_weight", description="Set the weight for damage bonus factored into damage calculations."
+    )
+    @commands.is_owner()
+    async def set_damage_bonus_weight(self, ctx: commands.Context, critical_chance: float):
+        """Set the damage bonus weight to calculate scaled damage bonuses."""
+        await self.config.guild(ctx.guild).critical_chance.set(critical_chance)
+        self.logger.info(f"Critical hit chance set to {critical_chance}.")
+        await ctx.send(f"Critical hit chance set to {critical_chance}.")
+
+    @bullshidoset_group.command(
         name="permanent_injury_chance", description="Set the permanent injury chance."
     )
     @commands.is_owner()
