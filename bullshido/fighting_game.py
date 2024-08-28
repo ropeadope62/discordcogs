@@ -16,7 +16,7 @@ from .fighting_constants import (
 from .bullshido_ai import generate_hype, generate_hype_challenge
 class FightingGame:
     active_games = {}
-    WEBHOOK_URL = "https://ptb.discord.com/api/webhooks/1264078679026307133/C-mjG4H90DXpSdKT2FAXcVHLnZbQlIUUZE1SQFrajfLi2hZYvJnjE8cET0UcZvMBxiOR"
+    WEBHOOK_URL = ""
 
     def __init__(self, bot, channel: discord.TextChannel, player1: discord.Member, player2: discord.Member, player1_data: dict, player2_data: dict, bullshido_cog, wager=0, challenge=False):
         self.bot = bot
