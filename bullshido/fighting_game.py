@@ -52,6 +52,7 @@ class FightingGame:
             str(player2.id): player2_data
         }
         self.base_health = 100
+        self.base_stamina = 100
         self.ACTION_COST = 10
         self.BASE_MISS_PROBABILITY = 0.15
         self.BASE_STAMINA_COST = 10
@@ -473,8 +474,8 @@ class FightingGame:
         # Increase the current stamina by the regeneration rate
         new_stamina = current_stamina + regeneration_rate
         
-        # Ensure that the new stamina does not exceed the base health
-        new_stamina = min(new_stamina, self.base_health)
+        # Ensure that the new stamina does not exceed the base stamina
+        new_stamina = min(new_stamina, self.base_stamina)
         
         # Return the new stamina value
         return new_stamina
@@ -557,7 +558,7 @@ class FightingGame:
                         await self.add_permanent_injury(defender, permanent_injury, targeted_bodypart)  # noqa: E501
 
             # Sleep for a random duration to simulate the turn
-            sleep_duration = random.uniform(1, 2) + (3 if critical_message else 0)
+            sleep_duration = random.uniform(1, 3) + (4 if critical_message else 0)
             await asyncio.sleep(sleep_duration)
 
             if "Permanent Injury" in critical_injury:
@@ -569,21 +570,24 @@ class FightingGame:
 
             # Check for KO
             if self.player1_health <= 0 or self.player2_health <= 0:
-                await asyncio.sleep(2)
+                await asyncio.sleep(3)
                 await self.declare_winner_by_ko(round_message)
                 return True
 
             # Check for TKO
             tko_probability = self.calculate_tko_probability(attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation)
-            if (self.player1_health < 20 or self.player2_health < 20) and random.random() < tko_probability:
-                await asyncio.sleep(2)
+            tko_roll = random.random()
+
+            if (self.player1_health < 20 or self.player2_health < 20) and tko_roll < tko_probability:
                 if self.player1_health < 20:
+                    await asyncio.sleep(3)
                     await self.declare_winner_by_tko(round_message, self.player1)
                 else:
                     await self.declare_winner_by_tko(round_message, self.player2)
                 return True
-
-            return False
+            else:
+                # Fight continues if TKO does not happen
+                return False
         except Exception as e:
             # Handle any errors that occur during the turn
             self.bullshido_cog.logger.error(f"Error during play_turn: {e}")
@@ -718,6 +722,7 @@ class FightingGame:
 
         # Update health bars and display round result
         await self.update_health_bars(round_number, "Round Ended", round_result)
+        await asyncio.sleep(random.uniform(3, 4))
 
         # Check for KO
         if self.player1_health <= 0 or self.player2_health <= 0:
@@ -832,8 +837,8 @@ class FightingGame:
             self.player1_health = self.base_health + player1_health_bonus
             self.player2_health = self.base_health + player2_health_bonus
 
-            self.player1_stamina = self.base_health + player1_stamina_bonus
-            self.player2_stamina = self.base_health + player2_stamina_bonus
+            self.player1_stamina = self.base_stamina + player1_stamina_bonus
+            self.player2_stamina = self.base_stamina + player2_stamina_bonus
 
             self.player1_damage_bonus = player1_damage_bonus
             self.player2_damage_bonus = player2_damage_bonus
@@ -858,7 +863,7 @@ class FightingGame:
             embed.set_image(url="attachment://fight_image.png")
             self.embed_message = await self.channel.send(file=file, embed=embed)
             await asyncio.sleep(15)
-            embed.set_image(url=None)
+            embed.set_image(url="attachment://fight_image.png")
             embed.description = ""
             await self.embed_message.edit(embed=embed)
             # Update health bars and display fight start message
