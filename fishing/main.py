@@ -394,6 +394,7 @@ class Fishing(commands.Cog):
 
         # Inform the user of the total credits earned
         await bank.deposit_credits(ctx.author, total_credits)
+        await ctx.send(f"DEBUG: Deposited {total_credits} {currency}")
         await ctx.send(f"You sold your fish for {total_credits:.2f} {currency}!")
         
 
