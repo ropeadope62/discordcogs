@@ -2,7 +2,7 @@ import asyncio
 import random
 import time
 import discord 
-from redbot.core import Config, commands
+from redbot.core import Config, commands, bank
 from redbot.core.bot import Red
 
 fishes = {
@@ -252,13 +252,12 @@ fishes = {
     "📂 Pricey's Medical Files": {"rarity": 1, "weight_range": (0.5, 1), "price_per_lb": 5000},
     "📂 Dime's Love Letters": {"rarity": 1, "weight_range": (0.5, 1), "price_per_lb": 5000},
     "📂 Angel's Journal Entries": {"rarity": 1, "weight_range": (0.5, 1), "price_per_lb": 5000},
-    "📂 UGH's Personal Files": {"rarity": 1, "weight_range": (0.5, 1), "price_per_lb": 5000},
     "📂 Copy of Dolores' DM's": {"rarity": 1, "weight_range": (0.5, 1), "price_per_lb": 5000},
     "📂 Catlady's Printed Text Messages": {"rarity": 1, "weight_range": (0.5, 1), "price_per_lb": 5000},
     "📂 Britney's Visa Application to Australia": {"rarity": 1, "weight_range": (0.5, 1), "price_per_lb": 5000},
     "📂 Caeleb's Research Papers": {"rarity": 1, "weight_range": (0.5, 1), "price_per_lb": 5000},
     "📂 Nugs' Tax Returns": {"rarity": 1, "weight_range": (0.5, 1), "price_per_lb": 5000},
-    "📂 UGH's Personal Files": {"rarity": 1, "weight_range": (0.5, 1), "price_per_lb": 5000},
+    "📂 c0dyac's Paycheques": {"rarity": 1, "weight_range": (0.5, 1), "price_per_lb": 5000},
     "📚 Tang's Interior Design Book": {"rarity": 1, "weight_range": (0.5, 1), "price_per_lb": 5000},
     "🪕 Tiny Banjo": {"rarity": 3, "weight_range": (1, 2), "price_per_lb": 1000},
     "🧩 Missing Puzzle Piece": {"rarity": 5, "weight_range": (0.01, 0.02), "price_per_lb": 0},
@@ -381,6 +380,7 @@ class Fishing(commands.Cog):
     async def sell_fish(self, ctx: commands.Context):
         """Sell all your fish for credits."""
         user_fish = await self.config.user(ctx.author).caught_fish()
+        currency = await bank.get_currency_name(ctx.guild)
         if not user_fish:
             await ctx.send("You don't have any fish to sell.")
             return
@@ -393,7 +393,9 @@ class Fishing(commands.Cog):
                 total_credits += credits
 
         # Inform the user of the total credits earned
-        await ctx.send(f"You sold your fish for {total_credits:.2f} bux!")
+        await bank.deposit_credits(ctx.author, total_credits)
+        await ctx.send(f"You sold your fish for {total_credits:.2f} {currency}!")
+        
 
         # Clear the inventory after selling
         await self.config.user(ctx.author).caught_fish.set({})
