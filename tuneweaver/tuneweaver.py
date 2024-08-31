@@ -471,9 +471,11 @@ class TuneWeaver(commands.Cog):
     @tuneweaverset_group.command(
         name="weave", description="Manually trigger the daily track selection."
     )
-    @is_mod_or_superior()
     async def trigger_weave(self, ctx):
         """Manually trigger the daily track selection."""
+        if not await is_mod_or_superior(self.bot, ctx.author):
+            await ctx.send("You don't have the required permissions to use this command.")
+            return
         if self.spotify is None:
             await ctx.send(
                 "Spotify API is not initialized. Please set up the API credentials."
@@ -484,10 +486,12 @@ class TuneWeaver(commands.Cog):
     @tuneweaverset_group.command(
         name="time", description="Set the time for daily track selection."
     )
-    @is_mod_or_superior()
     async def set_weave_time(self, ctx, weave_time: str):
         """Set the time for daily track selection."""
         """Set the time for daily track posts (in HH:MM format, UTC)."""
+        if not await is_mod_or_superior(self.bot, ctx.author):
+            await ctx.send("You don't have the required permissions to use this command.")
+            return
         try:
             datetime.strptime(weave_time, "%H:%M")
             await self.config.guild(ctx.guild).weave_time.set(weave_time)
