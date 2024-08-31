@@ -5,6 +5,7 @@ import random
 import asyncio
 from datetime import datetime, time, timezone, timedelta
 from redbot.core.bot import Red
+from redbot.core.utils.mod import is_mod_or_superior
 
 
 class TuneWeaver(commands.Cog):
