@@ -470,7 +470,7 @@ class TuneWeaver(commands.Cog):
     @tuneweaverset_group.command(
         name="weave", description="Manually trigger the daily track selection."
     )
-    @commands.is_owner()
+    @commands.is_mod_or_superior()
     async def trigger_weave(self, ctx):
         """Manually trigger the daily track selection."""
         if self.spotify is None:
@@ -483,7 +483,7 @@ class TuneWeaver(commands.Cog):
     @tuneweaverset_group.command(
         name="time", description="Set the time for daily track selection."
     )
-    @commands.is_owner()
+    @commands.is_mod_or_superior()
     async def set_weave_time(self, ctx, weave_time: str):
         """Set the time for daily track selection."""
         """Set the time for daily track posts (in HH:MM format, UTC)."""
