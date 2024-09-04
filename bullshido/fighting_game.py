@@ -249,7 +249,7 @@ class FightingGame:
         else:
             return "Exhausted"
 
-    async def update_health_bars(self, round_number, latest_message, round_result, fight_over=False, final_result=None):
+    async def update_health_bars(self, round_number, latest_message, round_result, fight_over=False, final_result=None, strike_injured_bodypart_message=None):
         # Create health bars for player 1 and player 2
         player1_health_bar = self.create_health_bar(self.player1_health, self.base_health)
         player2_health_bar = self.create_health_bar(self.player2_health, self.base_health)
@@ -291,11 +291,13 @@ class FightingGame:
         if self.player2_data.get("permanent_injuries"):
             embed.add_field(name=f"{self.player2.display_name} Permanent Injuries", value=", ".join(self.player2_data["permanent_injuries"]), inline=False)
 
+        if strike_injured_bodypart_message:
+            embed.add_field(name="Brutal Strike!", value=strike_injured_bodypart_message, inline=False)
         if round_result and not fight_over:
             # Add round result to the embed if round is not over
             embed.add_field(name="Round Result", value=round_result, inline=False)
+            
         embed.add_field(name="Latest Strike", value=latest_message, inline=False)
-
         # Set the thumbnail image for the embed
         embed.set_thumbnail(url="https://i.ibb.co/7KK90YH/bullshido.png")
 
@@ -362,6 +364,7 @@ class FightingGame:
         modified_damage = 0
         message = ""
         conclude_message = ""
+        strike_injured_bodypart_message = ""
         critical_injury = ""
         critical_result_key = ""
 
@@ -383,8 +386,7 @@ class FightingGame:
             modified_damage = round(modified_damage * modifier)
 
             # Check if the strike is a critical hit
-            is_critical_hit = random.random() < self.CRITICAL_CHANCE
-            if is_critical_hit:
+            if self.is_critical_hit(attacker, defender):
                 # Double the modified damage for critical hits
                 modified_damage *= 2
 
@@ -413,9 +415,10 @@ class FightingGame:
             if body_part in defender_data.get('permanent_injuries', []):
                 # Double the modified damage if the defender has a permanent injury on the body part
                 modified_damage *= 2
+                strike_injured_bodypart_message = f"🔥**{attacker.display_name}'s {strike} hits {defender.display_name}'s already injured {body_part}, causing double damage!🔥**"
 
             # Return the strike, modified damage, messages, and critical injury
-            return strike, modified_damage, message, conclude_message, critical_injury, body_part
+            return strike, modified_damage, message, conclude_message, critical_injury, body_part, strike_injured_bodypart_message
 
         except Exception as e:
             # Log any errors that occur during the calculation
@@ -423,7 +426,7 @@ class FightingGame:
             self.bullshido_cog.logger.debug(f"Attacker: {attacker}, Defender: {defender}, Style: {style}")
 
             # Return the default values in case of an error
-            return strike, modified_damage, message, conclude_message, critical_injury, body_part
+            return strike, modified_damage, message, conclude_message, critical_injury, body_part, strike_injured_bodypart_message
 
     async def end_fight(self, winner, loser):
         # Log the start of the end_fight method
@@ -863,7 +866,6 @@ class FightingGame:
             embed.set_image(url="attachment://fight_image.png")
             self.embed_message = await self.channel.send(file=file, embed=embed)
             await asyncio.sleep(15)
-            embed.set_image(url="attachment://fight_image.png")
             embed.description = ""
             await self.embed_message.edit(embed=embed)
             # Update health bars and display fight start message
