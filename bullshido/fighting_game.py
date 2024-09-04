@@ -514,7 +514,7 @@ class FightingGame:
             bodypart = await self.target_bodypart()
 
             # Get the strike damage and other related information
-            strike, damage, critical_message, conclude_message, critical_injury, targeted_bodypart = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender, defender_data, bodypart)
+            strike, damage, critical_message, conclude_message, critical_injury, targeted_bodypart, strike_injured_bodypart_message = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender, defender_data, bodypart)
 
             if not strike:
                 # An error occurred during the turn
@@ -569,7 +569,7 @@ class FightingGame:
                 message += f"\n**Permanent Injury:** {critical_injury.split(': ')[1]}"
 
             # Update the health bars with the turn message
-            await self.update_health_bars(round_number, message, None)
+            await self.update_health_bars(round_number, message, None, strike_injured_bodypart_message=strike_injured_bodypart_message)
 
             # Check for KO
             if self.player1_health <= 0 or self.player2_health <= 0:
