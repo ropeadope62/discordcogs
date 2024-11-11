@@ -3,6 +3,8 @@ import discord
 import random
 import logging
 
+from .powergeist import PowerGeist 
+
 logger = logging.getLogger("scrap.powerballs")
 
 class Powerballs(commands.Cog):
@@ -14,9 +16,16 @@ class Powerballs(commands.Cog):
             "jackpot": 0,
             "winners": {},
             "total_tickets_bought": 0,
-            "ticket_price": 500
+            "ticket_price": 500,
+            "geist_channel_id": None
         }
         self.config.register_guild(**default_guild)
+        
+        # Create an instance of the PowerGeist class
+        self.powergeist = PowerGeist(self.bot)
+        
+        # Start the PowerGeist event loop with the run method. 
+        self.bot.loop.create_task(self.powergeist.run())
     
     @commands.group()
     async def powerballs(self, ctx: commands.Context):
@@ -179,3 +188,11 @@ class Powerballs(commands.Cog):
                 await ctx.send("Winner not found in the guild.")
         else:
             await ctx.send("An error occurred while drawing the winner.")
+
+    @powerballs.command()
+    @commands.is_owner()
+    async def setgeistchannel(self, ctx: commands.Context, channel: discord.TextChannel):
+        """Set the channel where the Geist strike message will be sent."""
+        await self.config.guild(ctx.guild).geist_channel_id.set(channel.id)
+        await self.powergeist.set_channel(channel.id)
+        await ctx.send(f"Geist strike messages will be sent to {channel.mention}.")
