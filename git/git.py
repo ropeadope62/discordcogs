@@ -1,5 +1,7 @@
 import discord
 from redbot.core import commands, Config
+from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
+from discord.ext import commands as ext_commands
 from discord.ext import tasks
 import aiohttp
 
@@ -110,20 +112,24 @@ class ScrapGit(commands.Cog):
             await ctx.send(f"{repository} is not in the watchlist.")
 
     @git.command()
+    @ext_commands.guild_only()
     async def watchlist(self, ctx):
         """View the current GitHub watchlist."""
         watchlist = await self.config.guild(ctx.guild).watchlist()
         if not watchlist:
             await ctx.send("The watchlist is empty.")
             return
+
+        # Create embeds for each repository in the watchlist
         embeds = []
         for repo_name, repo_data in watchlist.items():
             enabled = repo_data["enabled"]
-            embed = discord.Embed(title=repo_name,
-                                  description="Enabled" if enabled else "Disabled")
+            embed = discord.Embed(
+                title=repo_name,
+                description="Enabled" if enabled else "Disabled",
+                color=discord.Color.blue()
+            )
             embeds.append(embed)
-        paginator = commands.Paginator(embeds=embeds)
-        try:
-            await paginator.start(ctx)
-        except Exception as e:
-            print(f"Error starting paginator for watchlist in {ctx.guild.id}: {e}")
+
+        # Use Redbot's menu utility to paginate the embeds
+        await menu(ctx, pages=embeds, controls=DEFAULT_CONTROLS)
