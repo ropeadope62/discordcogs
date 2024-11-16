@@ -9,6 +9,14 @@ class ScrapGit(commands.Cog):
         self.config = Config.get_conf(self, identifier=123234415131613614567890, force_registration=True)
         self.session = aiohttp.ClientSession()
         self.commit_check_loop.start()
+        
+        default_guild = {
+
+            "watchlist": {},
+            "notification_channel": None,
+            
+        }
+        self.config.register_guild(**default_guild)
 
     def cog_unload(self):
         self.commit_check_loop.cancel()
