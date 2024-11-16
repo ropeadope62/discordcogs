@@ -12,7 +12,7 @@ class ScrapGit(commands.Cog):
         
         default_guild = {
 
-            "watchlist": {},
+            "watchlist": [],
             "notification_channel": None,
             
         }
