@@ -1,12 +1,12 @@
 import discord
-from redbot.core import commands
+from redbot.core import commands, Config
 from discord.ext import tasks
 import aiohttp
 
 class ScrapGit(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.config = bot.get_cog("Config")
+        self.config = Config.get_conf(self, identifier=123234415131613614567890, force_registration=True)
         self.session = aiohttp.ClientSession()
         self.commit_check_loop.start()
 
