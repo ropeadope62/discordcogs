@@ -12,7 +12,7 @@ class ScrapGit(commands.Cog):
         
         default_guild = {
 
-            "watchlist": [],
+            "watchlist": {},
             "notification_channel": None,
             
         }
@@ -83,14 +83,21 @@ class ScrapGit(commands.Cog):
         ...
 
     @git.command()
-    async def addrepo(self, ctx, repository: commands.clean_content):
-        """Add a GitHub repo to the watchlist."""
-        watchlist = await self.config.guild(ctx.guild).watchlist()
-        if repository in watchlist:
-            await ctx.send(f"{repository} is already in the watchlist.")
-        else:
-            watchlist[repository] = {"enabled": True}
-            await ctx.send(f"Added {repository} to the watchlist.")
+    async def addrepo(self, ctx, repository: str):
+        """Add a repo to the watchlist."""
+        async with self.config.guild(ctx.guild).watchlist() as watchlist:
+            if repository in watchlist:
+                await ctx.send(f"{repository} is already in the watchlist.")
+            else:
+                watchlist[repository] = {"enabled": True}
+                await ctx.send(f"Added {repository} to the watchlist.")
+
+    @git.command()
+    @commands.has_permissions(administrator=True)
+    async def setchannel(self, ctx, channel: discord.TextChannel):
+        """Set the notification channel for commit updates."""
+        await self.config.guild(ctx.guild).notification_channel.set(channel.id)
+        await ctx.send(f"Notification channel set to {channel.mention}")
 
     @git.command()
     async def removerepo(self, ctx, repository: commands.clean_content):
