@@ -1,6 +1,6 @@
 import discord
 from redbot.core import commands
-from discord import tasks
+from discord.ext import tasks
 import aiohttp
 
 class ScrapGit(commands.Cog):
