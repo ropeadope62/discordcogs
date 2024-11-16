@@ -65,7 +65,7 @@ class ScrapGit(commands.Cog):
     async def git(self, ctx):
         """GitHub integration commands."""
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(self.github)
+            await ctx.send_help(self.git)
 
     @git.command()
     @commands.has_permissions(administrator=True)
