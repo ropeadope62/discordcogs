@@ -10,7 +10,7 @@ class PowerGeist:
     def __init__(self, bot):
         self.bot = bot
         self.channel_id = None
-        self._running = True
+        self.is_running = True
 
     async def set_channel(self, channel_id: int):
         """Set the channel for vague messages when the Geist strikes."""
