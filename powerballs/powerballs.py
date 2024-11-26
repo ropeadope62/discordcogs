@@ -201,7 +201,7 @@ class Powerballs(commands.Cog):
     @commands.is_owner()
     async def togglegeist(self, ctx: commands.Context):
         """Disable the PowerGeist event loop."""
-        if self.powergeist.is_running(): 
+        if self.powergeist.is_running_task(): 
             self.powergeist.stop()
             await ctx.send("PowerGeist event disabled.")
         else:

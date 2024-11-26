@@ -10,7 +10,7 @@ class PowerGeist:
     def __init__(self, bot):
         self.bot = bot
         self.channel_id = None
-        self.is_running = True
+        self._running = True
 
     async def set_channel(self, channel_id: int):
         """Set the channel for vague messages when the Geist strikes."""
@@ -20,9 +20,13 @@ class PowerGeist:
     async def run(self):
         """Runs between 1 AM and 3 AM, randomly deducting credits and adding to the jackpot."""
         """This code was added for The Powergeist Halloween event"""
+        if self._running: 
+            logger.info("PowerGeist has already started")
+            return 
+        
         await self.bot.wait_until_ready()
 
-        while True:
+        while self._running: 
             now = datetime.now()
             # Check if current time is between 1 AM and 3 AM
             if 1 <= now.hour < 3:
@@ -68,6 +72,6 @@ class PowerGeist:
         """Stop the PowerGeist event loop."""
         self._running = False
         
-    def if_running(self): 
+    def is_running_task(self): 
         """ Check if the PowerGeist event loop is running."""
         return self._running
