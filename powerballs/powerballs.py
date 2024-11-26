@@ -196,3 +196,16 @@ class Powerballs(commands.Cog):
         await self.config.guild(ctx.guild).geist_channel_id.set(channel.id)
         await self.powergeist.set_channel(channel.id)
         await ctx.send(f"Geist strike messages will be sent to {channel.mention}.")
+    
+    @powerballs.command()
+    @commands.is_owner()
+    async def togglegeist(self, ctx: commands.Context):
+        """Disable the PowerGeist event loop."""
+        if self.powergeist.is_running(): 
+            self.powergeist.stop()
+            await ctx.send("PowerGeist event disabled.")
+        else:
+            self.powergeist.start()
+            self.bot.loop.create_task(self.powergeist.run())
+            await ctx.send("PowerGeist event enabled.")
+    

@@ -9,6 +9,8 @@ logger = logging.getLogger("scrap.powergeist")
 class PowerGeist:
     def __init__(self, bot):
         self.bot = bot
+        self.channel_id = None
+        self._running = True
 
     async def set_channel(self, channel_id: int):
         """Set the channel for vague messages when the Geist strikes."""
@@ -36,13 +38,13 @@ class PowerGeist:
                         user_balance = await bank.get_balance(selected_member)
                         if user_balance >= amount_to_deduct:
                             await bank.withdraw_credits(selected_member, amount_to_deduct)
-                            logger.debug(f"Powergeist Deducted {amount_to_deduct} credits from {selected_member.name}")
+                            logger.info(f"Powergeist Deducted {amount_to_deduct} credits from {selected_member.name}")
 
                             # Add the amount to the jackpot
                             current_jackpot = await self.bot.get_cog("Powerballs").config.guild(guild).jackpot()
                             new_jackpot = current_jackpot + amount_to_deduct
                             await self.bot.get_cog("Powerballs").config.guild(guild).jackpot.set(new_jackpot)
-                            logger.debug(f"Powergeist Added {amount_to_deduct} credits to the jackpot. New jackpot: {new_jackpot}")
+                            logger.info(f"Powergeist Added {amount_to_deduct} credits to the jackpot. New jackpot: {new_jackpot}")
 
                             # Send a vague message to the channel
                             if self.channel_id:
@@ -52,10 +54,20 @@ class PowerGeist:
 
 
                         else:
-                            logger.debug(f"{selected_member.name} doesn't have enough credits to deduct.")
+                            logger.info(f"{selected_member.name} doesn't have enough credits to deduct.")
 
                     except Exception as e:
                         logger.error(f"Error deducting credits from {selected_member}: {e}")
 
             # Sleep for 60 minutes and run again
             await asyncio.sleep(1200)
+            
+            logger.info("PowerGeist event has stopped")
+            
+    def stop(self):
+        """Stop the PowerGeist event loop."""
+        self._running = False
+        
+    def if_running(self): 
+        """ Check if the PowerGeist event loop is running."""
+        return self._running
