@@ -393,10 +393,8 @@ class Fishing(commands.Cog):
                 total_credits += credits
 
         # Inform the user of the total credits earned
-        await bank.deposit_credits(ctx.author, total_credits)
-        await ctx.send(f"DEBUG: Deposited {total_credits} {currency}")
-        await ctx.send(f"You sold your fish for {total_credits:.2f} {currency}!")
-        
+        await bank.deposit_credits(ctx.author, round(total_credits))
+        await ctx.send(f"You sold your fish for {round(total_credits):.2f} {currency}!")
 
         # Clear the inventory after selling
         await self.config.user(ctx.author).caught_fish.set({})

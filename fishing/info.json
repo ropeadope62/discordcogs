@@ -1,0 +1,18 @@
+{
+    "name": "fishing",
+    "short": "A small minigame where you catch virtual fishes",
+    "description": "This cog is just a small minigame where you catch fish and other items, which can be sold in the redbot economy",
+    "end_user_data_statement": "This cog does not store any user data persistently.",
+    "install_msg": "Thanks for installing fishing!",
+    "author": [
+        "crayyy_zee", "ropeadope62"
+    ],
+    "required_cogs": {},
+    "requirements": [],
+    "tags": [
+        "minigame",
+        "fishing",
+        "virtual"
+    ],
+    "type": "COG"
+}
