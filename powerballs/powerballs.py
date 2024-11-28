@@ -205,7 +205,7 @@ class Powerballs(commands.Cog):
             self.powergeist.stop()
             await ctx.send("PowerGeist event disabled.")
         else:
-            self.powergeist.start()
+            self.powergeist.run()
             self.bot.loop.create_task(self.powergeist.run())
             await ctx.send("PowerGeist event enabled.")
     
