@@ -2,9 +2,9 @@ import discord
 import asyncio
 from redbot.core import commands, Config, bank
 from discord import Interaction
+from datetime import datetime, timedelta
 from .ui_elements import SelectFightingStyleView, StatIncreaseView
 from .fighting_game import FightingGame
-from datetime import datetime, timedelta
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont, ImageTransform
 from .fighting_constants import INJURY_TREATMENT_COST, XP_REQUIREMENTS, STRIKES
@@ -50,6 +50,7 @@ class Bullshido(commands.Cog):
             "morale": 100,
             "intimidation_level": 0,
             "stamina_level": 100,
+            "health_points": 100,
             "prize_money_won": 0,
             "prize_money_lost": 0,
             "last_interaction": None,
@@ -58,6 +59,7 @@ class Bullshido(commands.Cog):
             "last_diet": None,
             "fight_history": [],
             "permanent_injuries": [],
+            "taunts": [],
         }
 
         default_guild = {
@@ -316,7 +318,7 @@ class Bullshido(commands.Cog):
 
     async def apply_inactivity_penalties(self):
         self.logger.info("Applying inactivity penalties...")
-        current_time = datetime.datetime.utcnow()
+        current_time = datetime.utcnow() 
         users = await self.config.all_users()
         for user_id, user_data in users.items():
             self.logger.info(f"Applying inactivity penalties for user {user_id}")
@@ -1067,7 +1069,7 @@ class Bullshido(commands.Cog):
             self.logger.info(f"Player 1 Data: {player1_data}")
             self.logger.info(f"Player 2 Data: {player2_data}")
 
-            # Check stamina - not fully implemented between fights
+            # Check stamina - not yet fully implemented between fights
             if not await self.has_sufficient_stamina(player1):
                 await ctx.send(
                     f"You are too tired to fight, {player1.mention}.\nTry waiting some time for your stamina to recover, or buy some supplements to speed up your recovery."
