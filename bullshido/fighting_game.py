@@ -483,23 +483,26 @@ class FightingGame:
         # Return the new stamina value
         return new_stamina
 
+    def determine_attacker_defender(self):
+        """Determine the attacker and defender based on the current turn."""
+        if self.current_turn == self.player1:
+            return self.player1, self.player2, self.player1_data, self.player2_data
+        else:
+            return self.player2, self.player1, self.player2_data, self.player1_data
+
     async def play_turn(self, round_message, round_number):
         try:
-            # Determine the attacker and defender based on the current turn
-            attacker = self.player1 if self.current_turn == self.player1 else self.player2
-            defender = self.player2 if self.current_turn == self.player1 else self.player1
+            # Determine the attacker and defender
+            attacker, defender, attacker_data, defender_data = self.determine_attacker_defender()
 
             # Get the stamina and training levels of the attacker and defender
-            attacker_stamina = self.player1_stamina if self.current_turn == self.player1 else self.player2_stamina
-            defender_stamina = self.player2_stamina if self.current_turn == self.player1 else self.player1_stamina
-            attacker_training = self.player1_data["training_level"] if self.current_turn == self.player1 else self.player2_data["training_level"]
-            defender_training = self.player2_data["training_level"] if self.current_turn == self.player1 else self.player1_data["training_level"]
-            attacker_intimidation = self.player1_data["intimidation_level"] if self.current_turn == self.player1 else self.player2_data["intimidation_level"]
-            defender_intimidation = self.player2_data["intimidation_level"] if self.current_turn == self.player1 else self.player1_data["intimidation_level"]
-            style = self.player1_data["fighting_style"] if self.current_turn == self.player1 else self.player2_data["fighting_style"]
-
-            # Get the defender's data based on the current turn
-            defender_data = self.player2_data if self.current_turn == self.player1 else self.player1_data
+            attacker_stamina = attacker_data["stamina_level"]
+            defender_stamina = defender_data["stamina_level"]
+            attacker_training = attacker_data["training_level"]
+            defender_training = defender_data["training_level"]
+            attacker_intimidation = attacker_data["intimidation_level"]
+            defender_intimidation = defender_data["intimidation_level"]
+            style = attacker_data["fighting_style"]
 
             # Calculate the miss probability
             miss_probability = self.calculate_miss_probability(attacker_stamina, attacker_training, defender_training, defender_stamina, attacker_intimidation, defender_intimidation)
@@ -514,7 +517,7 @@ class FightingGame:
             bodypart = await self.target_bodypart()
 
             # Get the strike damage and other related information
-            strike, damage, critical_message, conclude_message, critical_injury, targeted_bodypart, strike_injured_bodypart_message = self.get_strike_damage(style, self.player1_data if attacker == self.player1 else self.player2_data, defender, defender_data, bodypart)
+            strike, damage, critical_message, conclude_message, critical_injury, targeted_bodypart, strike_injured_bodypart_message = self.get_strike_damage(style, attacker_data, defender, defender_data, bodypart)
 
             if not strike:
                 # An error occurred during the turn
@@ -558,7 +561,7 @@ class FightingGame:
                     if "Permanent Injury" in critical_injury:
                         # Add permanent injury to player 1 if applicable
                         permanent_injury = critical_injury.split(": ")[1]
-                        await self.add_permanent_injury(defender, permanent_injury, targeted_bodypart)  # noqa: E501
+                        await self.add_permanent_injury(defender, permanent_injury, targeted_bodypart)
 
             # Sleep for a random duration to simulate the turn
             sleep_duration = random.uniform(1, 3) + (4 if critical_message else 0)
