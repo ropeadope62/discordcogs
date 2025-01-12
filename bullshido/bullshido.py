@@ -108,11 +108,11 @@ class Bullshido(commands.Cog):
             self.file_handler.setFormatter(formatter)
             self.logger.addHandler(self.file_handler)
 
-    async def has_sufficient_stamina(self, user):
+    async def has_sufficient_stamina(self, user, required_stamina=20):
         """Check if the user has sufficient stamina to fight."""
         self.logger.info(f"Checking if {user} has sufficient stamina...")
         stamina = await self.config.user(user).stamina_level()
-        return stamina >= 20
+        return stamina >= required_stamina
 
     async def add_permanent_injury(self, user: discord.Member, injury, body_part):
         """Add a permanent injury to a user."""
@@ -1056,56 +1056,12 @@ class Bullshido(commands.Cog):
         await ctx.defer()
         self.logger.info(f"{ctx.author} challenged {opponent} to a fight.")
         try:
-            player1 = ctx.author
-            player2 = opponent
+            player1, player2 = ctx.author, opponent
+            player1_data, player2_data = await self.get_player_data(player1), await self.get_player_data(player2)
 
-            # Retrieve player data
-            player1_data = await self.config.user(player1).all()
-            player2_data = await self.config.user(player2).all()
-
-            self.logger.info(
-                f"Starting fight: {player1.display_name} vs {player2.display_name}"
-            )
-            self.logger.info(f"Player 1 Data: {player1_data}")
-            self.logger.info(f"Player 2 Data: {player2_data}")
-
-            # Check stamina - not yet fully implemented between fights
-            if not await self.has_sufficient_stamina(player1):
-                await ctx.send(
-                    f"You are too tired to fight, {player1.mention}.\nTry waiting some time for your stamina to recover, or buy some supplements to speed up your recovery."
-                )
-                self.logger.warning(f"{player1} does not have enough stamina to fight.")
-                return
-            if not await self.has_sufficient_stamina(player2):
-                await ctx.send(
-                    "Your opponent does not have enough stamina to start the fight."
-                )
-                self.logger.warning(f"{player2} does not have enough stamina to fight.")
+            if not await self.validate_fight_conditions(ctx, player1, player2, player1_data, player2_data):
                 return
 
-            # Check if fighting styles are selected for each player
-            if not player1_data["fighting_style"]:
-                await ctx.send(
-                    f"{player1.display_name}, you need to select a fighting style before you can fight."
-                )
-                self.logger.info(f"{player1} does not have a fighting style selected.")
-                return
-            if not player2_data["fighting_style"]:
-                await ctx.send(
-                    f"{player2.display_name} needs to select a fighting style before they can fight."
-                )
-                self.logger.info(f"{player2} does not have a fighting style selected.")
-                return
-
-            # Prevent fighting oneself
-            if player1 == player2:
-                await ctx.send(
-                    "You cannot fight yourself, only your own demons! Try challenging another fighter."
-                )
-                self.logger.warning(f"{player1} tried to fight themselves.")
-                return
-
-            # Set up an instance of the game session
             game = FightingGame(
                 self.bot,
                 ctx.channel,
@@ -1120,13 +1076,49 @@ class Bullshido(commands.Cog):
                 str(player2.id): player2_data,
             }
 
-            # Start the game method
             await game.start_game(ctx)
             self.logger.info("Game started successfully.")
 
         except Exception as e:
             self.logger.error(f"Failed to start fight: {e}")
             await ctx.send(f"Failed to start the fight due to an error: {e}")
+
+    async def validate_fight_conditions(self, ctx, player1, player2, player1_data, player2_data):
+        """Validate conditions before starting a fight."""
+        if not await self.has_sufficient_stamina(player1):
+            await ctx.send(
+                f"You are too tired to fight, {player1.mention}.\nTry waiting some time for your stamina to recover, or buy some supplements to speed up your recovery."
+            )
+            self.logger.warning(f"{player1} does not have enough stamina to fight.")
+            return False
+        if not await self.has_sufficient_stamina(player2):
+            await ctx.send(
+                "Your opponent does not have enough stamina to start the fight."
+            )
+            self.logger.warning(f"{player2} does not have enough stamina to fight.")
+            return False
+
+        if not player1_data["fighting_style"]:
+            await ctx.send(
+                f"{player1.display_name}, you need to select a fighting style before you can fight."
+            )
+            self.logger.info(f"{player1} does not have a fighting style selected.")
+            return False
+        if not player2_data["fighting_style"]:
+            await ctx.send(
+                f"{player2.display_name} needs to select a fighting style before they can fight."
+            )
+            self.logger.info(f"{player2} does not have a fighting style selected.")
+            return False
+
+        if player1 == player2:
+            await ctx.send(
+                "You cannot fight yourself, only your own demons! Try challenging another fighter."
+            )
+            self.logger.warning(f"{player1} tried to fight themselves.")
+            return False
+
+        return True
 
     @bullshido_group.command(
         name="train",
