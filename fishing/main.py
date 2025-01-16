@@ -319,33 +319,35 @@ class Fishing(commands.Cog):
     async def cast(self, ctx: commands.Context):
         """Cast your line into the water."""
         message = await ctx.send(
-            "You cast your line into the water. Click the 🎣 reaction to catch a fish."
+            "You cast your line into the water. Wait for the 🎣 to appear, then click it to catch a fish!"
         )
         
-        wait_time = random.uniform(1, 4)
+        # Random wait time before fish appears
+        wait_time = random.uniform(2, 8)
         await asyncio.sleep(wait_time)
         
+        # Add the reaction after the wait time
         t1 = time.time()
-        await ctx.message.add_reaction("🎣")
+        await message.add_reaction("🎣")  # Changed from ctx.message to message
 
         try:
-            await self.bot.wait_for(
+            reaction, user = await self.bot.wait_for(
                 "reaction_add",
-                check=lambda r, u: r.message.id == ctx.message.id
+                check=lambda r, u: r.message.id == message.id  # Changed from ctx.message.id to message.id
                 and u.id == ctx.author.id
                 and str(r.emoji) == "🎣",
                 timeout=10,
             )
 
         except asyncio.TimeoutError:
-            await ctx.message.clear_reactions()
-            await message.edit(content="You didn't catch anything.")
+            await message.clear_reactions()  # Changed from ctx.message to message
+            await message.edit(content="The fish got away!")
             return
 
         t2 = time.time()
         diff = t2 - t1
 
-        await ctx.message.clear_reactions()
+        await message.clear_reactions()  # Changed from ctx.message to message
 
         ch = self.calculate_catch_chance(diff)
         rand = random.random()
