@@ -1,6 +1,6 @@
 # Caption Crunch - Discord Game
 
-![CaptionCrunch Logo]()
+<img src="https://i.ibb.co/y4WCcbB/caption-crunch.png" alt="Markdown Logo" width="400" height="600">
 
 **Caption Crunch** is a fun and interactive Discord game where users submit captions for an image, and then vote on the best one! The game is designed to be easy to set up and play, with rewards for the most creative captions. 
 
