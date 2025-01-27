@@ -55,7 +55,31 @@ class Card:
         self.value = value
 
     def __str__(self):
-        return f"{self.rank} of {self.suit}"
+        # Unicode card representation
+        suits_unicode = {
+            ":clubs:": "♣️",
+            ":diamonds:": "♦️",
+            ":hearts:": "♥️",
+            ":spades:": "♠️"
+        }
+        rank_display = {
+            "ace": "A",
+            "2": "2",
+            "3": "3",
+            "4": "4",
+            "5": "5",
+            "6": "6",
+            "7": "7",
+            "8": "8",
+            "9": "9",
+            "10": "10",
+            "jack": "J",
+            "queen": "Q",
+            "king": "K"
+        }
+        suit = suits_unicode[self.suit]
+        rank = rank_display[self.rank]
+        return f"{rank}{suit}"
 
     def __repr__(self):
         return f"{self.rank} of {self.suit} ({self.value})"
