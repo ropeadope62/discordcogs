@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from cog import DayByDayCog  
+from .cog import DayByDayCog  
 
 class DayByDayMenuView(discord.ui.View):
     def __init__(self, cog: DayByDayCog, ctx: commands.Context):

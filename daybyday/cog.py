@@ -85,8 +85,9 @@ class DayByDayCog(commands.Cog):
     @commands.group(invoke_without_command=True, name="daybyday")
     async def daybyday(self, ctx: commands.Context):
         """Main menu for tracking your day-by-day progress."""
-        embed = await self.generate_main_menu_embed(ctx.author)
+        from .views import DayByDayMenuView
         view = DayByDayMenuView(self, ctx)
+        embed = await self.generate_main_menu_embed(ctx.author)
         view.message = await ctx.send(embed=embed, view=view)
         await view.initialize_menu()
 
