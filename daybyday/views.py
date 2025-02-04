@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from .daybyday import DayByDayCog  # if you need type hints or access to helper methods
+from .cog import DayByDayCog  # if you need type hints or access to helper methods
 
 class DayByDayMenuView(discord.ui.View):
     def __init__(self, cog: DayByDayCog, ctx: commands.Context):
